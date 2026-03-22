@@ -6,7 +6,12 @@ import { Search, User, MapPin, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LocationSearch } from "./LocationSearch";
 
-export function Header() {
+interface HeaderProps {
+  userInitials?: string;
+  isLoggedIn?: boolean;
+}
+
+export function Header({ userInitials = "JD", isLoggedIn = false }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -60,7 +65,7 @@ export function Header() {
            <Link href="/profile" className="flex items-center space-x-3 p-1 rounded-full hover:bg-white/5 transition-all">
               <div className="w-10 h-10 rounded-full bg-zinc-800 border-2 border-white/5 flex items-center justify-center overflow-hidden">
                 <div className="bg-gradient-to-br from-brand-blue to-brand-green w-full h-full flex items-center justify-center text-xs font-black text-white">
-                   JD
+                   {userInitials}
                 </div>
               </div>
               <ChevronDown size={14} className="text-zinc-600 hidden md:block" />
