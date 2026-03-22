@@ -13,7 +13,7 @@ export default function AdminLayout({
       <aside className="w-64 bg-zinc-900 border-r border-white/5 flex flex-col hidden md:flex sticky top-0 h-screen">
         <div className="p-8 border-b border-white/5">
           <h1 className="text-xl font-black font-outfit uppercase tracking-tighter">
-            PF Admin <span className="text-orange-500">v1.0</span>
+            PassFit <span className="text-brand-green italic">Admin</span>
           </h1>
         </div>
         <nav className="flex-1 p-4 space-y-2 pt-6">
