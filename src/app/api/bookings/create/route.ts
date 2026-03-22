@@ -1,0 +1,80 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { sendWhatsAppOTP } from "@/lib/whatsapp";
+import { cookies } from "next/headers";
+
+export async function POST(req: Request) {
+  try {
+    const bookingData = await req.json();
+    const { 
+      gymId, 
+      planId, 
+      amount, 
+      members,
+      addons,
+      gymName 
+    } = bookingData;
+
+    // 1. Get user from session cookie
+    const cookieStore = await cookies();
+    const userId = cookieStore.get("user_id")?.value;
+
+    if (!userId) {
+      return NextResponse.json({ error: "Authentication required to book" }, { status: 401 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User session invalid" }, { status: 401 });
+    }
+
+    // 2. Generate OTP
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    const bookingId = `BK-${Date.now()}`;
+
+    // 3. Create Booking
+    const booking = await prisma.booking.create({
+      data: {
+        userId: user.id,
+        gymId: gymId,
+        planId: planId,
+        bookingDate: new Date(),
+        totalAmount: parseFloat(amount),
+        status: "BOOKED",
+        otp: otp,
+        qrCode: `passfit-${bookingId}`,
+        members: members || 1,
+        selectedAddons: addons || [],
+        paymentId: "PAY_AT_GYM",
+      },
+    });
+
+    // 4. Send WhatsApp Notification to the REAL user phone
+    try {
+      if (user.phone) {
+        await sendWhatsAppOTP(
+          user.phone, 
+          otp, 
+          gymName || "PassFit Gym"
+        );
+      }
+    } catch (wsError) {
+      console.error("Failed to send WhatsApp OTP:", wsError);
+    }
+
+    return NextResponse.json({ 
+      success: true, 
+      bookingId: booking.id,
+      message: "Booking confirmed successfully" 
+    });
+
+  } catch (error: any) {
+    console.error("Booking Creation Error:", error);
+    return NextResponse.json({ 
+      error: error.message || "Failed to create booking" 
+    }, { status: 500 });
+  }
+}

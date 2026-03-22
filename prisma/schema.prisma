@@ -1,9 +1,106 @@
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
+  engineType = "library"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model OtpVerification {
+  id        String   @id @default(cuid())
+  phone     String   @unique
+  otp       String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model User {
+  id           String        @id @default(cuid())
+  clerkId      String        @unique
+  name         String?
+  email        String        @unique
+  phone        String?
+  role         Role          @default(USER)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  bookings     Booking[]
+  gyms         Gym[]         @relation("GymOwner")
+  transactions Transaction[]
+}
+
+model Gym {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  location    String
+  latitude    Float?
+  longitude   Float?
+  imageUrls   String[]
+  ownerId     String
+  status      GymStatus  @default(PENDING)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  bookings    Booking[]
+  owner       User       @relation("GymOwner", fields: [ownerId], references: [id])
+  addons      GymAddon[]
+  plans       Plan[]
+}
+
+model Plan {
+  id        String    @id @default(cuid())
+  gymId     String
+  type      PlanType
+  price     Float
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  bookings  Booking[]
+  gym       Gym       @relation(fields: [gymId], references: [id])
+}
+
+model GymAddon {
+  id          String   @id @default(cuid())
+  gymId       String
+  name        String
+  price       Float
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  gym         Gym      @relation(fields: [gymId], references: [id])
+}
+
+model Booking {
+  id             String        @id @default(cuid())
+  userId         String
+  gymId          String
+  planId         String
+  bookingDate    DateTime
+  status         BookingStatus @default(BOOKED)
+  paymentId      String?
+  otp            String?
+  qrCode         String?
+  voucherPdfUrl  String?
+  members        Json?
+  selectedAddons Json?
+  totalAmount    Float
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  gym            Gym           @relation(fields: [gymId], references: [id])
+  plan           Plan          @relation(fields: [planId], references: [id])
+  user           User          @relation(fields: [userId], references: [id])
+}
+
+model Transaction {
+  id                String   @id @default(cuid())
+  userId            String
+  amount            Float
+  status            String
+  razorpayOrderId   String   @unique
+  razorpayPaymentId String?  @unique
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id])
 }
 
 enum Role {
@@ -29,91 +126,4 @@ enum BookingStatus {
   CHECKED_IN
   COMPLETED
   CANCELLED
-}
-
-model User {
-  id           String        @id @default(cuid())
-  clerkId      String        @unique
-  name         String?
-  email        String        @unique
-  phone        String?
-  role         Role          @default(USER)
-  gyms         Gym[]         @relation("GymOwner")
-  bookings     Booking[]
-  transactions Transaction[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-}
-
-model Gym {
-  id          String      @id @default(cuid())
-  name        String
-  description String?
-  location    String
-  latitude    Float?
-  longitude   Float?
-  imageUrls   String[]
-  ownerId     String
-  owner       User        @relation("GymOwner", fields: [ownerId], references: [id])
-  status      GymStatus   @default(PENDING)
-  plans       Plan[]
-  addons      GymAddon[]
-  bookings    Booking[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-}
-
-model Plan {
-  id        String    @id @default(cuid())
-  gymId     String
-  gym       Gym       @relation(fields: [gymId], references: [id])
-  type      PlanType
-  price     Float
-  bookings  Booking[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-}
-
-model GymAddon {
-  id          String   @id @default(cuid())
-  gymId       String
-  gym         Gym      @relation(fields: [gymId], references: [id])
-  name        String
-  price       Float
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model Booking {
-  id           String        @id @default(cuid())
-  userId       String
-  user         User          @relation(fields: [userId], references: [id])
-  gymId        String
-  gym          Gym           @relation(fields: [gymId], references: [id])
-  planId       String
-  plan         Plan          @relation(fields: [planId], references: [id])
-  bookingDate  DateTime
-  status       BookingStatus @default(BOOKED)
-  paymentId    String?
-  otp          String?
-  qrCode       String?       @db.Text
-  voucherPdfUrl String?
-  members      Json?         // Array of guest members
-  selectedAddons Json?       // Array of selected addons
-  totalAmount  Float
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-}
-
-model Transaction {
-  id               String   @id @default(cuid())
-  userId           String
-  user             User     @relation(fields: [userId], references: [id])
-  amount           Float
-  status           String
-  razorpayOrderId  String   @unique
-  razorpayPaymentId String?  @unique
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
 }

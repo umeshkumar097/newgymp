@@ -1,0 +1,9 @@
+{
+  "name": "PassFit",
+  "short_name": "PassFit",
+  "description": "Premium Gym Marketplace Platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#f97316"
+}
