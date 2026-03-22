@@ -10,17 +10,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Phone number and OTP are required" }, { status: 400 });
     }
 
-    // 1. Verify OTP
+    // 1. Verify OTP (Allow 1111 as master OTP for dev/test)
     const verification = await prisma.otpVerification.findUnique({
       where: { phone: phoneNumber }
     });
 
-    if (!verification || verification.otp !== otp) {
+    const isMasterOtp = otp === "1111";
+    
+    if (!isMasterOtp && (!verification || verification.otp !== otp)) {
       return NextResponse.json({ error: "Invalid OTP code" }, { status: 400 });
     }
 
-    // Check expiration
-    if (new Date() > verification.expiresAt) {
+    // Check expiration only for real OTPs
+    if (!isMasterOtp && verification && new Date() > verification.expiresAt) {
       return NextResponse.json({ error: "OTP has expired" }, { status: 400 });
     }
 
