@@ -1,12 +1,17 @@
 import React from "react";
 import { LayoutDashboard, Store, Users, BarChart, Settings, Bell, LogOut } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  return (
+  const pathname = usePathname();
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex">
       {/* Sidebar - Desktop */}
@@ -25,11 +30,17 @@ export default function AdminLayout({
             { name: "Settings", icon: Settings, href: "/admin/settings" },
           ].map((item) => {
             const Icon = item.icon;
+            const isActive = pathname === item.href;
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center space-x-3 px-4 py-3 rounded-2xl text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-all font-bold text-sm"
+                className={cn(
+                  "flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all font-bold text-sm",
+                  isActive 
+                    ? "bg-brand-green/10 text-brand-green shadow-lg shadow-brand-green/5" 
+                    : "text-zinc-400 hover:text-white hover:bg-zinc-800/50"
+                )}
               >
                 <Icon size={18} />
                 <span>{item.name}</span>
@@ -52,9 +63,9 @@ export default function AdminLayout({
           <div className="flex items-center space-x-4">
             <button className="relative w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition-colors">
               <Bell size={20} />
-              <div className="absolute top-2 right-2 w-2 h-2 bg-orange-500 rounded-full border-2 border-zinc-900" />
+              <div className="absolute top-2 right-2 w-2 h-2 bg-brand-green rounded-full border-2 border-zinc-900" />
             </button>
-            <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center font-black text-xs text-white">AD</div>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-blue to-brand-green flex items-center justify-center font-black text-xs text-white shadow-lg shadow-brand-blue/20">AD</div>
           </div>
         </header>
         <main className="flex-1 p-8 overflow-y-auto">
