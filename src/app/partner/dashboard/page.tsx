@@ -1,15 +1,26 @@
-import React from "react";
-import { TrendingUp, Users, Wallet, CheckCircle2, Search, QrCode, Filter, ArrowUpRight, Clock, MapPin, Zap } from "lucide-react";
-import { prisma } from "@/lib/prisma";
-import { cn } from "@/lib/utils";
-import { OtpVerification } from "@/components/partner/OtpVerification";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 export default async function PartnerDashboardPage() {
-  // Mock owner ID for now
-  const ownerId = "mock-owner-id";
+  // 1. Get user from session cookie
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("user_id")?.value;
+
+  if (!userId) {
+    redirect("/gym-login");
+  }
+
+  // 2. Verify user exists and is a partner/admin
+  const user = await prisma.user.findUnique({
+    where: { id: userId }
+  });
+
+  if (!user || (user.role !== "GYM_OWNER" && user.role !== "ADMIN")) {
+    redirect("/gym-login");
+  }
 
   const gyms = await prisma.gym.findMany({
-    where: { ownerId },
+    where: { ownerId: user.id },
     include: {
       bookings: {
         orderBy: { bookingDate: "desc" },
@@ -22,9 +33,9 @@ export default async function PartnerDashboardPage() {
   const recentBookings = gyms.flatMap(g => g.bookings);
 
   const stats = [
-    { label: "Today's Check-ins", value: "12", trend: "+2", icon: Users, color: "text-orange-500", bg: "bg-orange-500/10" },
-    { label: "Pending OTPs", value: "04", trend: "0", icon: Clock, color: "text-blue-500", bg: "bg-blue-500/10" },
-    { label: "Monthly Revenue", value: "₹24,500", trend: "+₹2.1k", icon: Wallet, color: "text-green-500", bg: "bg-green-500/10" },
+    { label: "Today's Check-ins", value: "12", trend: "+2", icon: Users, color: "text-brand-green", bg: "bg-brand-green/10" },
+    { label: "Pending OTPs", value: "04", trend: "0", icon: Clock, color: "text-brand-blue", bg: "bg-brand-blue/10" },
+    { label: "Monthly Revenue", value: "₹24,500", trend: "+₹2.1k", icon: Wallet, color: "text-emerald-500", bg: "bg-emerald-500/10" },
     { label: "Avg. Rating", value: "4.8", trend: "+0.1", icon: CheckCircle2, color: "text-purple-500", bg: "bg-purple-500/10" },
   ];
 
@@ -75,7 +86,7 @@ export default async function PartnerDashboardPage() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
            <h2 className="text-xl font-black font-outfit text-white">Incoming Users</h2>
-           <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest underline cursor-pointer">View All</span>
+           <span className="text-[10px] font-black text-brand-green uppercase tracking-widest underline cursor-pointer">View All</span>
         </div>
         <div className="space-y-4">
           {recentBookings.length === 0 ? (
