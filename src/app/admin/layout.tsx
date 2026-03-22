@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { LayoutDashboard, Store, Users, BarChart, Settings, Bell, LogOut } from "lucide-react";
 import Link from "next/link";
@@ -9,15 +11,14 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex font-outfit">
       {/* Sidebar - Desktop */}
       <aside className="w-64 bg-zinc-900 border-r border-white/5 flex flex-col hidden md:flex sticky top-0 h-screen">
         <div className="p-8 border-b border-white/5">
-          <h1 className="text-xl font-black font-outfit uppercase tracking-tighter">
+          <h1 className="text-xl font-black uppercase tracking-tighter">
             PassFit <span className="text-brand-green italic">Admin</span>
           </h1>
         </div>
@@ -39,7 +40,7 @@ export default function AdminLayout({
                   "flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all font-bold text-sm",
                   isActive 
                     ? "bg-brand-green/10 text-brand-green shadow-lg shadow-brand-green/5" 
-                    : "text-zinc-400 hover:text-white hover:bg-zinc-800/50"
+                    : "text-zinc-500 hover:text-white hover:bg-zinc-800/50"
                 )}
               >
                 <Icon size={18} />
@@ -49,7 +50,7 @@ export default function AdminLayout({
           })}
         </nav>
         <div className="p-4 border-t border-white/5">
-          <button className="flex items-center space-x-3 px-4 py-3 w-full text-zinc-500 hover:text-red-400 text-sm font-bold">
+          <button className="flex items-center space-x-3 px-4 py-3 w-full text-zinc-500 hover:text-red-400 text-sm font-bold transition-colors">
             <LogOut size={18} />
             <span>Logout</span>
           </button>
@@ -58,8 +59,8 @@ export default function AdminLayout({
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
-        <header className="h-20 bg-zinc-900/50 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-8 sticky top-0 z-40">
-          <h2 className="text-lg font-bold font-outfit">Control Center</h2>
+        <header className="h-20 bg-zinc-900/50 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-8 sticky top-0 z-40 font-bold uppercase tracking-[0.1em]">
+          <h2 className="text-lg font-black italic">God-Eye Hub</h2>
           <div className="flex items-center space-x-4">
             <button className="relative w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition-colors">
               <Bell size={20} />
