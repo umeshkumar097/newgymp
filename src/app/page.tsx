@@ -131,7 +131,7 @@ export default function HomePage() {
 
       {/* Footer Decoration */}
       <footer className="max-w-7xl mx-auto w-full px-6 py-12 border-t border-white/5 text-center mt-20">
-         <p className="text-[10px] text-zinc-800 font-black uppercase tracking-[1em]">Version 2.0.2 • Powered by Aiclex</p>
+         <p className="text-[10px] text-zinc-800 font-black uppercase tracking-[1em]">Version 2.0.3 • Powered by Aiclex</p>
       </footer>
     </div>
   );
