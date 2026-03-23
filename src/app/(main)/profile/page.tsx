@@ -18,6 +18,9 @@ export default async function ProfilePage() {
     ? await prisma.user.findUnique({ 
         where: { id: userId },
         include: {
+          supportTickets: {
+            orderBy: { createdAt: "desc" }
+          },
           _count: {
             select: { bookings: true }
           }
@@ -141,12 +144,44 @@ export default async function ProfilePage() {
                 </div>
                 
                 <Link 
-                  href="/contact"
+                  href="/support"
                   className="bg-white text-zinc-950 font-black px-14 py-7 rounded-[2rem] text-xs tracking-[0.3em] shadow-2xl relative z-10 hover:scale-105 active:scale-95 transition-all uppercase whitespace-nowrap"
                 >
-                   Contact Support
+                   Raise Dispute
                 </Link>
              </div>
+
+             {/* Tickets History */}
+             {user.supportTickets.length > 0 && (
+                <div className="space-y-6">
+                   <h3 className="text-xl font-black text-white italic tracking-widest pl-6 uppercase">Dispute History</h3>
+                   <div className="bg-zinc-900 shadow-2xl rounded-[3rem] border border-white/5 overflow-hidden">
+                      {user.supportTickets.map((ticket: any) => (
+                        <div key={ticket.id} className="p-8 border-b last:border-0 border-white/5 flex items-center justify-between hover:bg-white/5 transition-all">
+                           <div className="flex items-center space-x-6">
+                              <div className={cn(
+                                "w-3 h-3 rounded-full blur-[2px]",
+                                ticket.status === "OPEN" ? "bg-orange-500 animate-pulse" : 
+                                ticket.status === "RESOLVED" ? "bg-brand-green" : "bg-brand-blue"
+                              )} />
+                              <div>
+                                 <div className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">{ticket.ticketId} • {new Date(ticket.createdAt).toLocaleDateString()}</div>
+                                 <div className="text-sm font-bold text-white uppercase tracking-tight mt-1">{ticket.subject}</div>
+                              </div>
+                           </div>
+                           <div className={cn(
+                             "px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border",
+                             ticket.status === "OPEN" ? "bg-orange-500/10 text-orange-500 border-orange-500/20" :
+                             ticket.status === "RESOLVED" ? "bg-brand-green/10 text-brand-green border-brand-green/20" :
+                             "bg-brand-blue/10 text-brand-blue border-brand-blue/20"
+                           )}>
+                              {ticket.status}
+                           </div>
+                        </div>
+                      ))}
+                   </div>
+                </div>
+             )}
           </div>
 
         </div>

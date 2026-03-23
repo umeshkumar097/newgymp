@@ -22,6 +22,7 @@ interface GymManagementTabsProps {
     activeUsers: string;
     revShare: string;
     growth: string;
+    waitTime?: string;
   };
 }
 
@@ -45,9 +46,9 @@ export function GymManagementTabs({
       {/* Stats Quick Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: "Total Partners", value: stats.totalGyms, icon: Store, trend: "+12%", color: "text-brand-green" },
-          { label: "Active Users", value: stats.activeUsers, icon: Users, trend: "+5%", color: "text-brand-blue" },
-          { label: "Total Rev Share", value: stats.revShare, icon: BarChart3, trend: "+20%", color: "text-orange-500" },
+          { label: "Total Partners", value: stats.totalGyms, icon: Store, trend: "+2.5%", color: "text-brand-green" },
+          { label: "Active Users", value: stats.activeUsers, icon: Users, trend: "+4.1%", color: "text-brand-blue" },
+          { label: "Total Rev Share", value: stats.revShare, icon: BarChart3, trend: "+12.2%", color: "text-orange-500" },
           { label: "Network Growth", value: stats.growth, icon: TrendingUp, trend: "+8%", color: "text-purple-500" },
         ].map((stat) => (
           <div key={stat.label} className="bg-slate-900 border border-white/5 rounded-3xl p-6 space-y-4 hover:border-white/10 transition-all shadow-xl group cursor-default">
@@ -93,7 +94,7 @@ export function GymManagementTabs({
 
       {/* Active Area */}
       <div className="min-h-[400px]">
-        {activeTab === "VERIFICATION" && <VerificationDesk gyms={pendingGyms} />}
+        {activeTab === "VERIFICATION" && <VerificationDesk gyms={pendingGyms} waitTime={stats.waitTime} />}
         {activeTab === "ACTIVE" && <ActiveHubs gyms={[...activeGyms, ...suspendedGyms]} />}
         {activeTab === "LEDGER" && <PartnerLedger gyms={activeGyms} />}
       </div>

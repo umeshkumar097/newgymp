@@ -7,7 +7,7 @@ import {
 import { GymReviewModal } from "../GymReviewModal";
 import Image from "next/image";
 
-export function VerificationDesk({ gyms }: { gyms: any[] }) {
+export function VerificationDesk({ gyms, waitTime = "2.4 Hours" }: { gyms: any[], waitTime?: string }) {
   const [selectedGym, setSelectedGym] = useState<any>(null);
 
   return (
@@ -22,7 +22,7 @@ export function VerificationDesk({ gyms }: { gyms: any[] }) {
             <Clock size={18} className="text-orange-500" />
             <div>
                <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Average Wait Time</p>
-               <p className="text-sm font-black text-white">4.2 Hours</p>
+               <p className="text-sm font-black text-white">{waitTime}</p>
             </div>
          </div>
       </div>
