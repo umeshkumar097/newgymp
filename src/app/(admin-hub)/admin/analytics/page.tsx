@@ -3,7 +3,7 @@ import { BarChart3, TrendingUp, Users, DollarSign, ArrowUpRight, ArrowDownRight,
 import { prisma } from "@/lib/prisma";
 
 export default async function AdminAnalyticsPage() {
-  const [revenue, userCount, bookingCount, recentBookings, gymStats] = await Promise.all([
+  const [revenue, userCount, bookingCount, recentBookings, gymStats, gymCount] = await Promise.all([
     prisma.booking.aggregate({ _sum: { totalAmount: true } }),
     prisma.user.count(),
     prisma.booking.count(),
@@ -16,7 +16,8 @@ export default async function AdminAnalyticsPage() {
       by: ['location'],
       _count: true,
       take: 5
-    })
+    }),
+    prisma.gym.count()
   ]);
 
   const totalRevenue = revenue._sum.totalAmount || 0;
