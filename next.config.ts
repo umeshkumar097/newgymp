@@ -7,7 +7,20 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "images.unsplash.com",
       },
+      {
+        protocol: "https",
+        hostname: "img.passfit.in",
+      },
     ],
+  },
+  async redirects() {
+    return [
+      {
+        source: "/gym-login",
+        destination: "/partner/login",
+        permanent: true,
+      },
+    ];
   },
 };
 
