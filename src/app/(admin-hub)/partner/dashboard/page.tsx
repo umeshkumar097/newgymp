@@ -81,12 +81,12 @@ export default async function PartnerDashboardPage() {
   }
   
   // Check for Onboarding Fee (AWAITING_PAYMENT)
-  if (gym.status === GymStatus.AWAITING_PAYMENT) {
+  if ((gym.status as any) === "AWAITING_PAYMENT") {
     redirect("/partner/checkout");
   }
 
   // Check for Under Review (PENDING)
-  if (gym.status === GymStatus.PENDING) {
+  if ((gym.status as any) === "PENDING") {
     return (
       <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6 text-center space-y-10 font-outfit">
          <div className="relative">
@@ -133,7 +133,7 @@ export default async function PartnerDashboardPage() {
 
   // Actual Stats Calculation
   const now = new Date();
-  const gracePeriodEnd = gym.commissionFreeUntil;
+  const gracePeriodEnd = (gym as any).commissionFreeUntil;
   const isGracePeriodActive = gracePeriodEnd ? now < gracePeriodEnd : false;
   const daysLeft = gracePeriodEnd 
     ? Math.ceil((gracePeriodEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
@@ -141,13 +141,13 @@ export default async function PartnerDashboardPage() {
 
   // Ledger Logic (bookings verified after grace period)
   const taxableBookings = gym.bookings.filter(b => 
-    b.status === BookingStatus.CHECKED_IN && 
+    (b.status as any) === "CHECKED_IN" && 
     (!gracePeriodEnd || b.updatedAt > gracePeriodEnd)
   );
   
-  const commissionDue = taxableBookings.reduce((sum, b) => sum + (b.totalAmount * (gym.baseCommissionRate || 15) / 100), 0);
+  const commissionDue = taxableBookings.reduce((sum, b) => sum + (b.totalAmount * ((gym as any).baseCommissionRate || 15) / 100), 0);
   const todaysCheckins = gym.bookings.filter(b => 
-    b.status === BookingStatus.CHECKED_IN && 
+    (b.status as any) === "CHECKED_IN" && 
     new Date(b.updatedAt).toDateString() === now.toDateString()
   ).length;
 
@@ -287,7 +287,7 @@ export default async function PartnerDashboardPage() {
            </div>
            
            <div className="space-y-3">
-              {gym.bookings.filter(b => b.status === "CHECKED_IN").slice(0, 5).map((booking: any) => (
+              {gym.bookings.filter(b => (b.status as any) === "CHECKED_IN").slice(0, 5).map((booking: any) => (
                 <div key={booking.id} className="p-5 rounded-2xl bg-zinc-900/30 border border-white/5 flex justify-between items-center group hover:border-brand-green/30 transition-all">
                    <div className="flex items-center space-x-4">
                       <div className="w-12 h-12 rounded-xl bg-zinc-950 border border-white/5 flex items-center justify-center text-brand-green">
