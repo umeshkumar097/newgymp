@@ -95,8 +95,8 @@ export async function POST(req: Request) {
         message: "Login successful",
         user: {
             id: user.id,
-            name: user.name,
-            email: user.email
+            name: user.name || "",
+            email: user.email || ""
         }
     });
 

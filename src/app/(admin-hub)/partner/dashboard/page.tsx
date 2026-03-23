@@ -6,6 +6,7 @@ import { OtpVerification } from "@/components/partner/OtpVerification";
 import { GymSetup } from "@/components/partner/GymSetup";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { GymStatus, BookingStatus } from "@prisma/client";
 
 export default async function PartnerDashboardPage() {
   const cookieStore = await cookies();
@@ -80,12 +81,12 @@ export default async function PartnerDashboardPage() {
   }
   
   // Check for Onboarding Fee (AWAITING_PAYMENT)
-  if (gym.status === "AWAITING_PAYMENT") {
+  if (gym.status === GymStatus.AWAITING_PAYMENT) {
     redirect("/partner/checkout");
   }
 
   // Check for Under Review (PENDING)
-  if (gym.status === "PENDING") {
+  if (gym.status === GymStatus.PENDING) {
     return (
       <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6 text-center space-y-10 font-outfit">
          <div className="relative">
@@ -140,13 +141,13 @@ export default async function PartnerDashboardPage() {
 
   // Ledger Logic (bookings verified after grace period)
   const taxableBookings = gym.bookings.filter(b => 
-    b.status === "CHECKED_IN" && 
+    b.status === BookingStatus.CHECKED_IN && 
     (!gracePeriodEnd || b.updatedAt > gracePeriodEnd)
   );
   
   const commissionDue = taxableBookings.reduce((sum, b) => sum + (b.totalAmount * (gym.baseCommissionRate || 15) / 100), 0);
   const todaysCheckins = gym.bookings.filter(b => 
-    b.status === "CHECKED_IN" && 
+    b.status === BookingStatus.CHECKED_IN && 
     new Date(b.updatedAt).toDateString() === now.toDateString()
   ).length;
 
