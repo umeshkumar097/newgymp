@@ -3,11 +3,14 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
-export async function approveGym(gymId: string) {
+export async function approveGym(gymId: string, setupFee: number) {
   try {
     await prisma.gym.update({
       where: { id: gymId },
-      data: { status: "APPROVED" },
+      data: { 
+        status: "AWAITING_PAYMENT",
+        onboardingFeeAmount: setupFee
+      },
     });
     revalidatePath("/admin/gyms");
     return { success: true };

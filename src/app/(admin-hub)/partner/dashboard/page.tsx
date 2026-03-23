@@ -1,5 +1,5 @@
 import React from "react";
-import { TrendingUp, Users, Wallet, CheckCircle2, Search, QrCode, Filter, ArrowUpRight, Clock, MapPin, Zap } from "lucide-react";
+import { TrendingUp, Users, Wallet, CheckCircle2, Search, QrCode, Filter, ArrowUpRight, Clock, MapPin, Zap, ShieldCheck, AlertCircle, History } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 import { OtpVerification } from "@/components/partner/OtpVerification";
@@ -7,15 +7,11 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 export default async function PartnerDashboardPage() {
-  // 1. Get user from session cookie
   const cookieStore = await cookies();
   const userId = cookieStore.get("user_id")?.value;
 
-  if (!userId) {
-    redirect("/gym-login");
-  }
+  if (!userId) redirect("/gym-login");
 
-  // 2. Verify user exists and is a partner/admin
   const user = await prisma.user.findUnique({
     where: { id: userId }
   });
@@ -24,109 +20,226 @@ export default async function PartnerDashboardPage() {
     redirect("/gym-login");
   }
 
-  const gyms = await prisma.gym.findMany({
+  // Fetch Gym data & Monetization tokens
+  const gym = await prisma.gym.findFirst({
     where: { ownerId: user.id },
     include: {
       bookings: {
-        orderBy: { bookingDate: "desc" },
-        take: 5,
+        orderBy: { updatedAt: "desc" },
         include: { plan: true }
       }
     }
   });
 
-  const recentBookings = gyms.flatMap((g: any) => g.bookings);
+  if (!gym) redirect("/partner/onboarding");
+  
+  // Enforce Activation Wall
+  if (gym.status === "AWAITING_PAYMENT") {
+    redirect("/partner/checkout");
+  }
+  
+  if (gym.status === "PENDING") {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center space-y-6">
+         <div className="w-24 h-24 rounded-[2.5rem] bg-orange-500/10 flex items-center justify-center text-orange-500 animate-pulse border border-orange-500/20 shadow-2xl shadow-orange-500/10">
+            <Clock size={48} />
+         </div>
+         <div className="space-y-2">
+            <h2 className="text-3xl font-black uppercase tracking-tighter">Under Review</h2>
+            <p className="text-zinc-500 text-sm font-medium max-w-sm">
+                Our team is currently verifying your gym details. We will notify you on WhatsApp once approved!
+            </p>
+         </div>
+         <div className="p-4 bg-zinc-900 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest text-zinc-500">
+            Estimated wait: &lt; 24 Hours
+         </div>
+      </div>
+    );
+  }
 
-  const stats = [
-    { label: "Today's Check-ins", value: "12", trend: "+2", icon: Users, color: "text-brand-green", bg: "bg-brand-green/10" },
-    { label: "Pending OTPs", value: "04", trend: "0", icon: Clock, color: "text-brand-blue", bg: "bg-brand-blue/10" },
-    { label: "Monthly Revenue", value: "₹24,500", trend: "+₹2.1k", icon: Wallet, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-    { label: "Avg. Rating", value: "4.8", trend: "+0.1", icon: CheckCircle2, color: "text-purple-500", bg: "bg-purple-500/10" },
-  ];
+  // Calculate Grace Period
+  const now = new Date();
+  const gracePeriodEnd = gym.commissionFreeUntil;
+  const isGracePeriodActive = gracePeriodEnd ? now < gracePeriodEnd : false;
+  const daysLeft = gracePeriodEnd 
+    ? Math.ceil((gracePeriodEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
+
+  // Ledger Logic (bookings verified after grace period)
+  const taxableBookings = gym.bookings.filter(b => 
+    b.status === "CHECKED_IN" && 
+    (!gracePeriodEnd || b.updatedAt > gracePeriodEnd)
+  );
+  
+  const commissionDue = taxableBookings.reduce((sum, b) => sum + (b.totalAmount * (gym.baseCommissionRate || 15) / 100), 0);
+  const todaysCheckins = gym.bookings.filter(b => 
+    b.status === "CHECKED_IN" && 
+    new Date(b.updatedAt).toDateString() === now.toDateString()
+  ).length;
 
   return (
-    <div className="p-6 space-y-10 pb-32 font-outfit">
-      {/* Header */}
-      <div className="flex justify-between items-start">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-black text-white uppercase tracking-tighter">Partner Control</h1>
-          <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">Real-time gym performance</p>
-        </div>
-        <div className="w-12 h-12 rounded-2xl bg-zinc-900 border border-white/5 flex items-center justify-center text-zinc-400">
-          <Filter size={20} />
-        </div>
-      </div>
-
-      {/* Quick Verification Card */}
-      <div className="relative p-8 rounded-[3rem] bg-zinc-900/60 border border-white/5 backdrop-blur-3xl space-y-6 overflow-hidden group shadow-2xl">
-        <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-           <QrCode size={120} />
-        </div>
-        <div className="space-y-1 relative">
-          <h2 className="text-xl font-black text-white uppercase tracking-tight">Instant Verification</h2>
-          <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">Scan QR or enter 4-digit OTP to grant entry.</p>
-        </div>
-        <OtpVerification gymId={gyms[0]?.id || ""} />
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-4">
-        {stats.map((stat) => (
-          <div key={stat.label} className="bg-zinc-900/40 border border-white/5 rounded-[2rem] p-6 space-y-4 hover:border-brand-green/20 transition-all">
-            <div className="flex justify-between items-center">
-               <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center border border-white/5", stat.bg, stat.color)}>
-                  <stat.icon size={20} />
-               </div>
-               <span className="text-[10px] font-black text-brand-green">{stat.trend}</span>
-            </div>
-            <div>
-               <div className="text-[10px] font-black uppercase tracking-widest text-zinc-600 mb-1">{stat.label}</div>
-               <div className="text-2xl font-black text-white tracking-tighter">{stat.value}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Recent Bookings */}
-      <div className="space-y-6">
-        <div className="flex justify-between items-center px-1">
-           <h2 className="text-xl font-black text-white uppercase tracking-tight">Incoming Users</h2>
-           <span className="text-[10px] font-black text-brand-green uppercase tracking-widest underline cursor-pointer">View All</span>
-        </div>
-        <div className="space-y-4">
-          {recentBookings.length === 0 ? (
-            <div className="p-10 border-2 border-dashed border-zinc-900 rounded-[2.5rem] text-center space-y-4">
-               <div className="w-16 h-16 rounded-full bg-zinc-900 mx-auto flex items-center justify-center text-zinc-800">
-                  <Search size={32} />
-               </div>
-               <p className="text-zinc-700 text-[10px] font-black uppercase tracking-widest">No active bookings found</p>
-            </div>
-          ) : (
-            recentBookings.map((booking: any) => (
-              <div key={booking.id} className="p-6 rounded-[2.5rem] bg-zinc-900/40 border border-white/5 flex justify-between items-center group active:scale-95 transition-all hover:border-brand-blue/30">
-                 <div className="flex items-center space-x-5">
-                    <div className="w-14 h-14 rounded-2xl bg-zinc-950 flex items-center justify-center text-zinc-600 group-hover:bg-brand-blue group-hover:text-white border border-white/5 transition-all duration-500">
-                       <Users size={22} />
-                    </div>
-                    <div>
-                       <div className="text-sm font-black text-white uppercase tracking-tight">User #{booking.id.substring(0, 6)}</div>
-                       <div className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mt-1">
-                         {booking.plan.type} • {new Date(booking.bookingDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                       </div>
-                    </div>
+    <div className="pb-32 font-outfit">
+      
+      {/* Grace Period Banner */}
+      {isGracePeriodActive && (
+        <div className="bg-gradient-to-r from-brand-blue/20 to-brand-green/20 border-b border-white/5 py-4 px-6 relative overflow-hidden">
+           <div className="max-w-7xl mx-auto flex justify-between items-center group cursor-pointer">
+              <div className="flex items-center space-x-3">
+                 <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-brand-green">
+                    <Zap size={16} className="fill-brand-green" />
                  </div>
-                  <div className="text-right space-y-1">
-                    <div className="text-sm font-black text-brand-green tracking-widest">OTP: {booking.otp}</div>
-                    <div className="text-xs font-black text-white">Collect: ₹{booking.totalAmount}</div>
-                    {booking.status === "BOOKED" ? (
-                      <div className="inline-flex items-center px-3 py-1 rounded-full bg-brand-green/10 text-brand-green text-[8px] font-black uppercase tracking-widest border border-brand-green/20">Collect Payment</div>
-                    ) : (
-                      <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-500/10 text-blue-500 text-[8px] font-black uppercase tracking-widest border border-blue-500/20">Verified</div>
-                    )}
-                  </div>
+                 <p className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-white">
+                    Grace Period Active: <span className="text-brand-green">{daysLeft} Days Left</span>
+                 </p>
               </div>
-            ))
-          )}
+              <div className="hidden md:flex items-center space-x-2 text-[8px] font-black uppercase tracking-widest text-zinc-500">
+                 <span>Enjoy 0% Commission on all bookings</span>
+                 <ArrowUpRight size={10} />
+              </div>
+           </div>
+        </div>
+      )}
+
+      <div className="p-6 max-w-5xl mx-auto space-y-12">
+        {/* Header Section */}
+        <div className="flex justify-between items-end pt-6">
+           <div className="space-y-1">
+              <h1 className="text-4xl font-black text-white uppercase tracking-tighter italic">
+                {gym.name.split(" ")[0]} <span className="text-brand-green">Hub</span>
+              </h1>
+              <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.3em]">{gym.location}</p>
+           </div>
+           <div className="flex space-x-2">
+              <div className="w-12 h-12 rounded-2xl bg-zinc-900 border border-white/5 flex items-center justify-center text-zinc-500 hover:text-white transition-all cursor-pointer">
+                 <History size={20} />
+              </div>
+           </div>
+        </div>
+
+        {/* The Magic Moment: Big OTP Search Box */}
+        <div className="relative group">
+           <div className="absolute -inset-1 bg-gradient-to-r from-brand-blue to-brand-green rounded-[4rem] blur opacity-10 group-hover:opacity-20 transition duration-1000"></div>
+           <div className="relative p-12 rounded-[3.5rem] bg-zinc-900/40 border border-white/5 backdrop-blur-3xl space-y-10 shadow-3xl overflow-hidden">
+              <div className="absolute top-0 right-0 p-10 opacity-5 -rotate-12">
+                 <QrCode size={200} />
+              </div>
+              
+              <div className="space-y-3 text-center md:text-left relative">
+                 <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-green/10 text-brand-green border border-brand-green/20 mb-2">
+                    <ShieldCheck size={12} />
+                    <span className="text-[8px] font-black uppercase tracking-widest leading-none">Smart Security Active</span>
+                 </div>
+                 <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Enter Customer OTP</h2>
+                 <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest">Verify the 4-digit code from the user's PassFit app</p>
+              </div>
+
+              <div className="max-w-xl">
+                 <OtpVerification gymId={gym.id} />
+              </div>
+           </div>
+        </div>
+
+        {/* Stats & Ledger Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+           
+           {/* Ledger: PassFit Khata */}
+           <div className="bg-zinc-900 border border-white/5 rounded-[2.5rem] p-8 space-y-6 shadow-2xl relative overflow-hidden min-h-[250px] flex flex-col justify-between">
+              <div className="space-y-1">
+                 <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 mb-4">
+                    <Wallet size={20} />
+                 </div>
+                 <h3 className="text-sm font-black text-white uppercase tracking-widest">PassFit Khata (Ledger)</h3>
+                 <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-tighter leading-none italic">Total Commission Due to PassFit</p>
+              </div>
+              
+              <div className="space-y-6">
+                 <div className="text-5xl font-black tracking-tighter text-white font-mono uppercase">
+                    ₹{commissionDue.toLocaleString()}
+                 </div>
+                 {commissionDue >= 2000 ? (
+                    <button className="w-full bg-orange-500 text-white font-black py-4 rounded-2xl text-[10px] uppercase tracking-widest shadow-xl shadow-orange-500/20 active:scale-95 transition-all">
+                       Clear Due (Pay Now)
+                    </button>
+                 ) : (
+                    <div className="flex items-center space-x-2 text-[9px] font-black text-zinc-600 uppercase tracking-widest">
+                       <CheckCircle2 size={12} className="text-brand-green" />
+                       <span>Below threshold (₹2,000)</span>
+                    </div>
+                 )}
+              </div>
+           </div>
+
+           {/* Today's Walk-ins */}
+           <div className="bg-zinc-900 border border-white/5 rounded-[2.5rem] p-8 space-y-6 shadow-2xl relative overflow-hidden min-h-[250px] flex flex-col justify-between">
+              <div className="space-y-1">
+                 <div className="w-10 h-10 rounded-xl bg-brand-green/10 flex items-center justify-center text-brand-green mb-4">
+                    <Users size={20} />
+                 </div>
+                 <h3 className="text-sm font-black text-white uppercase tracking-widest">Today's Walk-ins</h3>
+                 <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-tighter">Verified entries from today</p>
+              </div>
+
+              <div className="space-y-1">
+                 <div className="text-6xl font-black text-white tracking-tighter">
+                    {todaysCheckins.toString().padStart(2, '0')}
+                 </div>
+                 <div className="text-[10px] font-black text-brand-green uppercase tracking-[0.2em] font-mono">Real-Time Sync</div>
+              </div>
+           </div>
+
+           {/* Quick Support */}
+           <div className="bg-zinc-950 border border-white/5 rounded-[2.5rem] p-8 space-y-6 shadow-2xl border-dashed flex flex-col justify-center items-center text-center">
+              <div className="w-16 h-16 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-700 border border-white/5 mb-2">
+                 <Users size={32} />
+              </div>
+              <div className="space-y-1">
+                 <h3 className="text-xs font-black text-white uppercase tracking-widest">Need Assistance?</h3>
+                 <p className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest leading-relaxed">
+                    Contact your dedicated account manager on WhatsApp
+                 </p>
+              </div>
+              <button className="px-6 py-3 bg-zinc-900 border border-white/10 rounded-xl text-[9px] font-black text-white uppercase tracking-[0.2em] hover:bg-white hover:text-zinc-950 transition-all">
+                 Chat Now
+              </button>
+           </div>
+        </div>
+
+        {/* Live Entries List */}
+        <div className="space-y-6">
+           <div className="flex justify-between items-center px-2">
+              <h2 className="text-xl font-black text-white uppercase tracking-tighter italic">
+                Recent <span className="text-brand-green">Checked-in</span>
+              </h2>
+           </div>
+           
+           <div className="space-y-3">
+              {gym.bookings.filter(b => b.status === "CHECKED_IN").slice(0, 5).map((booking: any) => (
+                <div key={booking.id} className="p-5 rounded-2xl bg-zinc-900/30 border border-white/5 flex justify-between items-center group hover:border-brand-green/30 transition-all">
+                   <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 rounded-xl bg-zinc-950 border border-white/5 flex items-center justify-center text-brand-green">
+                         <Zap size={18} className="fill-brand-green" />
+                      </div>
+                      <div>
+                         <div className="text-[11px] font-black text-white uppercase tracking-widest">User #{booking.id.substring(0, 6)}</div>
+                         <div className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest mt-1">
+                            {new Date(booking.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • Day Pass
+                         </div>
+                      </div>
+                   </div>
+                   <div className="text-right">
+                      <div className="text-[11px] font-black text-white">₹{booking.totalAmount}</div>
+                      <div className="text-[8px] font-black text-brand-green uppercase tracking-widest mt-1">Verified ✅</div>
+                   </div>
+                </div>
+              ))}
+              
+              {gym.bookings.filter(b => b.status === "CHECKED_IN").length === 0 && (
+                <div className="p-12 border-2 border-dashed border-zinc-900/50 rounded-[2.5rem] flex flex-col items-center justify-center text-center space-y-4 opacity-40">
+                   <AlertCircle size={40} className="text-zinc-800" />
+                   <p className="text-[10px] font-black text-zinc-700 uppercase tracking-widest">No verified entries yet today</p>
+                </div>
+              )}
+           </div>
         </div>
       </div>
     </div>

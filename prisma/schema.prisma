@@ -40,9 +40,13 @@ model Gym {
   longitude   Float?
   imageUrls   String[]
   ownerId     String
-  status      GymStatus  @default(PENDING)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  status               GymStatus  @default(PENDING)
+  onboardingFeeAmount  Float?
+  onboardingFeePaid    Boolean    @default(false)
+  commissionFreeUntil  DateTime?
+  baseCommissionRate   Float      @default(15.0)
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
   bookings    Booking[]
   owner       User       @relation("GymOwner", fields: [ownerId], references: [id])
   addons      GymAddon[]
@@ -112,6 +116,7 @@ enum Role {
 
 enum GymStatus {
   PENDING
+  AWAITING_PAYMENT
   APPROVED
   REJECTED
 }
