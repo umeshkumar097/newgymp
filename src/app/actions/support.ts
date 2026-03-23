@@ -32,10 +32,10 @@ export async function createSupportTicket(data: {
 
     // Send Email Notification
     if (ticket.user?.email) {
-      await sendEmail({
-        to: ticket.user.email,
-        subject: `Dispute Registered: ${ticketId}`,
-        html: `
+      await sendEmail(
+        ticket.user.email,
+        `Dispute Registered: ${ticketId}`,
+        `
           <div style="font-family: sans-serif; padding: 20px; color: #0F172A;">
             <h1 style="font-weight: 800; text-transform: uppercase; letter-spacing: -0.05em;">PassFit Support</h1>
             <p style="font-size: 14px; font-weight: 500;">Your dispute has been registered successfully.</p>
@@ -49,7 +49,7 @@ export async function createSupportTicket(data: {
             <p style="font-size: 12px; color: #64748B;">Our team will review your dispute and get back to you within 24-48 hours. You can track this ticket in your profile.</p>
           </div>
         `
-      });
+      );
     }
 
     revalidatePath("/profile");
