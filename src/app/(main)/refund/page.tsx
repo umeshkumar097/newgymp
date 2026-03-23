@@ -1,5 +1,10 @@
 import React from "react";
 
+export const metadata = {
+  title: "Cancellation & Refund | PassFit Trust Policy",
+  description: "Review our policies regarding booking cancellations and refunds. Transparent and fair terms for all PassFit users, powered by AICLEX TECHNOLOGIES.",
+};
+
 export default function RefundPolicy() {
   const sections = [
     {

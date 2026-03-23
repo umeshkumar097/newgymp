@@ -7,13 +7,32 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
 export const metadata: Metadata = {
-  title: "PassFit | Premium Gym Marketplace - Instant Access",
-  description: "Discover, compare, and book premium gyms near you with flexible day passes. No long-term commitments, just pure fitness.",
+  title: {
+    default: "PassFit | Gym Day Pass & Premium Fitness Hubs Near Me",
+    template: "%s | PassFit Gym Day Pass"
+  },
+  description: "Find and book premium gym day passes near you with PassFit. Instant access to elite fitness hubs, no commitments. The best way to find a gym near me for daily workouts.",
+  keywords: ["gym day pass", "gym near me", "fitness hubs", "daily gym access", "PassFit", "premium gyms", "workout", "fitness", "buy gym pass online"],
+  authors: [{ name: "PassFit Team" }],
+  creator: "AICLEX TECHNOLOGIES",
+  publisher: "AICLEX TECHNOLOGIES",
   manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "PassFit",
+  icons: {
+    icon: "/icon.png",
+    apple: "/icon.png",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: "https://passfit.in",
+    siteName: "PassFit",
+    title: "PassFit | Gym Day Pass & Fitness Hubs Near Me",
+    description: "Instant daily access to premium gyms. No subscriptions, just fitness.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PassFit | Gym Day Pass & Fitness Hubs",
+    description: "Instant daily access to premium gyms.",
   },
 };
 

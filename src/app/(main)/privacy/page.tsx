@@ -1,5 +1,10 @@
 import React from "react";
 
+export const metadata = {
+  title: "Privacy Policy | PassFit Data Protection",
+  description: "Learn how PassFit protects your personal information and gym booking data. Your privacy and security are our top priorities.",
+};
+
 export default function PrivacyPolicy() {
   const sections = [
     {

@@ -4,6 +4,11 @@ import { prisma } from "@/lib/prisma";
 import Image from "next/image";
 import Link from "next/link";
 
+export const metadata = {
+  title: "Explore Elite Gyms | Gym Near Me & Daily Pass",
+  description: "Browse and book premium gyms and fitness hubs near you. Compare elite amenities, view pricing, and find the perfect gym day pass instantly. Pure fitness on-demand with PassFit.",
+};
+
 export default async function ExplorePage() {
   const gyms = await prisma.gym.findMany({
     where: { status: "APPROVED" },

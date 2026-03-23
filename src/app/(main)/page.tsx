@@ -5,6 +5,11 @@ import { GymCard } from "@/components/gyms/GymCard";
 import Image from "next/image";
 import Link from "next/link";
 
+export const metadata = {
+  title: "PassFit | Gym Day Pass & Premium Fitness Hubs Near Me",
+  description: "Experience the best gyms with PassFit. Get instant daily access to premium fitness hubs. Search for gym day passes or find a gym near you with top-tier amenities in Indore. No commitments, just performance.",
+};
+
 export default async function HomePage() {
   const gyms = await prisma.gym.findMany({
     where: { status: "APPROVED" },

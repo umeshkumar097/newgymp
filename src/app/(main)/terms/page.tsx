@@ -1,5 +1,10 @@
 import React from "react";
 
+export const metadata = {
+  title: "Terms of Service | PassFit Platform Rules",
+  description: "Understand the terms and conditions for using the PassFit gym marketplace. Clear rules for users and fitness partners. Powered by AICLEX TECHNOLOGIES.",
+};
+
 export default function TermsOfService() {
   const sections = [
     {

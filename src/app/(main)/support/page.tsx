@@ -1,4 +1,10 @@
 import React from "react";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Support Desk | Get Help with Your Gym Booking",
+  description: "Need help with a gym session? Use the PassFit Support Desk to raise tickets and track resolutions for any issues. 24/7 dedicated support for elite fitness hubs.",
+};
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { SupportForm } from "./SupportForm";

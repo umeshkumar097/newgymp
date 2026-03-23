@@ -11,8 +11,30 @@ import { BookingForm } from "@/components/bookings/BookingForm";
 export function GymDetailClient({ gym }: { gym: any }) {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ExerciseGym",
+    "name": gym.name,
+    "description": gym.description,
+    "image": gym.imageUrls[0],
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": gym.location,
+      "addressLocality": "Indore",
+      "addressCountry": "IN"
+    },
+    "url": `https://passfit.in/gyms/${gym.id}`,
+    "telephone": "+918449488090",
+    "priceRange": "₹₹",
+  };
+
   return (
-    <div className="flex flex-col min-h-screen bg-[#0F172A] text-slate-200 font-sans">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <div className="flex flex-col min-h-screen bg-[#0F172A] text-slate-200 font-sans">
       
       {/* Container for Desktop Split Layout */}
       <div className="max-w-7xl mx-auto w-full px-6 py-8 md:py-12 flex flex-col lg:flex-row gap-12">
@@ -157,5 +179,6 @@ export function GymDetailClient({ gym }: { gym: any }) {
         <BookingForm gym={gym} onClose={() => setIsBookingOpen(false)} />
       )}
     </div>
+    </>
   );
 }

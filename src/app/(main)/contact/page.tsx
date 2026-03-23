@@ -2,6 +2,11 @@ import React from "react";
 import { Mail, Phone, MapPin, Clock, MessageSquare, ArrowRight, Zap, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
+export const metadata = {
+  title: "Contact Us | PassFit Gym Support & Partnerships",
+  description: "Get in touch with PassFit for gym bookings, partner support, or general inquiries. Reach us via Phone, Email, or WhatsApp for 24/7 assistance.",
+};
+
 export default function ContactPage() {
   const contactMethods = [
     {

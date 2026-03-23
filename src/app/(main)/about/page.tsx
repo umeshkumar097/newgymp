@@ -1,3 +1,8 @@
+export const metadata = {
+  title: "About PassFit | Our Mission & Vision",
+  description: "Learn how PassFit is revolutionizing daily gym access. No commitments, just premium fitness on-demand.",
+};
+
 export default function ComingSoonPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6 text-center px-6">
