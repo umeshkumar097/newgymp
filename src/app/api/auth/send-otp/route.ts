@@ -4,10 +4,27 @@ import { sendWhatsAppOTP } from "@/lib/whatsapp";
 
 export async function POST(req: Request) {
   try {
-    const { phoneNumber } = await req.json();
+    const { phoneNumber, role } = await req.json();
 
     if (!phoneNumber) {
       return NextResponse.json({ error: "Phone number is required" }, { status: 400 });
+    }
+
+    // Role Check for Partners/Admins
+    if (role === "GYM_OWNER" || role === "ADMIN") {
+      const user = await prisma.user.findFirst({
+        where: { 
+          phone: phoneNumber,
+          role: { in: ["GYM_OWNER", "ADMIN"] }
+        }
+      });
+
+      if (!user) {
+        return NextResponse.json({ 
+          error: "Aap register nahi ho. Kripya support se sampark karein.",
+          notRegistered: true 
+        }, { status: 404 });
+      }
     }
 
     // 1. Generate a 4-digit OTP
