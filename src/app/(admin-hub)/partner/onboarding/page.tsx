@@ -83,9 +83,9 @@ export default function PartnerOnboardingPage() {
   const canContinue = () => {
     switch (step) {
       case 2: return formData.gymName.length > 2 && formData.location.length > 10;
-      case 3: return formData.panNumber.length === 10 && 
-                     formData.bankAccount.length > 8 && 
-                     formData.ifscCode.length === 11 && 
+      case 3: return formData.panNumber.length >= 10 && 
+                     formData.bankAccount.length >= 4 && 
+                     formData.ifscCode.length >= 4 && 
                      formData.panPhoto !== "" && 
                      formData.chequePhoto !== "" && 
                      formData.registrationDoc !== "" &&
