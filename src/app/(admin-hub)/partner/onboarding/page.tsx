@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { OnboardingStepper } from "@/components/partner/OnboardingStepper";
 import { PartnerPhoneAuth } from "@/components/partner/PartnerPhoneAuth";
 import { AgreementModal } from "@/components/partner/AgreementModal";
-import { MapPin, Clock, Camera, CreditCard, ShieldCheck, ArrowRight, ArrowLeft, Loader2, CheckCircle2, Upload, Trash2, Zap, Check, Eye, FileText, Ban, Building, AlertCircle, Scan, Cpu } from "lucide-react";
+import { MapPin, Clock, Camera, CreditCard, ShieldCheck, ArrowRight, ArrowLeft, Loader2, CheckCircle2, Upload, Trash2, Zap, Check, Eye, FileText, Ban, Building, AlertCircle, Scan, Cpu, User, Phone, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
