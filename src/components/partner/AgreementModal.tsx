@@ -61,7 +61,7 @@ export function AgreementModal({ isOpen, onClose, data }: AgreementModalProps) {
            <section className="space-y-4">
               <h3 className="text-white font-black uppercase tracking-widest text-xs font-outfit">BY AND BETWEEN:</h3>
               <p className="text-sm">
-                <strong className="text-white">Aiclex Technologies</strong>, a company operating the digital fitness marketplace brand "PassFit" (www.passfit.in), hereinafter referred to as the <strong className="text-white">"Platform"</strong> or <strong className="text-white">"First Party"</strong>.
+                <strong className="text-white">Aiclex Technologies</strong>, a company operating the digital fitness marketplace brand "PassFit" (passfit.in), hereinafter referred to as the <strong className="text-white">"Platform"</strong> or <strong className="text-white">"First Party"</strong>.
               </p>
               <p className="text-sm italic text-zinc-500">AND</p>
               <p className="text-sm">
