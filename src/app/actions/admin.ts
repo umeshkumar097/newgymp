@@ -113,6 +113,9 @@ export async function updatePlatformSetting(key: string, value: string) {
       create: { key, value },
     });
     revalidatePath("/admin/settings");
+    revalidatePath("/admin/dashboard");
+    revalidatePath("/admin/gyms");
+    revalidatePath("/admin", "layout");
     return { success: true };
   } catch (error: any) {
     console.error("Settings Update Error:", error);

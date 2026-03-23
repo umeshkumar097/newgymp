@@ -6,20 +6,36 @@ import Link from "next/link";
 
 export default async function AdminDashboardPage() {
   // Real DB Queries
+  // Time-based trend calculations
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+
   const [
     totalRevenueResult,
+    prevRevenueResult,
     userCount,
+    prevUserCount,
     gymCount,
-    bookingCount,
+    prevGymCount,
     recentBookings,
     openTicketsCount,
     pendingGyms,
     platformSettings
   ] = await Promise.all([
      prisma.booking.aggregate({ _sum: { totalAmount: true } }),
+     prisma.booking.aggregate({ 
+        where: { createdAt: { lt: thirtyDaysAgo, gte: sixtyDaysAgo } },
+        _sum: { totalAmount: true } 
+     }),
      prisma.user.count({ where: { role: "USER" as any } } as any),
+     prisma.user.count({ 
+        where: { role: "USER" as any, createdAt: { lt: thirtyDaysAgo, gte: sixtyDaysAgo } } 
+     } as any),
      prisma.gym.count({ where: { status: "APPROVED" as any } } as any),
-     prisma.booking.count(),
+     prisma.gym.count({ 
+        where: { status: "APPROVED" as any, createdAt: { lt: thirtyDaysAgo, gte: sixtyDaysAgo } } 
+     } as any),
      prisma.booking.findMany({
         take: 5,
         orderBy: { createdAt: "desc" },
@@ -39,14 +55,26 @@ export default async function AdminDashboardPage() {
   ]);
 
   const totalRevenue = totalRevenueResult._sum.totalAmount || 0;
+  const prevRevenue = prevRevenueResult._sum.totalAmount || 0;
+  
+  const calculateTrend = (curr: number, prev: number) => {
+    if (prev === 0) return curr > 0 ? "+100%" : "0%";
+    const ratio = ((curr - prev) / prev) * 100;
+    return `${ratio >= 0 ? "+" : ""}${ratio.toFixed(1)}%`;
+  };
+
+  const revenueTrend = calculateTrend(totalRevenue, prevRevenue);
+  const userTrend = calculateTrend(userCount, prevUserCount);
+  const gymTrend = calculateTrend(gymCount, prevGymCount);
+
   const commissionRate = platformSettings.find((s: any) => s.key === "COMMISSION_RATE")?.value || "15";
   const defaultFee = platformSettings.find((s: any) => s.key === "DEFAULT_ONBOARDING_FEE")?.value || "4999";
 
   const stats = [
-    { label: "Total Revenue", value: `₹${(totalRevenue / 1000).toFixed(1)}k`, trend: "+14.5%", up: true, icon: Wallet, color: "text-green-500", bg: "bg-green-500/10" },
-    { label: "Active Users", value: userCount.toString(), trend: "+8.2%", up: true, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
-    { label: "Partner Hubs", value: gymCount.toString(), trend: "-2.1%", up: false, icon: Store, color: "text-orange-500", bg: "bg-orange-500/10" },
-    { label: "Open Tickets", value: openTicketsCount.toString(), trend: "Urgent", up: false, icon: Activity, color: "text-red-500", bg: "bg-red-500/10" },
+    { label: "Total Revenue", value: `₹${(totalRevenue / 1000).toFixed(1)}k`, trend: revenueTrend, up: totalRevenue >= prevRevenue, icon: Wallet, color: "text-green-500", bg: "bg-green-500/10" },
+    { label: "Active Users", value: userCount.toString(), trend: userTrend, up: userCount >= prevUserCount, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
+    { label: "Partner Hubs", value: gymCount.toString(), trend: gymTrend, up: gymCount >= prevGymCount, icon: Store, color: "text-orange-500", bg: "bg-orange-500/10" },
+    { label: "Open Tickets", value: openTicketsCount.toString(), trend: openTicketsCount > 0 ? "Urgent" : "Stable", up: openTicketsCount === 0, icon: Activity, color: "text-red-500", bg: "bg-red-500/10" },
   ];
 
   return (
