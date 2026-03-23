@@ -22,9 +22,10 @@ export function ModerationButtons({ gymId }: { gymId: string }) {
   };
 
   const handleReject = () => {
-    if (!confirm("Are you sure you want to reject this gym?")) return;
+    const reason = prompt("Please provide a reason for rejection:");
+    if (!reason) return;
     startTransition(async () => {
-      const res = await rejectGym(gymId);
+      const res = await rejectGym(gymId, reason);
       if (!res.success) alert(res.error);
     });
   };
