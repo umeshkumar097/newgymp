@@ -50,7 +50,30 @@ export async function POST(req: Request) {
         selectedAddons: addons || [],
         paymentId: "PAY_AT_GYM",
       },
+      include: {
+        gym: {
+          include: {
+            owner: true
+          }
+        },
+        plan: true
+      }
     });
+
+    // 4. Send Owner Notification
+    try {
+      if (booking.gym.owner?.email) {
+        await NotificationEngine.sendBookingAlertToOwner(
+          { email: booking.gym.owner.email, name: booking.gym.owner.name || "Partner" },
+          { name: user.name || "Customer", phone: user.phone },
+          booking.gym.name,
+          booking.plan.type,
+          booking.totalAmount
+        );
+      }
+    } catch (ownerEmailError) {
+      console.error("Failed to send owner email notification:", ownerEmailError);
+    }
 
     // 3. Mark Intent as Converted
     await (prisma as any).bookingIntent.updateMany({

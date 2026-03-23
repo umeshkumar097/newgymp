@@ -122,6 +122,34 @@ export const NotificationEngine = {
     }
   },
 
+  // 5. Booking Alert to Gym Owner
+  async sendBookingAlertToOwner(owner: { email: string; name: string }, customer: { name: string; phone: string | null }, gymName: string, planName: string, amount: number) {
+    const subject = `New Booking Received! 🏋️‍♂️ - ${customer.name}`;
+    const html = `
+      <div style="font-family: sans-serif; max-width: 600px; padding: 20px; border: 1px solid #e5e7eb; border-radius: 12px;">
+        <h2 style="color: #10b981;">New Hub Booking!</h2>
+        <p>Hello ${owner.name}, you have a new customer booking for <strong>${gymName}</strong>.</p>
+        
+        <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 0; font-size: 12px; color: #6b7280; text-transform: uppercase;">Customer Details</p>
+            <p style="margin: 5px 0; font-size: 16px; font-weight: bold; color: #111827;">${customer.name}</p>
+            <p style="margin: 0; font-size: 14px; color: #4b5563;">Phone: ${customer.phone || 'N/A'}</p>
+            
+            <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 15px 0;" />
+            
+            <p style="margin: 0; font-size: 12px; color: #6b7280; text-transform: uppercase;">Plan Details</p>
+            <p style="margin: 5px 0; font-size: 16px; font-weight: bold; color: #111827;">${planName}</p>
+            <p style="margin: 0; font-size: 18px; font-weight: 800; color: #10b981;">₹${amount}</p>
+        </div>
+        
+        <p style="font-size: 14px; color: #6b7280;">Please ensure the facility is ready. You can verify the customer's Entry ID at the desk.</p>
+        <br/>
+        <p>Best Regards,<br/>Team PassFit</p>
+      </div>
+    `;
+    await sendEmail(owner.email, subject, html);
+  },
+
   // --- USER NOTIFICATIONS ---
 
   async sendUserWelcome(phoneNumber: string, name: string) {
