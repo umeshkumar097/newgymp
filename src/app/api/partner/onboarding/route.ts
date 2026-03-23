@@ -22,8 +22,12 @@ export async function POST(req: Request) {
         imageUrls: data.images,
         ownerId: userId,
         status: "PENDING",
-        // Additional fields for Phase 19 could be set here if needed, 
-        // but user plan says Admin sets the fee later.
+        // KYC Data
+        panNumber: data.panNumber,
+        panPhotoUrl: data.panPhoto,
+        bankAccountNumber: data.bankAccount,
+        bankIfscCode: data.ifscCode,
+        bankProofUrl: data.chequePhoto,
       }
     });
 

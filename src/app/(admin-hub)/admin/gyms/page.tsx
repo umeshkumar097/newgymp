@@ -2,6 +2,7 @@ import React from "react";
 import { Check, X, Eye, Clock, MapPin, ExternalLink, ShieldAlert, BarChart3, TrendingUp, Users, Store } from "lucide-react";
 import Image from "next/image";
 import { ModerationButtons } from "@/components/admin/ModerationButtons";
+import { KycReview } from "@/components/admin/KycReview";
 import { prisma } from "@/lib/prisma";
 
 export default async function AdminGymsPage() {
@@ -108,7 +109,11 @@ export default async function AdminGymsPage() {
                     </div>
                   </td>
                   <td className="p-6 text-right">
-                    <ModerationButtons gymId={gym.id} />
+                    <div className="flex justify-end items-center space-x-3">
+                       <KycReview gym={gym} />
+                       <div className="h-6 w-[1px] bg-white/5 mx-2" />
+                       <ModerationButtons gymId={gym.id} />
+                    </div>
                   </td>
                 </tr>
               ))

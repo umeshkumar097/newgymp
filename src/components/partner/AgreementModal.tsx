@@ -6,9 +6,14 @@ import { X, FileText, Download, ShieldCheck, Printer } from "lucide-react";
 interface AgreementModalProps {
   isOpen: boolean;
   onClose: () => void;
+  data: {
+    gymName: string;
+    address: string;
+    date: string;
+  };
 }
 
-export function AgreementModal({ isOpen, onClose }: AgreementModalProps) {
+export function AgreementModal({ isOpen, onClose, data }: AgreementModalProps) {
   if (!isOpen) return null;
 
   return (
@@ -50,7 +55,7 @@ export function AgreementModal({ isOpen, onClose }: AgreementModalProps) {
            </div>
 
            <p className="text-sm">
-             This Memorandum of Understanding ("Agreement") is made and entered into on this <span className="border-b border-zinc-700 px-4">____</span> day of <span className="border-b border-zinc-700 px-8">__________</span>, 202<span className="border-b border-zinc-700 px-2">_</span> ("Effective Date").
+             This Memorandum of Understanding ("Agreement") is made and entered into on this <span className="border-b-2 border-brand-green px-4 text-white font-black">{data.date.split("-")[2] || "__"}</span> day of <span className="border-b-2 border-brand-green px-8 text-white font-black">{new Date(data.date).toLocaleString('default', { month: 'long' }) || "__________"}</span>, {new Date(data.date).getFullYear() || "202_"} ("Effective Date").
            </p>
 
            <section className="space-y-4">
@@ -60,7 +65,7 @@ export function AgreementModal({ isOpen, onClose }: AgreementModalProps) {
               </p>
               <p className="text-sm italic text-zinc-500">AND</p>
               <p className="text-sm">
-                The <strong className="text-white">Gym/Fitness Center</strong> specified in the registration portal, hereinafter referred to as the <strong className="text-white">"Gym Partner"</strong> or <strong className="text-white">"Second Party"</strong>.
+                <strong className="text-white leading-relaxed border-b-2 border-brand-green/30">{data.gymName || "[Name of the Gym]"}</strong>, located at <strong className="text-white leading-relaxed border-b-2 border-brand-green/30">{data.address || "[Exact Location]"}</strong>, hereinafter referred to as the <strong className="text-white">"Gym Partner"</strong> or <strong className="text-white">"Second Party"</strong>.
               </p>
            </section>
 
@@ -123,7 +128,7 @@ export function AgreementModal({ isOpen, onClose }: AgreementModalProps) {
               <div className="space-y-4">
                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">For Gym Partner</p>
                  <div className="h-[1px] bg-zinc-800 w-full mt-10" />
-                 <p className="text-xs font-bold text-zinc-700 uppercase italic">Digitally Signed on Registration</p>
+                 <p className="text-xs font-bold text-white uppercase italic">Digitally Signed by {data.gymName || "Partner"} on {data.date}</p>
               </div>
            </div>
         </div>

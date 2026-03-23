@@ -45,6 +45,14 @@ model Gym {
   onboardingFeePaid    Boolean    @default(false)
   commissionFreeUntil  DateTime?
   baseCommissionRate   Float      @default(15.0)
+  
+  // KYC & Legal
+  panNumber            String?
+  panPhotoUrl          String?
+  bankAccountNumber    String?
+  bankIfscCode         String?
+  bankProofUrl         String?
+
   createdAt            DateTime   @default(now())
   updatedAt            DateTime   @updatedAt
   bookings    Booking[]
