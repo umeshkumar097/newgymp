@@ -15,6 +15,11 @@ export default async function AdminAnalyticsPage() {
     prisma.gym.groupBy({
       by: ['location'],
       _count: true,
+      orderBy: {
+        _count: {
+          location: 'desc'
+        }
+      },
       take: 5
     }),
     prisma.gym.count()
