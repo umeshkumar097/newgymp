@@ -3,7 +3,6 @@
 import React, { useState, useCallback } from "react";
 import { GoogleMap, Marker, InfoWindow } from "@react-google-maps/api";
 import { useGoogleMaps } from "@/components/providers/GoogleMapsProvider";
-import { gyms } from "@/lib/mock-data";
 import { Star, MapPin, ChevronRight } from "lucide-react";
 
 const mapContainerStyle = {
@@ -13,6 +12,7 @@ const mapContainerStyle = {
 
 interface GymMapProps {
   center?: { lat: number; lng: number };
+  gyms: any[];
 }
 
 const options = {
@@ -53,7 +53,7 @@ const options = {
   zoomControl: true,
 };
 
-export function GymMap({ center: customCenter }: GymMapProps) {
+export function GymMap({ center: customCenter, gyms }: GymMapProps) {
   const defaultCenter = {
     lat: 12.9716,
     lng: 77.5946,
@@ -68,13 +68,17 @@ export function GymMap({ center: customCenter }: GymMapProps) {
   const [map, setMap] = useState<google.maps.Map | null>(null);
 
   const onLoad = useCallback(function callback(map: any) {
-    if (!customCenter) {
+    if (!customCenter && gyms.length > 0) {
       const bounds = new window.google.maps.LatLngBounds();
-      gyms.forEach((gym) => bounds.extend({ lat: gym.lat, lng: gym.lng }));
+      gyms.forEach((gym) => {
+        if (gym.latitude && gym.longitude) {
+           bounds.extend({ lat: gym.latitude, lng: gym.longitude });
+        }
+      });
       map.fitBounds(bounds);
     }
     setMap(map);
-  }, [customCenter]);
+  }, [customCenter, gyms]);
 
   const onUnmount = useCallback(function callback(map: any) {
     setMap(null);
@@ -92,10 +96,10 @@ export function GymMap({ center: customCenter }: GymMapProps) {
         onUnmount={onUnmount}
         options={options}
       >
-        {gyms.map((gym) => (
+        {gyms.filter(g => g.latitude && g.longitude).map((gym) => (
           <Marker
             key={gym.id}
-            position={{ lat: gym.lat, lng: gym.lng }}
+            position={{ lat: gym.latitude, lng: gym.longitude }}
             onClick={() => setSelectedGym(gym)}
             icon={{
               url: 'https://maps.google.com/mapfiles/ms/icons/orange-dot.png',
@@ -105,26 +109,26 @@ export function GymMap({ center: customCenter }: GymMapProps) {
 
         {selectedGym && (
           <InfoWindow
-            position={{ lat: selectedGym.lat, lng: selectedGym.lng }}
+            position={{ lat: selectedGym.latitude, lng: selectedGym.longitude }}
             onCloseClick={() => setSelectedGym(null)}
           >
             <div className="p-2 min-w-[200px] space-y-3 bg-zinc-900 rounded-2xl border border-zinc-800">
               <div className="relative h-24 w-full rounded-xl overflow-hidden">
-                <img src={selectedGym.image} alt={selectedGym.name} className="w-full h-full object-cover" />
-                <div className="absolute top-2 right-2 bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-lg shadow-lg">
-                  {selectedGym.price}
+                <img src={selectedGym.imageUrls?.[0] || ""} alt={selectedGym.name} className="w-full h-full object-cover" />
+                <div className="absolute top-2 right-2 bg-brand-green text-[#0F172A] text-[10px] font-bold px-2 py-0.5 rounded-lg shadow-lg uppercase">
+                  Pass Available
                 </div>
               </div>
               <div className="space-y-1">
-                <h4 className="font-bold text-white text-sm">{selectedGym.name}</h4>
+                <h4 className="font-bold text-white text-sm uppercase tracking-tight">{selectedGym.name}</h4>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center text-orange-500 text-[10px] font-bold">
-                    <Star size={10} className="fill-orange-500 mr-0.5" />
-                    {selectedGym.rating}
+                  <div className="flex items-center text-brand-green text-[10px] font-bold">
+                    <Star size={10} className="fill-brand-green mr-0.5" />
+                    {selectedGym.avgRating || "5.0"}
                   </div>
-                  <div className="text-[10px] text-zinc-500 flex items-center font-medium">
+                  <div className="text-[10px] text-zinc-500 flex items-center font-medium uppercase tracking-tighter">
                     <MapPin size={10} className="mr-0.5" />
-                    {selectedGym.distance}
+                    {selectedGym.location.substring(0, 15)}...
                   </div>
                 </div>
               </div>

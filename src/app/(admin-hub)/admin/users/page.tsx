@@ -1,6 +1,7 @@
 import React from "react";
 import { Users, Search, Filter, Shield, MoreVertical, Mail, Phone, Calendar } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { DeleteUserButton } from "./DeleteUserButton";
 
 export default async function AdminUsersPage() {
   const users = await prisma.user.findMany({
@@ -82,9 +83,7 @@ export default async function AdminUsersPage() {
                     </div>
                   </td>
                   <td className="px-8 py-6 text-right">
-                    <button className="p-2 rounded-lg bg-zinc-800 text-zinc-500 hover:text-white transition-colors">
-                      <MoreVertical size={16} />
-                    </button>
+                    <DeleteUserButton userId={user.id} userName={user.name || "User"} />
                   </td>
                 </tr>
               ))}
