@@ -104,17 +104,21 @@ export function ActiveHubs({ gyms }: { gyms: any[] }) {
                      </p>
                      <p className="text-2xl font-black text-white">{gym._count?.bookings || "242"}</p>
                   </div>
-                  <div className="space-y-1">
-                     <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center">
-                        <Star size={10} className="mr-1 text-yellow-500" />
-                        User Rating
-                     </p>
-                     <p className="text-2xl font-black text-white">{gym.avgRating?.toFixed(1) || "4.8"}</p>
-                  </div>
-                  <div className="space-y-1 text-right">
-                     <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Rev. Contribution</p>
-                     <p className="text-2xl font-black text-brand-green">₹14.2k</p>
-                  </div>
+                   <div className="space-y-1">
+                      <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center">
+                         <Star size={10} className="mr-1 text-yellow-500" />
+                         User Rating
+                      </p>
+                      <p className="text-2xl font-black text-white">{gym.avgRating ? gym.avgRating.toFixed(1) : "N/A"}</p>
+                   </div>
+                   <div className="space-y-1 text-right">
+                      <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Rev. Contribution</p>
+                      <p className="text-2xl font-black text-brand-green">
+                         ₹{gym.bookings?.reduce((acc: number, b: any) => acc + b.totalAmount, 0) * 0.15 > 999 
+                           ? `${((gym.bookings?.reduce((acc: number, b: any) => acc + b.totalAmount, 0) * 0.15) / 1000).toFixed(1)}k`
+                           : (gym.bookings?.reduce((acc: number, b: any) => acc + b.totalAmount, 0) * 0.15 || 0).toFixed(0)}
+                      </p>
+                   </div>
                </div>
 
                <div className="flex gap-3 pt-2">

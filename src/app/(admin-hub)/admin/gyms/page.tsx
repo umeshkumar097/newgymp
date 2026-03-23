@@ -22,7 +22,11 @@ export default async function AdminGymsPage() {
         status: GymStatus.APPROVED,
         isPaused: false
       },
-      include: { owner: true, _count: { select: { bookings: true } } },
+      include: { 
+        owner: true, 
+        bookings: { select: { totalAmount: true } },
+        _count: { select: { bookings: true } } 
+      },
       orderBy: { createdAt: "desc" }
     }),
     prisma.gym.findMany({
