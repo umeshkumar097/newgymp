@@ -11,7 +11,7 @@ import Image from "next/image";
 
 import { useRouter } from "next/navigation";
 
-export function ActiveHubs({ gyms }: { gyms: any[] }) {
+export function ActiveHubs({ gyms, commissionRate = 15 }: { gyms: any[], commissionRate?: number }) {
   const router = useRouter();
   const [activeGyms, setActiveGyms] = useState(gyms);
 
@@ -130,10 +130,10 @@ export function ActiveHubs({ gyms }: { gyms: any[] }) {
                    </div>
                    <div className="space-y-2 text-right">
                       <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Net Share</p>
-                      <p className="text-3xl font-black text-brand-green tracking-tight italic">
-                         ₹{gym.bookings?.reduce((acc: number, b: any) => acc + (b.totalAmount || 0), 0) * 0.15 > 999 
-                           ? `${((gym.bookings?.reduce((acc: number, b: any) => acc + (b.totalAmount || 0), 0) * 0.15) / 1000).toFixed(1)}k`
-                           : (gym.bookings?.reduce((acc: number, b: any) => acc + (b.totalAmount || 0), 0) * 0.15 || 0).toFixed(0)}
+                       <p className="text-3xl font-black text-brand-green tracking-tight italic">
+                         ₹{gym.bookings?.reduce((acc: number, b: any) => acc + (b.totalAmount || 0), 0) * (commissionRate / 100) > 999 
+                           ? `${((gym.bookings?.reduce((acc: number, b: any) => acc + (b.totalAmount || 0), 0) * (commissionRate / 100)) / 1000).toFixed(1)}k`
+                           : (gym.bookings?.reduce((acc: number, b: any) => acc + (b.totalAmount || 0), 0) * (commissionRate / 100) || 0).toFixed(0)}
                       </p>
                    </div>
                </div>

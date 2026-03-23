@@ -194,3 +194,10 @@ enum BookingStatus {
   COMPLETED
   CANCELLED
 }
+
+model PlatformSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}

@@ -24,13 +24,15 @@ interface GymManagementTabsProps {
     growth: string;
     waitTime?: string;
   };
+  commissionRate?: number;
 }
 
 export function GymManagementTabs({ 
   pendingGyms, 
   activeGyms, 
   suspendedGyms,
-  stats 
+  stats,
+  commissionRate = 15
 }: GymManagementTabsProps) {
   const [activeTab, setActiveTab] = useState<"VERIFICATION" | "ACTIVE" | "LEDGER">("VERIFICATION");
 
@@ -98,7 +100,7 @@ export function GymManagementTabs({
       {/* Active Area */}
       <div className="min-h-[500px] bg-zinc-900/40 border border-white/10 rounded-[3.5rem] p-8 shadow-3xl border-dashed">
         {activeTab === "VERIFICATION" && <VerificationDesk gyms={pendingGyms} waitTime={stats.waitTime} />}
-        {activeTab === "ACTIVE" && <ActiveHubs gyms={[...activeGyms, ...suspendedGyms]} />}
+        {activeTab === "ACTIVE" && <ActiveHubs gyms={[...activeGyms, ...suspendedGyms]} commissionRate={commissionRate} />}
         {activeTab === "LEDGER" && <PartnerLedger gyms={activeGyms} />}
       </div>
     </div>

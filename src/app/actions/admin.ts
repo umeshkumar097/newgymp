@@ -7,10 +7,10 @@ import { GymStatus } from "@prisma/client";
 
 export async function approveGym(gymId: string, setupFee: number) {
   try {
-    const gym = await prisma.gym.update({
+    const gym = await (prisma.gym as any).update({
       where: { id: gymId },
       data: { 
-        status: GymStatus.AWAITING_PAYMENT,
+        status: "AWAITING_PAYMENT" as any,
         onboardingFeeAmount: setupFee
       },
       include: { owner: true }
@@ -39,7 +39,7 @@ export async function approveGym(gymId: string, setupFee: number) {
 
 export async function toggleGymPause(gymId: string, isPaused: boolean) {
   try {
-    await prisma.gym.update({
+    await (prisma.gym as any).update({
       where: { id: gymId },
       data: { isPaused },
     });
@@ -52,7 +52,7 @@ export async function toggleGymPause(gymId: string, isPaused: boolean) {
 
 export async function sendDuesReminder(gymId: string) {
   try {
-    const gym = await prisma.gym.findUnique({
+    const gym = await (prisma.gym as any).findUnique({
       where: { id: gymId },
       include: { owner: true }
     });
@@ -71,9 +71,9 @@ export async function sendDuesReminder(gymId: string) {
 
 export async function rejectGym(gymId: string) {
   try {
-    await prisma.gym.update({
+    await (prisma.gym as any).update({
       where: { id: gymId },
-      data: { status: "REJECTED" },
+      data: { status: "REJECTED" as any },
     });
     revalidatePath("/admin/gyms");
     return { success: true };
@@ -93,6 +93,29 @@ export async function deleteUser(userId: string) {
     return { success: true };
   } catch (error: any) {
     console.error("User Deletion Error:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function getPlatformSettings() {
+  try {
+    return await (prisma as any).platformSetting.findMany();
+  } catch (error: any) {
+    return [];
+  }
+}
+
+export async function updatePlatformSetting(key: string, value: string) {
+  try {
+    await (prisma as any).platformSetting.upsert({
+      where: { key },
+      update: { value },
+      create: { key, value },
+    });
+    revalidatePath("/admin/settings");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Settings Update Error:", error);
     return { success: false, error: error.message };
   }
 }

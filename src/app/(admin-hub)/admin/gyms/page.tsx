@@ -10,7 +10,8 @@ export default async function AdminGymsPage() {
     suspendedGyms,
     totalGymsCount,
     userCount,
-    totalRevenueResult
+    totalRevenueResult,
+    settings
   ] = await Promise.all([
     prisma.gym.findMany({
       where: { status: GymStatus.PENDING },
@@ -41,12 +42,14 @@ export default async function AdminGymsPage() {
     }),
     prisma.gym.count({ where: { status: "APPROVED" as any } } as any),
     prisma.user.count({ where: { role: "USER" as any } } as any),
-    prisma.booking.aggregate({ _sum: { totalAmount: true } })
+    prisma.booking.aggregate({ _sum: { totalAmount: true } }),
+    (prisma as any).platformSetting.findUnique({ where: { key: "COMMISSION_RATE" } })
   ]);
 
   const totalRevenue = totalRevenueResult._sum.totalAmount || 0;
-  // Dynamic commission calculation (15%)
-  const revShare = totalRevenue * 0.15;
+  // Dynamic commission calculation from settings
+  const commissionRate = settings ? parseFloat(settings.value) : 15.0;
+  const revShare = totalRevenue * (commissionRate / 100);
 
   const stats = {
     totalGyms: totalGymsCount.toString(),
@@ -63,6 +66,7 @@ export default async function AdminGymsPage() {
         activeGyms={activeGyms}
         suspendedGyms={suspendedGyms}
         stats={stats}
+        commissionRate={commissionRate}
       />
     </div>
   );

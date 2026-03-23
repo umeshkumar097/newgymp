@@ -1,7 +1,51 @@
-import React from "react";
-import { Settings, Shield, Bell, Database, Globe, Lock, Save, Zap } from "lucide-react";
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { Settings, Shield, Bell, Database, Globe, Lock, Save, Zap, Loader2 } from "lucide-react";
+import { getPlatformSettings, updatePlatformSetting } from "@/app/actions/admin";
 
 export default function AdminSettingsPage() {
+  const [isPending, setIsPending] = useState(false);
+  const [tax, setTax] = useState("15");
+  const [currency, setCurrency] = useState("INR");
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadSettings() {
+      const settings = await getPlatformSettings();
+      const taxSetting = settings.find((s: any) => s.key === "COMMISSION_RATE");
+      const currencySetting = settings.find((s: any) => s.key === "OPERATIONAL_CURRENCY");
+      
+      if (taxSetting) setTax(taxSetting.value);
+      if (currencySetting) setCurrency(currencySetting.value);
+      setIsLoading(false);
+    }
+    loadSettings();
+  }, []);
+
+  const handleSave = async () => {
+    setIsPending(true);
+    try {
+      await Promise.all([
+        updatePlatformSetting("COMMISSION_RATE", tax),
+        updatePlatformSetting("OPERATIONAL_CURRENCY", currency)
+      ]);
+      alert("Platform settings updated successfully");
+    } catch (error) {
+      alert("Failed to update settings");
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#0B0F19] flex items-center justify-center">
+        <Loader2 className="animate-spin text-brand-green" size={48} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-12 font-outfit bg-[#0B0F19] -m-8 p-12 min-h-screen">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 px-4">
@@ -10,9 +54,13 @@ export default function AdminSettingsPage() {
           <p className="text-slate-400 text-sm font-medium uppercase tracking-[0.1em]">Configure global platform parameters and security protocols</p>
         </div>
         <div className="flex items-center space-x-4">
-           <button className="bg-white text-zinc-950 font-black px-10 py-5 rounded-[1.5rem] text-[10px] uppercase tracking-[0.2em] shadow-3xl flex items-center space-x-4 hover:bg-brand-green transition-all active:scale-95">
-              <Save size={18} />
-              <span>Commit Changes</span>
+           <button 
+             disabled={isPending}
+             onClick={handleSave}
+             className="bg-white text-zinc-950 font-black px-10 py-5 rounded-[1.5rem] text-[10px] uppercase tracking-[0.2em] shadow-3xl flex items-center space-x-4 hover:bg-brand-green transition-all active:scale-95 disabled:opacity-50"
+           >
+              {isPending ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+              <span>{isPending ? "Syncing..." : "Commit Changes"}</span>
            </button>
         </div>
       </div>
@@ -54,7 +102,12 @@ export default function AdminSettingsPage() {
           <div className="space-y-4">
             <label className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-500 px-2">PLATFORM TAX / COMMISSION (%)</label>
             <div className="p-6 bg-zinc-950 border border-white/10 rounded-2xl group focus-within:border-brand-green/30 transition-all shadow-inner">
-              <input type="text" defaultValue="15" className="bg-transparent border-none outline-none text-2xl font-black text-white w-full tracking-tighter" />
+              <input 
+                type="text" 
+                value={tax} 
+                onChange={(e) => setTax(e.target.value)}
+                className="bg-transparent border-none outline-none text-2xl font-black text-white w-full tracking-tighter" 
+              />
             </div>
             <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest px-2">EFFECTIVE IMMEDIATELY ON NEW BOOKINGS</p>
           </div>
@@ -62,8 +115,13 @@ export default function AdminSettingsPage() {
             <label className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-500 px-2">OPERATIONAL CURRENCY</label>
             <div className="p-6 bg-zinc-950 border border-white/10 rounded-2xl group focus-within:border-brand-blue/30 transition-all shadow-inner">
                <div className="flex items-center space-x-4">
-                  <span className="text-2xl font-black text-brand-blue italic">₹</span>
-                  <input type="text" defaultValue="INR" className="bg-transparent border-none outline-none text-2xl font-black text-white w-full tracking-tighter uppercase" />
+                  <span className="text-2xl font-black text-brand-blue italic">{currency === "INR" ? "₹" : "$"}</span>
+                  <input 
+                    type="text" 
+                    value={currency} 
+                    onChange={(e) => setCurrency(e.target.value.toUpperCase())}
+                    className="bg-transparent border-none outline-none text-2xl font-black text-white w-full tracking-tighter uppercase" 
+                  />
                </div>
             </div>
             <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest px-2">LOCALIZATION SYMBOLS FOR VOUCHERS</p>
