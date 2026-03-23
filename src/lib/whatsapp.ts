@@ -28,6 +28,10 @@ export async function sendWhatsAppOTP(phoneNumber: string, otp: string, gymName:
                   type: "text",
                   text: otp,
                 },
+                {
+                  type: "text",
+                  text: "Helping number - 919871881183",
+                },
               ],
             },
             {
