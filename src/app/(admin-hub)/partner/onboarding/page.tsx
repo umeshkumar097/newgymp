@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { OnboardingStepper } from "@/components/partner/OnboardingStepper";
 import { PartnerPhoneAuth } from "@/components/partner/PartnerPhoneAuth";
+import { AgreementModal } from "@/components/partner/AgreementModal";
 import { MapPin, Clock, Camera, CreditCard, ShieldCheck, ArrowRight, ArrowLeft, Loader2, CheckCircle2, Upload, Trash2, Zap, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
@@ -85,8 +86,11 @@ export default function PartnerOnboardingPage() {
 
   const amenitiesList = ["AC", "Parking", "Steam Bath", "Pool", "Locker", "Showers", "Cafeteria"];
 
+  const [isAgreementOpen, setIsAgreementOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-zinc-950 text-white font-outfit pb-20">
+      <AgreementModal isOpen={isAgreementOpen} onClose={() => setIsAgreementOpen(false)} />
       {/* Top Header */}
       <header className="py-10 text-center space-y-2">
         <h1 className="text-4xl font-black uppercase tracking-tighter">
@@ -288,8 +292,13 @@ export default function PartnerOnboardingPage() {
                     )}>
                       {formData.agreed && <Check size={14} className="text-zinc-950 font-black" />}
                     </div>
-                    <p className="text-[10px] font-bold text-zinc-400 group-hover:text-white transition-colors">
-                      I agree to the <span className="text-brand-green underline uppercase tracking-widest font-black">Partner Tie-up Agreement</span> and authorize PassFit to verify my details.
+                    <p className="text-[10px] font-bold text-zinc-400">
+                      I agree to the <span 
+                        onClick={(e) => { e.stopPropagation(); setIsAgreementOpen(true); }}
+                        className="text-brand-green underline uppercase tracking-widest font-black cursor-pointer hover:text-white transition-colors"
+                      >
+                        Partner Tie-up Agreement
+                      </span> and authorize PassFit to verify my details.
                     </p>
                   </div>
                </div>
