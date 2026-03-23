@@ -353,6 +353,48 @@ export default function PartnerOnboardingPage() {
                       <input type="text" value={formData.gymName} onChange={(e) => updateForm({ gymName: e.target.value })} placeholder="e.g. Iron Paradise Fitness" className={cn("w-full bg-zinc-950 border p-6 rounded-2xl text-sm font-bold outline-none transition-all placeholder:text-zinc-900", errors.gymName ? "border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.1)]" : "border-white/5 focus:border-brand-green/30")} />
                       {errors.gymName && <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider pl-1 flex items-center"><AlertCircle size={10} className="mr-1" /> {errors.gymName}</p>}
                     </div>
+
+                    {/* Operational Hours */}
+                    <div className="grid grid-cols-2 gap-4">
+                       <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Opening Time</label>
+                          <div className="relative">
+                             <Clock className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-700" size={18} />
+                             <input type="text" value={formData.openingTime} onChange={(e) => updateForm({ openingTime: e.target.value })} placeholder="06:00 AM" className="w-full bg-zinc-950 border border-white/5 p-5 pl-14 rounded-2xl text-xs font-black outline-none focus:border-brand-green/30" />
+                          </div>
+                       </div>
+                       <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Closing Time</label>
+                          <div className="relative">
+                             <Clock className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-700" size={18} />
+                             <input type="text" value={formData.closingTime} onChange={(e) => updateForm({ closingTime: e.target.value })} placeholder="10:00 PM" className="w-full bg-zinc-950 border border-white/5 p-5 pl-14 rounded-2xl text-xs font-black outline-none focus:border-brand-green/30" />
+                          </div>
+                       </div>
+                    </div>
+
+                    {/* Weekly Off */}
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Weekly Off Day</label>
+                       <select 
+                          value={formData.weeklyOffDay} 
+                          onChange={(e) => updateForm({ weeklyOffDay: e.target.value })}
+                          className="w-full bg-zinc-950 border border-white/5 p-6 rounded-2xl text-xs font-black uppercase tracking-widest outline-none focus:border-brand-green/30 appearance-none cursor-pointer"
+                       >
+                          <option value="None">Open All Week (No Off)</option>
+                          <option value="Sunday">Sunday</option>
+                          <option value="Monday">Monday</option>
+                          <option value="Tuesday">Tuesday</option>
+                          <option value="Wednesday">Wednesday</option>
+                          <option value="Thursday">Thursday</option>
+                          <option value="Friday">Friday</option>
+                          <option value="Saturday">Saturday</option>
+                       </select>
+                       <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest pl-1 mt-2 flex items-center">
+                          <AlertCircle size={10} className="mr-1.5 text-brand-blue" />
+                          Owner can manually pause the gym anytime from dashboard
+                       </p>
+                    </div>
+
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1 font-outfit">Full Operational Address *</label>
                       <textarea value={formData.location} onChange={(e) => updateForm({ location: e.target.value })} placeholder="Street, Area, City, Pincode" className={cn("w-full bg-zinc-950 border p-6 rounded-2xl text-sm font-bold outline-none transition-all h-32 resize-none placeholder:text-zinc-900", errors.location ? "border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.1)]" : "border-white/5 focus:border-brand-green/30")} />

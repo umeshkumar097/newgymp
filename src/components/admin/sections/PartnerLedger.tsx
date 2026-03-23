@@ -10,6 +10,12 @@ import { sendDuesReminder } from "@/app/actions/admin";
 
 export function PartnerLedger({ gyms }: { gyms: any[] }) {
   
+   const atRiskPartners = gyms.filter((g: any) => {
+    const gross = (g.bookings || []).reduce((acc: number, b: any) => acc + (b.totalAmount || 0), 0);
+    const daysLeft = g.commissionFreeUntil ? Math.max(0, Math.ceil((new Date(g.commissionFreeUntil).getTime() - new Date().getTime()) / (1000 * 3600 * 24))) : 45; 
+    return daysLeft === 0 && (gross * ((g.baseCommissionRate || 15) / 100)) > 5000;
+  });
+
   const handleSendReminder = async (gymId: string) => {
     const res = await sendDuesReminder(gymId);
     if (res.success) {
@@ -17,12 +23,9 @@ export function PartnerLedger({ gyms }: { gyms: any[] }) {
     }
   };
 
-  const getDaysLeft = (date: Date) => {
-    const now = new Date();
-    const expiry = new Date(date);
-    const diff = expiry.getTime() - now.getTime();
-    return Math.max(0, Math.ceil(diff / (1000 * 3600 * 24)));
-  };
+  const activeCount = gyms.filter(g => g.status === "APPROVED" && !g.isPaused).length;
+  const totalCount = gyms.length || 1;
+  const retentionRate = ((activeCount / totalCount) * 100).toFixed(1);
 
   return (
     <div className="space-y-10 animate-in slide-in-from-bottom-4 duration-500">
@@ -38,6 +41,7 @@ export function PartnerLedger({ gyms }: { gyms: any[] }) {
       </div>
 
       <div className="bg-zinc-900 border border-white/10 rounded-[3.5rem] overflow-hidden shadow-3xl">
+        {/* ... table remains same ... */}
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead className="bg-zinc-950/50 border-b border-white/10">
@@ -61,8 +65,12 @@ export function PartnerLedger({ gyms }: { gyms: any[] }) {
                 </tr>
               ) : (
                 gyms.map((gym: any) => {
-                  const daysLeft = gym.commissionFreeUntil ? getDaysLeft(new gym.commissionFreeUntil()) : 45; 
-                  const dues = 3500; 
+                  const daysLeft = gym.commissionFreeUntil ? Math.max(0, Math.ceil((new Date(gym.commissionFreeUntil).getTime() - new Date().getTime()) / (1000 * 3600 * 24))) : 45; 
+                  
+                  // Calculate dynamic gross and dues
+                  const gross = (gym.bookings || []).reduce((acc: number, b: any) => acc + (b.totalAmount || 0), 0);
+                  const commissionRate = (gym.baseCommissionRate || 15) / 100;
+                  const dues = (daysLeft === 0) ? (gross * commissionRate) : 0;
                   
                   return (
                     <tr key={gym.id} className="hover:bg-zinc-900 transition-all group border-white/5">
@@ -97,7 +105,7 @@ export function PartnerLedger({ gyms }: { gyms: any[] }) {
                       <td className="p-10">
                          <div className="flex items-center space-x-3 text-brand-green mb-1.5 px-3 py-1 bg-brand-green/5 border border-brand-green/10 rounded-xl w-fit">
                             <TrendingUp size={16} />
-                            <span className="text-xl font-black">₹42,200</span>
+                            <span className="text-xl font-black">₹{gross.toLocaleString()}</span>
                          </div>
                          <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Lifetime Gross</p>
                       </td>
@@ -137,7 +145,7 @@ export function PartnerLedger({ gyms }: { gyms: any[] }) {
                <h4 className="text-2xl font-black uppercase tracking-tighter text-white italic leading-none">Critical <br/> Recovery</h4>
             </div>
             <p className="text-sm font-medium text-slate-400 leading-relaxed uppercase tracking-tight relative z-10">
-               There are 12 partners with commissions older than 15 days. System suggests enabling "Kill Switch" for partners with dues exceeding ₹5,000.
+               There are {atRiskPartners.length} partners with commissions older than 15 days. System suggests enabling "Kill Switch" for partners with dues exceeding ₹5,000.
             </p>
             <button className="text-[11px] font-black text-brand-blue uppercase hover:underline flex items-center tracking-[0.2em] relative z-10 group/link">
                IDENTIFY AT-RISK PARTNERS <ArrowUpRight size={16} className="ml-2 group-hover/link:translate-x-1 group-hover/link:-translate-y-1 transition-transform" />
@@ -147,13 +155,13 @@ export function PartnerLedger({ gyms }: { gyms: any[] }) {
          <div className="bg-zinc-900 border border-white/10 rounded-[3rem] p-10 flex flex-col justify-center space-y-4 shadow-3xl hover:border-brand-green/20 transition-all">
             <div className="space-y-1">
                <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">Platform Retention Rate</p>
-               <p className="text-6xl font-black text-white uppercase tracking-tighter italic">98.2%</p>
+               <p className="text-6xl font-black text-white uppercase tracking-tighter italic">{retentionRate}%</p>
             </div>
             <div className="space-y-3">
                <div className="h-2.5 bg-zinc-950 rounded-full border border-white/5 overflow-hidden shadow-inner">
-                  <div className="h-full bg-gradient-to-r from-brand-blue to-brand-green w-[98.2%] rounded-full shadow-[0_0_15px_rgba(16,185,129,0.3)]" />
+                  <div className="h-full bg-gradient-to-r from-brand-blue to-brand-green rounded-full shadow-[0_0_15px_rgba(16,185,129,0.3)]" style={{ width: `${retentionRate}%` }} />
                </div>
-               <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest text-right">SYNCED 2M AGO • STABLE NETWORK</p>
+               <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest text-right">SYNCED NOW • STABLE NETWORK</p>
             </div>
          </div>
       </div>

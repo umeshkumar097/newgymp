@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import { 
   FileText, ShieldCheck, X, CreditCard, Building, 
-  ChevronLeft, ChevronRight, DollarSign, AlertCircle, Loader2
+  ChevronLeft, ChevronRight, DollarSign, AlertCircle, Loader2,
+  Clock, Calendar
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { approveGym, rejectGym } from "@/app/actions/admin";
@@ -136,6 +137,27 @@ export function GymReviewModal({ gym, isOpen, onClose }: GymReviewModalProps) {
                        <p className="text-sm font-bold text-white truncate uppercase">{doc.value || "N/A"}</p>
                     </div>
                   ))}
+                </div>
+
+                {/* Operational Hours */}
+                <div className="space-y-4">
+                   <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">Operational Protocol</h4>
+                   <div className="grid grid-cols-2 gap-4">
+                      <div className="p-6 bg-slate-950 rounded-[1.5rem] border border-white/5 space-y-2">
+                         <div className="flex items-center space-x-3 text-slate-600">
+                            <Clock size={16} />
+                            <p className="text-[9px] font-bold uppercase tracking-widest">Operating Hours</p>
+                         </div>
+                         <p className="text-sm font-bold text-white uppercase">{gym.openingTime || "06:00 AM"} - {gym.closingTime || "10:00 PM"}</p>
+                      </div>
+                      <div className="p-6 bg-slate-950 rounded-[1.5rem] border border-white/5 space-y-2">
+                         <div className="flex items-center space-x-3 text-slate-600">
+                            <AlertCircle size={16} />
+                            <p className="text-[9px] font-bold uppercase tracking-widest">Weekly Off</p>
+                         </div>
+                         <p className="text-sm font-bold text-white uppercase">{gym.weeklyOffDay || "None"}</p>
+                      </div>
+                   </div>
                 </div>
 
                 <div className="space-y-4">

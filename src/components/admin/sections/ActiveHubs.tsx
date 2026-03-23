@@ -3,13 +3,16 @@
 import React, { useState } from "react";
 import { 
   Store, MapPin, Star, MoreHorizontal, Power, 
-  ExternalLink, BarChart, Hash, Zap, User
+  ExternalLink, BarChart, Hash, Zap, User, Clock, Calendar
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toggleGymPause } from "@/app/actions/admin";
 import Image from "next/image";
 
+import { useRouter } from "next/navigation";
+
 export function ActiveHubs({ gyms }: { gyms: any[] }) {
+  const router = useRouter();
   const [activeGyms, setActiveGyms] = useState(gyms);
 
   const handleTogglePause = async (gymId: string, currentPaused: boolean) => {
@@ -32,13 +35,13 @@ export function ActiveHubs({ gyms }: { gyms: any[] }) {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-        {gyms.filter(g => g.status === "APPROVED").length === 0 ? (
+        {activeGyms.filter((g: any) => g.status === "APPROVED" || g.status === "SUSPENDED").length === 0 ? (
            <div className="col-span-full p-28 bg-zinc-900 border border-white/10 border-dashed rounded-[3.5rem] flex flex-col items-center justify-center opacity-20 text-center">
               <Store size={72} className="mb-6 stroke-1" />
               <p className="text-sm font-black uppercase tracking-[0.4em]">No active hubs discovered</p>
            </div>
         ) : (
-          gyms.filter(g => g.status === "APPROVED").map((gym: any) => (
+          activeGyms.filter((g: any) => g.status === "APPROVED" || g.status === "SUSPENDED").map((gym: any) => (
             <div key={gym.id} className="bg-zinc-900 border border-white/10 rounded-[3rem] p-10 space-y-10 shadow-3xl relative overflow-hidden group hover:border-white/20 transition-all">
                
                {/* Kill Switch Overlay */}
@@ -72,12 +75,26 @@ export function ActiveHubs({ gyms }: { gyms: any[] }) {
                      <div>
                         <div className="flex items-center space-x-4 mb-2">
                            <h3 className="text-2xl font-black text-white uppercase tracking-tight">{gym.name}</h3>
-                           <div className="px-3 py-1 rounded-xl bg-brand-green/10 text-brand-green text-[9px] font-black uppercase tracking-widest border border-brand-green/20 shadow-inner">LIVE</div>
+                           <div className={cn(
+                             "px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest border shadow-inner",
+                             gym.status === "SUSPENDED" ? "bg-red-500/10 text-red-500 border-red-500/20" : "bg-brand-green/10 text-brand-green border-brand-green/20"
+                           )}>{gym.status === "SUSPENDED" ? "SUSPENDED" : "LIVE"}</div>
                         </div>
-                        <p className="text-sm font-medium text-slate-400 flex items-center tracking-tight">
+                        <p className="text-sm font-medium text-slate-400 flex items-center tracking-tight mb-2">
                            <MapPin size={16} className="mr-2.5 text-brand-blue" />
                            {gym.location}
                         </p>
+                        <div className="flex items-center space-x-4 pl-0.5">
+                           <div className="flex items-center text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                              <Clock size={12} className="mr-1.5 text-zinc-600" />
+                              <span>{gym.openingTime || "06:00 AM"} - {gym.closingTime || "10:00 PM"}</span>
+                           </div>
+                           <div className="h-3 w-[1px] bg-white/5" />
+                           <div className="flex items-center text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                              <Calendar size={12} className="mr-1.5 text-zinc-600" />
+                              <span>OFF: {gym.weeklyOffDay || "NONE"}</span>
+                           </div>
+                        </div>
                      </div>
                   </div>
                   <div className="flex items-center space-x-3">
@@ -114,23 +131,32 @@ export function ActiveHubs({ gyms }: { gyms: any[] }) {
                    <div className="space-y-2 text-right">
                       <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Net Share</p>
                       <p className="text-3xl font-black text-brand-green tracking-tight italic">
-                         ₹{gym.bookings?.reduce((acc: number, b: any) => acc + b.totalAmount, 0) * 0.15 > 999 
-                           ? `${((gym.bookings?.reduce((acc: number, b: any) => acc + b.totalAmount, 0) * 0.15) / 1000).toFixed(1)}k`
-                           : (gym.bookings?.reduce((acc: number, b: any) => acc + b.totalAmount, 0) * 0.15 || 0).toFixed(0)}
+                         ₹{gym.bookings?.reduce((acc: number, b: any) => acc + (b.totalAmount || 0), 0) * 0.15 > 999 
+                           ? `${((gym.bookings?.reduce((acc: number, b: any) => acc + (b.totalAmount || 0), 0) * 0.15) / 1000).toFixed(1)}k`
+                           : (gym.bookings?.reduce((acc: number, b: any) => acc + (b.totalAmount || 0), 0) * 0.15 || 0).toFixed(0)}
                       </p>
                    </div>
                </div>
 
                <div className="flex gap-4 pt-4 relative z-0">
-                  <button className="flex-1 bg-zinc-950 border border-white/5 hover:border-brand-green/30 text-slate-400 hover:text-white font-black py-4.5 rounded-2xl text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center space-x-3 group relative overflow-hidden">
+                  <button 
+                    onClick={() => router.push("/admin/analytics")}
+                    className="flex-1 bg-zinc-950 border border-white/5 hover:border-brand-green/30 text-slate-400 hover:text-white font-black py-4.5 rounded-2xl text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center space-x-3 group relative overflow-hidden"
+                  >
                      <BarChart size={16} className="text-brand-green group-hover:scale-110 transition-transform" />
                      <span>Analytics Deep-Dive</span>
                   </button>
-                  <button className="flex-1 bg-zinc-950 border border-white/5 hover:border-brand-blue/30 text-slate-400 hover:text-white font-black py-4.5 rounded-2xl text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center space-x-3 group">
+                  <button 
+                    onClick={() => router.push("/admin/users")}
+                    className="flex-1 bg-zinc-950 border border-white/5 hover:border-brand-blue/30 text-slate-400 hover:text-white font-black py-4.5 rounded-2xl text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center space-x-3 group"
+                  >
                      <User size={16} className="text-brand-blue group-hover:scale-110 transition-transform" />
                      <span>Governance</span>
                   </button>
-                  <button className="w-16 bg-zinc-950 border border-white/5 hover:border-white/20 text-slate-400 hover:text-white rounded-2xl flex items-center justify-center transition-all group shadow-xl">
+                  <button 
+                    onClick={() => window.open(`/gym/${gym.id}`, '_blank')}
+                    className="w-16 bg-zinc-950 border border-white/5 hover:border-white/20 text-slate-400 hover:text-white rounded-2xl flex items-center justify-center transition-all group shadow-xl"
+                  >
                      <ExternalLink size={18} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                   </button>
                </div>

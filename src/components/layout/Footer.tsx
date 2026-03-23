@@ -103,22 +103,22 @@ export function Footer() {
 
       {/* Bottom Bar */}
       <div className="max-w-7xl mx-auto pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-        <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">
-          &copy; {new Date().getFullYear()} PassFit. All rights reserved.
+        <p className="text-[10px] text-slate-600 font-black uppercase tracking-[0.5em]">
+          &copy; {new Date().getFullYear()} AICLEX TECHNOLOGIES. All rights reserved.
         </p>
         
         {/* Attribution - AS REQUESTED */}
         <div className="flex items-center space-x-6">
-           <div className="flex items-center space-x-2 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all cursor-default">
-              <Globe size={12} className="text-slate-500" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
-                A Product by <span className="text-white">Aiclex Technologies</span>
+           <div className="flex items-center space-x-3 transition-all cursor-default group">
+              <Globe size={14} className="text-brand-green group-hover:animate-spin-slow" />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white">
+                OFFICIAL PRODUCT OF <span className="text-brand-blue">AICLEX TECHNOLOGIES</span>
               </span>
            </div>
         </div>
 
-        <div className="text-[9px] text-slate-800 font-bold uppercase tracking-[0.5em]">
-           Premium Gym Marketplace v3.0
+        <div className="text-[9px] text-slate-800 font-black uppercase tracking-[0.5em]">
+           Premium Gym Marketplace v3.1
         </div>
       </div>
 

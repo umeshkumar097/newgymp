@@ -31,6 +31,10 @@ export async function POST(req: Request) {
         bankIfscCode: data.ifscCode,
         bankProofUrl: data.chequePhoto,
         registrationDocUrl: data.registrationDoc,
+        // Operational Hours
+        openingTime: data.openingTime || "06:00 AM",
+        closingTime: data.closingTime || "10:00 PM",
+        weeklyOffDay: data.weeklyOffDay || "None",
       }
     });
 

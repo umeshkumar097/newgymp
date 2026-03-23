@@ -17,57 +17,57 @@ model OtpVerification {
 }
 
 model User {
-  id           String        @id @default(cuid())
-  clerkId      String        @unique
-  name         String?
-  email        String        @unique
-  password     String?
-  phone        String?
-  role         Role          @default(USER)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  bookings     Booking[]
-  reviews      Review[]
-  gyms         Gym[]         @relation("GymOwner")
-  transactions Transaction[]
+  id             String          @id @default(cuid())
+  clerkId        String          @unique
+  name           String?
+  email          String          @unique
+  phone          String?
+  role           Role            @default(USER)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  password       String?
+  bookings       Booking[]
+  gyms           Gym[]           @relation("GymOwner")
+  reviews        Review[]
   supportTickets SupportTicket[]
+  transactions   Transaction[]
 }
 
 model Gym {
-  id                   String     @id @default(cuid())
-  name                 String
-  description          String?
-  location             String
-  latitude             Float?
-  longitude            Float?
-  imageUrls            String[]
-  ownerId              String
-  status               GymStatus  @default(PENDING)
-  onboardingFeeAmount  Float?
-  onboardingFeePaid    Boolean    @default(false)
-  commissionFreeUntil  DateTime?
-  baseCommissionRate   Float      @default(15.0)
-  isPaused             Boolean    @default(false)
-  
-  // KYC & Legal
-  panNumber            String?
-  panPhotoUrl          String?
-  bankAccountNumber    String?
-  bankIfscCode         String?
-  bankProofUrl         String?
-  registrationDocUrl   String?
-  moUrl                String?    // Agreement Document
-
-  createdAt            DateTime   @default(now())
-  updatedAt            DateTime   @updatedAt
-  bookings             Booking[]
-  reviews              Review[]
-  totalRating          Float      @default(0)
-  numReviews           Int        @default(0)
-  avgRating            Float      @default(0)
-  owner                User       @relation("GymOwner", fields: [ownerId], references: [id])
-  addons               GymAddon[]
-  plans                Plan[]
+  id                  String     @id @default(cuid())
+  name                String
+  description         String?
+  location            String
+  latitude            Float?
+  longitude           Float?
+  imageUrls           String[]
+  ownerId             String
+  status              GymStatus  @default(PENDING)
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+  baseCommissionRate  Float      @default(15.0)
+  commissionFreeUntil DateTime?
+  onboardingFeeAmount Float?
+  onboardingFeePaid   Boolean    @default(false)
+  bankAccountNumber   String?
+  bankIfscCode        String?
+  bankProofUrl        String?
+  panNumber           String?
+  panPhotoUrl         String?
+  registrationDocUrl  String?
+  avgRating           Float      @default(0)
+  isPaused            Boolean    @default(false)
+  openingTime         String?    // e.g. "06:00 AM"
+  closingTime         String?    // e.g. "10:00 PM"
+  weeklyOffDay        String?    @default("None") // e.g. "Sunday"
+  moUrl               String?
+  numReviews          Int        @default(0)
+  totalRating         Float      @default(0)
+  bookings            Booking[]
+  owner               User       @relation("GymOwner", fields: [ownerId], references: [id])
+  addons              GymAddon[]
+  plans               Plan[]
+  reviews             Review[]
 }
 
 model Review {
@@ -110,7 +110,6 @@ model Booking {
   planId         String
   bookingDate    DateTime
   status         BookingStatus @default(BOOKED)
-  paymentType    PaymentType   @default(ONLINE)
   paymentId      String?
   otp            String?
   qrCode         String?
@@ -120,6 +119,7 @@ model Booking {
   totalAmount    Float
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+  paymentType    PaymentType   @default(ONLINE)
   gym            Gym           @relation(fields: [gymId], references: [id])
   plan           Plan          @relation(fields: [planId], references: [id])
   user           User          @relation(fields: [userId], references: [id])
@@ -139,7 +139,7 @@ model Transaction {
 
 model SupportTicket {
   id        String         @id @default(cuid())
-  ticketId  String         @unique // PF-XXXX
+  ticketId  String         @unique
   userId    String
   subject   String
   message   String
@@ -171,9 +171,9 @@ enum Role {
 
 enum GymStatus {
   PENDING
-  AWAITING_PAYMENT
   APPROVED
   REJECTED
+  AWAITING_PAYMENT
   SUSPENDED
 }
 
