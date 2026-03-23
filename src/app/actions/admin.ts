@@ -22,7 +22,7 @@ export async function approveGym(gymId: string, setupFee: number) {
         { 
             email: gym.owner.email, 
             name: gym.owner.name || "Partner", 
-            phone: gym.owner.phone || undefined
+            phone: gym.owner.phone || null
         },
         gym.name,
         setupFee
