@@ -3,6 +3,7 @@ import { TrendingUp, Users, Wallet, CheckCircle2, Search, QrCode, Filter, ArrowU
 import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 import { OtpVerification } from "@/components/partner/OtpVerification";
+import { GymSetup } from "@/components/partner/GymSetup";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -20,10 +21,11 @@ export default async function PartnerDashboardPage() {
     redirect("/gym-login");
   }
 
-  // Fetch Gym data & Monetization tokens
+  // Fetch Gym data & plans
   const gym = await prisma.gym.findFirst({
     where: { ownerId: user.id },
     include: {
+      plans: true,
       bookings: {
         orderBy: { updatedAt: "desc" },
         include: { plan: true }
@@ -55,6 +57,11 @@ export default async function PartnerDashboardPage() {
          </div>
       </div>
     );
+  }
+
+  // Check for Post-Approval Setup (Photos & Plans)
+  if (gym.imageUrls.length === 0 || gym.plans.length === 0) {
+    return <GymSetup gymId={gym.id} />;
   }
 
   // Calculate Grace Period

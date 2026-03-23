@@ -52,6 +52,7 @@ model Gym {
   bankAccountNumber    String?
   bankIfscCode         String?
   bankProofUrl         String?
+  registrationDocUrl   String?
 
   createdAt            DateTime   @default(now())
   updatedAt            DateTime   @updatedAt

@@ -1,7 +1,5 @@
-"use client";
-
 import React, { useState } from "react";
-import { FileText, Eye, ExternalLink, ShieldCheck, X, CreditCard } from "lucide-react";
+import { FileText, Eye, ExternalLink, ShieldCheck, X, CreditCard, Building } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface KycReviewProps {
@@ -11,6 +9,7 @@ interface KycReviewProps {
     bankAccountNumber: string | null;
     bankIfscCode: string | null;
     bankProofUrl: string | null;
+    registrationDocUrl: string | null;
     name: string;
   };
 }
@@ -68,6 +67,36 @@ export function KycReview({ gym }: KycReviewProps) {
                             <img src={gym.panPhotoUrl} className="w-full h-full object-contain" alt="pan" />
                           ) : (
                             <div className="absolute inset-0 flex items-center justify-center text-zinc-800 font-black uppercase tracking-widest text-xs">No Image Found</div>
+                          )}
+                       </div>
+                    </div>
+                 </div>
+
+                 {/* Registration Section */}
+                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 border-b border-white/5 pb-10">
+                    <div className="space-y-4">
+                       <h4 className="text-sm font-black text-white uppercase tracking-widest flex items-center">
+                          <Building size={16} className="mr-2 text-brand-blue" />
+                          Business Registration
+                       </h4>
+                       <div className="p-6 bg-zinc-950 rounded-2xl border border-white/5 space-y-2">
+                          <p className="text-[10px] font-black text-zinc-700 uppercase tracking-widest">Document Type</p>
+                          <p className="text-xs font-black text-white tracking-widest uppercase">GST / UDYAM / TRADE CERTIFICATE</p>
+                          <div className="mt-4 px-3 py-1.5 rounded-lg bg-brand-blue/10 border border-brand-blue/20 w-fit">
+                             <p className="text-[8px] font-black text-brand-blue uppercase">Official Proof of Name</p>
+                          </div>
+                       </div>
+                    </div>
+                    <div className="space-y-4">
+                       <div className="flex justify-between items-center">
+                          <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Registration Proof</p>
+                          {gym.registrationDocUrl && <a href={gym.registrationDocUrl} target="_blank" className="text-brand-blue flex items-center text-[10px] font-black uppercase hover:underline"><ExternalLink size={12} className="mr-1" /> View Full</a>}
+                       </div>
+                       <div className="aspect-video bg-black rounded-2xl border border-white/5 overflow-hidden relative group">
+                          {gym.registrationDocUrl ? (
+                            <img src={gym.registrationDocUrl} className="w-full h-full object-contain" alt="registration" />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center text-zinc-800 font-black uppercase tracking-widest text-xs font-outfit">No Document Found</div>
                           )}
                        </div>
                     </div>

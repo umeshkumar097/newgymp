@@ -28,6 +28,7 @@ export async function POST(req: Request) {
         bankAccountNumber: data.bankAccount,
         bankIfscCode: data.ifscCode,
         bankProofUrl: data.chequePhoto,
+        registrationDocUrl: data.registrationDoc,
       }
     });
 
