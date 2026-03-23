@@ -52,6 +52,12 @@ export async function POST(req: Request) {
       },
     });
 
+    // 3. Mark Intent as Converted
+    await (prisma as any).bookingIntent.updateMany({
+      where: { userId: user.id, gymId, status: "PENDING" },
+      data: { status: "CONVERTED" }
+    });
+
     // 4. Send Enhanced WhatsApp Notifications
     try {
       if (user.phone) {

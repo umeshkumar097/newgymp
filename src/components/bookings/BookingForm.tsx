@@ -38,6 +38,32 @@ export function BookingForm({ gym, onClose }: BookingFormProps) {
     return planPrice + addonPrice;
   }, [selectedPlan, memberCount, selectedAddons]);
 
+  // Sync Intent with Server
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const syncIntent = async () => {
+      try {
+        await fetch("/api/bookings/intent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            gymId: gym.id,
+            planId: selectedPlan.id,
+            amount: totalAmount,
+            members: memberCount,
+            addons: selectedAddons,
+          }),
+        });
+      } catch (err) {
+        console.error("Failed to sync intent:", err);
+      }
+    };
+
+    const timeout = setTimeout(syncIntent, 1000);
+    return () => clearTimeout(timeout);
+  }, [isAuthenticated, gym.id, selectedPlan.id, totalAmount, memberCount, selectedAddons]);
+
   const toggleAddon = (name: string) => {
     setSelectedAddons((prev) =>
       prev.includes(name) ? prev.filter((a) => a !== name) : [...prev, name]

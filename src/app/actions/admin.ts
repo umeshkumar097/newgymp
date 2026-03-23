@@ -137,3 +137,37 @@ export async function updatePlatformSetting(key: string, value: string) {
     return { success: false, error: error.message };
   }
 }
+
+export async function nudgeIntent(intentId: string) {
+  try {
+    const intent = await (prisma as any).bookingIntent.findUnique({
+      where: { id: intentId },
+      include: { user: true, gym: true }
+    });
+
+    if (!intent || !intent.user?.email) throw new Error("Intent or User not found");
+
+    const bookingUrl = `https://passfit.in/gyms/${intent.gymId}`;
+
+    await NotificationEngine.sendAbandonedBookingNudge(
+      { 
+        email: intent.user.email, 
+        name: intent.user.name || "Customer", 
+        phone: intent.user.phone || null
+      },
+      intent.gym.name,
+      bookingUrl
+    );
+
+    await (prisma as any).bookingIntent.update({
+      where: { id: intentId },
+      data: { status: "RECOVERED" as any }
+    });
+
+    revalidatePath("/admin/intents");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Nudge Error:", error);
+    return { success: false, error: error.message };
+  }
+}

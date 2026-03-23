@@ -145,5 +145,23 @@ export const NotificationEngine = {
 
   async sendReviewRequestNotification(user: { phone: string; name: string }, gymName: string) {
      await sendPostWorkoutReview(user.phone, gymName);
+  },
+
+  async sendAbandonedBookingNudge(user: { phone: string; name: string; email: string }, gymName: string, bookingUrl: string) {
+    const subject = "Don't miss out on your fitness goals! 🏋️‍♂️";
+    const html = `
+      <div style="font-family: sans-serif; max-width: 600px; padding: 20px;">
+        <h2 style="color: #3b82f6;">Hey ${user.name}!</h2>
+        <p>We noticed you were looking at <strong>${gymName}</strong> but didn't finish your booking.</p>
+        <p>Your fitness journey is just a few clicks away. Don't let your goals slip!</p>
+        <a href="${bookingUrl}" style="display: inline-block; padding: 12px 24px; background: #3b82f6; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;">Complete Your Booking</a>
+        <br/><br/>
+        <p>Best Regards,<br/>Team PassFit</p>
+      </div>
+    `;
+    await sendEmail(user.email, subject, html);
+    if (user.phone) {
+      await sendWhatsAppTemplate(user.phone, "booking_abandoned_recovery", [user.name, gymName, bookingUrl]);
+    }
   }
 };
