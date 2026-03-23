@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
+import { NotificationEngine } from "@/lib/notifications";
 
 export async function POST(req: Request) {
   try {
@@ -38,7 +39,6 @@ export async function POST(req: Request) {
         where: { phone: phoneNumber }
     });
 
-    if (user) {
         // Update existing user with provided details
         user = await prisma.user.update({
             where: { id: user.id },
@@ -49,6 +49,10 @@ export async function POST(req: Request) {
                 role: role || user.role
             }
         });
+        
+        if (role === "GYM_OWNER" && user.email) {
+            await NotificationEngine.sendWelcomePartner({ email: user.email, name: user.name || "Partner", phone: user.phone });
+        }
     } else {
         // Create new user
         user = await prisma.user.create({
@@ -61,6 +65,10 @@ export async function POST(req: Request) {
                 role: role || "USER"
             }
         });
+
+        if (role === "GYM_OWNER" && user.email) {
+            await NotificationEngine.sendWelcomePartner({ email: user.email, name: user.name, phone: user.phone });
+        }
     }
 
     // Set a session cookie (unencrypted for dev/demo)

@@ -2,7 +2,32 @@ import { sendEmail } from "./email";
 import { sendWhatsAppTemplate } from "./whatsapp";
 
 export const NotificationEngine = {
-  // 1. Onboarding Submission
+  // 0. Welcome & Account Activation (Onboarding Step 1)
+  async sendWelcomePartner(user: { email: string; name: string; phone: string | null }) {
+    const subject = "Activate Your PassFit Partner Account! 🚀";
+    const html = `
+      <div style="font-family: sans-serif; max-width: 600px; padding: 20px; color: #333;">
+        <h2 style="color: #10b981;">Welcome to PassFit, ${user.name}!</h2>
+        <p>Your partner account has been created successfully.</p>
+        <p>To start accepting customers and listing your gym, please complete your onboarding details: </p>
+        <ul>
+            <li>Business Information & Photos</li>
+            <li>KYC Verification (PAN, Bank)</li>
+            <li>Legal Agreement</li>
+        </ul>
+        <a href="https://newpassfit.in/partner/onboarding" style="display: inline-block; padding: 12px 24px; background: #10b981; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;">Complete Onboarding Now</a>
+        <br/><br/>
+        <p>Once you submit the details, our team will review your application within 24 hours.</p>
+        <p>Best Regards,<br/>Team PassFit</p>
+      </div>
+    `;
+    await sendEmail(user.email, subject, html);
+    if (user.phone) {
+      await sendWhatsAppTemplate(user.phone, "welcome_partner", [user.name]);
+    }
+  },
+
+  // 1. Onboarding Submission (Final Step)
   async sendOnboardingConfirmation(user: { email: string; name: string; phone: string | null }, gymName: string) {
     const subject = "Application Received - PassFit Partner Program 🛡️";
     const html = `

@@ -287,8 +287,14 @@ export default function PartnerOnboardingPage() {
                                })
                              });
                              const data = await res.json();
-                             if (data.success) setVerifiedFields(prev => ({ ...prev, phone: true }));
-                             else setErrors(prev => ({ ...prev, phone: "Invalid OTP" }));
+                             if (data.success) {
+                               setVerifiedFields(prev => ({ ...prev, phone: true }));
+                               // Redirect to dashboard to allow flexible onboarding
+                               router.push("/partner/dashboard");
+                               router.refresh();
+                             } else {
+                               setErrors(prev => ({ ...prev, phone: "Invalid OTP" }));
+                             }
                              setIsPending(false);
                           }}
                           className="bg-white text-zinc-950 px-8 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all"

@@ -33,7 +33,51 @@ export default async function PartnerDashboardPage() {
     }
   });
 
-  if (!gym) redirect("/partner/onboarding");
+  // If no gym, show the onboarding entry gate
+  if (!gym) {
+    return (
+      <div className="min-h-screen bg-zinc-950 text-white font-outfit flex flex-col items-center justify-center p-6 space-y-12">
+        <div className="w-24 h-24 rounded-[3rem] bg-brand-green/10 border border-brand-green/20 flex items-center justify-center text-brand-green shadow-3xl shadow-brand-green/10 animate-bounce-subtle">
+           <Zap size={48} className="fill-brand-green" />
+        </div>
+        
+        <div className="text-center space-y-4 max-w-md">
+           <h1 className="text-4xl font-black uppercase tracking-tighter italic leading-none">Activate your <span className="text-brand-green">Hub</span></h1>
+           <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest leading-relaxed">
+              Your account is created! Now complete your gym profile and KYC to start accepting bookings.
+           </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl">
+           {[
+             { icon: MapPin, title: "Business Info", desc: "Location & Amenities" },
+             { icon: ShieldCheck, title: "KYC Verification", desc: "PAN & Bank Proof" },
+             { icon: Clock, title: "Operating Hours", desc: "Open/Close Times" },
+             { icon: Wallet, title: "Pricing Plans", desc: "Set your Hub fees" }
+           ].map((item, i) => (
+             <div key={i} className="bg-zinc-900/50 border border-white/5 p-6 rounded-[2rem] flex items-center space-x-4">
+                <div className="w-10 h-10 rounded-xl bg-zinc-950 flex items-center justify-center text-zinc-700">
+                   <item.icon size={20} />
+                </div>
+                <div>
+                   <h3 className="text-[10px] font-black uppercase tracking-widest text-white">{item.title}</h3>
+                   <p className="text-[8px] font-bold text-zinc-600 uppercase tracking-tighter">{item.desc}</p>
+                </div>
+             </div>
+           ))}
+        </div>
+
+        <button 
+          onClick={() => redirect("/partner/onboarding")} 
+          className="bg-white text-zinc-950 font-black px-12 py-6 rounded-[2.5rem] text-xs uppercase tracking-[0.3em] shadow-2xl hover:scale-105 active:scale-95 transition-all"
+        >
+           Start Onboarding
+        </button>
+
+        <p className="text-[9px] font-black text-zinc-700 uppercase tracking-widest">Typical review time: &lt; 24 Hours</p>
+      </div>
+    );
+  }
   
   // Enforce Activation Wall
   if (gym.status === "AWAITING_PAYMENT") {
