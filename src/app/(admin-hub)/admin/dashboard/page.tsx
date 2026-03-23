@@ -10,7 +10,8 @@ export default async function AdminDashboardPage() {
     userCount,
     gymCount,
     bookingCount,
-    recentBookings
+    recentBookings,
+    openTicketsCount
   ] = await Promise.all([
      prisma.booking.aggregate({ _sum: { totalAmount: true } }),
      prisma.user.count({ where: { role: "USER" } }),
@@ -20,7 +21,8 @@ export default async function AdminDashboardPage() {
         take: 5,
         orderBy: { createdAt: "desc" },
         include: { gym: true, user: true }
-     })
+     }),
+     prisma.supportTicket.count({ where: { status: "OPEN" } })
   ]);
 
   const totalRevenue = totalRevenueResult._sum.totalAmount || 0;
@@ -29,7 +31,7 @@ export default async function AdminDashboardPage() {
     { label: "Revenue", value: `₹${(totalRevenue / 1000).toFixed(1)}k`, trend: "+14.5%", up: true, icon: Wallet, color: "text-green-500", bg: "bg-green-500/10" },
     { label: "Active Users", value: userCount.toString(), trend: "+8.2%", up: true, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
     { label: "Partner Gyms", value: gymCount.toString(), trend: "-2.1%", up: false, icon: Store, color: "text-orange-500", bg: "bg-orange-500/10" },
-    { label: "Bookings", value: bookingCount.toString(), trend: "+22.4%", up: true, icon: Activity, color: "text-purple-500", bg: "bg-purple-500/10" },
+    { label: "Open Tickets", value: openTicketsCount.toString(), trend: "Urgent", up: false, icon: Activity, color: "text-red-500", bg: "bg-red-500/10" },
   ];
 
   return (
