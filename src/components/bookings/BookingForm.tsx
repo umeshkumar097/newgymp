@@ -21,10 +21,13 @@ export function BookingForm({ gym, onClose }: BookingFormProps) {
   // Check auth status on mount
   useEffect(() => {
     const checkAuth = async () => {
-      // In a real app, you might check a cookie or call an auth-status API
-      // For this demo, we check if the cookie exists via a simple document.cookie check
-      const hasSession = document.cookie.split(';').some((item) => item.trim().startsWith('user_id='));
-      setIsAuthenticated(hasSession);
+      try {
+        const res = await fetch("/api/auth/check");
+        const data = await res.json();
+        setIsAuthenticated(data.loggedIn);
+      } catch (err) {
+        setIsAuthenticated(false);
+      }
     };
     checkAuth();
   }, []);
