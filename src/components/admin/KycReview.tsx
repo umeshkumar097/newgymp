@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import { FileText, Eye, ExternalLink, ShieldCheck, X, CreditCard, Building } from "lucide-react";
 import { cn } from "@/lib/utils";

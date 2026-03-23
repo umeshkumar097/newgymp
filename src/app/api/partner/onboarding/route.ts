@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
+import { NotificationEngine } from "@/lib/notifications";
 
 export async function POST(req: Request) {
   try {
@@ -19,7 +20,7 @@ export async function POST(req: Request) {
         location: data.location,
         latitude: data.latitude,
         longitude: data.longitude,
-        imageUrls: data.images,
+        imageUrls: [],
         ownerId: userId,
         status: "PENDING",
         // KYC Data
@@ -37,7 +38,7 @@ export async function POST(req: Request) {
       data: {
         gymId: gym.id,
         type: "DAY",
-        price: parseFloat(data.dayPassPrice),
+        price: parseFloat(data.dayPassPrice || "0"),
       }
     });
 
@@ -47,13 +48,14 @@ export async function POST(req: Request) {
       data: { role: "GYM_OWNER" }
     });
 
-    // 4. Store KYC/Legal data (Optional: Add specific model if needed, 
-    // for now we can store in a Json field or just log it)
-    console.log("KYC Data for Gym", gym.id, { 
-      pan: data.panNumber, 
-      bank: data.bankAccount, 
-      ifsc: data.ifscCode 
-    });
+    // 5. Send Notification
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (user && user.email) {
+        await NotificationEngine.sendOnboardingConfirmation(
+            { email: user.email, name: user.name || "Partner", phone: user.phone },
+            data.gymName
+        );
+    }
 
     return NextResponse.json({ success: true, gymId: gym.id });
   } catch (error: any) {

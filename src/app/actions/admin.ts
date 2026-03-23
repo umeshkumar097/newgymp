@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { NotificationEngine } from "@/lib/notifications";
 
 export async function approveGym(gymId: string, setupFee: number) {
   try {
@@ -14,16 +15,23 @@ export async function approveGym(gymId: string, setupFee: number) {
       include: { owner: true }
     });
 
-    // Simulate sending Welcome Email with Agreement
-    console.log(`[EMAIL SIMULATOR] Sending to: ${gym.owner.email}`);
-    console.log(`Subject: Welcome to PassFit! Your Partner Agreement is Approved.`);
-    console.log(`Body: Hello ${gym.owner.name}, Your gym "${gym.name}" is approved. 
-      Please pay the setup fee of ₹${setupFee} to activate the 90-day 0% commission period. 
-      Signed Agreement attached: MoU_${gym.id}.pdf`);
+    // Send Real Welcome Notification (Email + WhatsApp)
+    if (gym.owner?.email) {
+      await NotificationEngine.sendApprovalNotification(
+        { 
+            email: gym.owner.email, 
+            name: gym.owner.name || "Partner", 
+            phone: gym.owner.phone 
+        },
+        gym.name,
+        setupFee
+      );
+    }
 
     revalidatePath("/admin/gyms");
     return { success: true };
   } catch (error: any) {
+    console.error("Approval Error:", error);
     return { success: false, error: error.message };
   }
 }

@@ -59,7 +59,42 @@ export async function sendWhatsAppOTP(phoneNumber: string, otp: string, gymName:
   }
 }
 
+export async function sendWhatsAppTemplate(phoneNumber: string, templateName: string, parameters: any[]) {
+  try {
+    const response = await axios.post(
+      WHATSAPP_API_URL,
+      {
+        messaging_product: "whatsapp",
+        to: phoneNumber.startsWith("+") ? phoneNumber : `+91${phoneNumber}`,
+        type: "template",
+        template: {
+          name: templateName,
+          language: {
+            code: "en_US",
+          },
+          components: [
+            {
+              type: "body",
+              parameters: parameters.map(p => ({ type: "text", text: p })),
+            },
+          ],
+        },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${ACCESS_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error("WhatsApp API Error:", error.response?.data || error.message);
+    // Log but don't crash if WhatsApp fails (Email is primary)
+    return null;
+  }
+}
+
 export async function sendWhatsAppVoucher(phoneNumber: string, gymName: string, bookingId: string) {
-  // Similar implementation for vouchers if needed
-  // For now, focusing on OTP
+    return sendWhatsAppTemplate(phoneNumber, "gym_voucher", [gymName, bookingId]);
 }
