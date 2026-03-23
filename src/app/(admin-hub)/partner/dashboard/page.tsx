@@ -79,33 +79,58 @@ export default async function PartnerDashboardPage() {
     );
   }
   
-  // Check for Activation Wall (Approval Pending)
+  // Check for Onboarding Fee (AWAITING_PAYMENT)
+  if (gym.status === "AWAITING_PAYMENT") {
+    redirect("/partner/checkout");
+  }
+
+  // Check for Under Review (PENDING)
   if (gym.status === "PENDING") {
     return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6 text-center space-y-6">
-         <div className="w-24 h-24 rounded-[3rem] bg-orange-500/10 flex items-center justify-center text-orange-500 animate-pulse border border-orange-500/20 shadow-2xl shadow-orange-500/10">
-            <Clock size={48} />
+      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6 text-center space-y-10 font-outfit">
+         <div className="relative">
+            <div className="w-24 h-24 rounded-[3rem] bg-amber-500/10 flex items-center justify-center text-amber-500 animate-pulse border border-amber-500/20 shadow-3xl shadow-amber-500/10">
+               <Clock size={48} />
+            </div>
+            <div className="absolute -top-2 -right-2 bg-zinc-950 p-2 rounded-full border border-white/5">
+                <ShieldCheck size={16} className="text-zinc-700" />
+            </div>
          </div>
-         <div className="space-y-4">
-            <h2 className="text-3xl font-black uppercase tracking-tighter italic">Application Under Review</h2>
-            <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest max-w-sm mx-auto leading-relaxed">
-                Our legal team is verifying your documents. You will receive a notification within 24 hours.
+         
+         <div className="space-y-4 max-w-sm">
+            <h2 className="text-4xl font-black uppercase tracking-tighter italic">Review in <span className="text-amber-500">Progress</span></h2>
+            <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] leading-relaxed">
+                Our verification team is analyzing your KYC documents. We'll nudge you on WhatsApp as soon as we're done!
             </p>
          </div>
-         <div className="p-5 bg-zinc-900 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest text-zinc-500">
-            Estimated wait: &lt; 24 Hours
+
+         <div className="grid grid-cols-2 gap-4 w-full max-w-xs">
+            <div className="p-5 bg-zinc-900/50 border border-white/5 rounded-2xl text-center">
+               <div className="text-[8px] font-black text-zinc-600 uppercase mb-1">Status</div>
+               <div className="text-[10px] font-black text-amber-500 uppercase tracking-widest italic">Scanning...</div>
+            </div>
+            <div className="p-5 bg-zinc-900/50 border border-white/5 rounded-2xl text-center">
+               <div className="text-[8px] font-black text-zinc-600 uppercase mb-1">Wait Time</div>
+               <div className="text-[10px] font-black text-white uppercase tracking-widest">~24 Hours</div>
+            </div>
          </div>
-         <button onClick={() => redirect("/partner/onboarding")} className="text-[10px] font-black text-brand-green uppercase tracking-widest hover:underline cursor-pointer">View Submission</button>
+
+         <button 
+           onClick={() => redirect("/partner/onboarding")} 
+           className="text-[10px] font-black text-zinc-600 uppercase tracking-widest hover:text-white transition-all underline underline-offset-8"
+         >
+            Edit Application
+         </button>
       </div>
     );
   }
 
-  // Check for Post-Approval Setup (Photos & Plans)
+  // Post-Approval Setup Check
   if (gym.imageUrls.length === 0 || gym.plans.length === 0) {
     return <GymSetup gymId={gym.id} />;
   }
 
-  // Calculate Grace Period
+  // Actual Stats Calculation
   const now = new Date();
   const gracePeriodEnd = gym.commissionFreeUntil;
   const isGracePeriodActive = gracePeriodEnd ? now < gracePeriodEnd : false;

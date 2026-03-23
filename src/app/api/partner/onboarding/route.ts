@@ -48,13 +48,13 @@ export async function POST(req: Request) {
       data: { role: "GYM_OWNER" }
     });
 
-    // 5. Send Notification
+    // 5. Send Notification (Under Review)
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (user && user.email) {
         await NotificationEngine.sendOnboardingConfirmation(
             { email: user.email, name: user.name || "Partner", phone: user.phone },
             data.gymName
-        );
+        ).catch(err => console.error("Onboarding Email Error:", err));
     }
 
     return NextResponse.json({ success: true, gymId: gym.id });
