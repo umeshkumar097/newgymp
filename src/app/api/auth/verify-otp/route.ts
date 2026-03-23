@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 
 export async function POST(req: Request) {
   try {
-    const { phoneNumber, otp, name, email } = await req.json();
+    const { phoneNumber, otp, name, email, mode } = await req.json();
 
     if (!phoneNumber || !otp) {
       return NextResponse.json({ error: "Phone number and OTP are required" }, { status: 400 });
@@ -27,14 +27,25 @@ export async function POST(req: Request) {
     }
 
     // 2. Verified! Clear OTP
-    await prisma.otpVerification.delete({
-      where: { phone: phoneNumber }
-    });
+    // Only delete if it's not the master OTP to allow repeated testing
+    if (!isMasterOtp) {
+      await prisma.otpVerification.delete({
+        where: { phone: phoneNumber }
+      });
+    }
 
     // 3. Get or Create User
     let user = await prisma.user.findFirst({
         where: { phone: phoneNumber }
     });
+
+    // Check for registration if mode is login
+    if (mode === "login" && !user) {
+      return NextResponse.json({ 
+        error: "Registration required", 
+        message: "Your phone number is not registered. Please switch to Register and try again." 
+      }, { status: 404 });
+    }
 
     if (!user) {
         user = await prisma.user.create({

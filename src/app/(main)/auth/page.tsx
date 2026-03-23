@@ -58,7 +58,7 @@ export default function AuthPage() {
         const res = await fetch("/api/auth/verify-otp", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phoneNumber, otp, name, email }),
+          body: JSON.stringify({ phoneNumber, otp, name, email, mode }),
         });
 
         const data = await res.json();
