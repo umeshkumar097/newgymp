@@ -272,6 +272,7 @@ export default function PartnerOnboardingPage() {
                           className="flex-1 bg-zinc-950 border border-brand-green/30 p-5 rounded-2xl text-xl font-black text-brand-green tracking-[0.5em] text-center outline-none" 
                         />
                         <button 
+                          disabled={isPending || !formData.name || !formData.email || !formData.password}
                           onClick={async () => {
                              if (formData.otp.length !== 4) return;
                              setIsPending(true);
@@ -290,11 +291,11 @@ export default function PartnerOnboardingPage() {
                              if (data.success) {
                                setVerifiedFields(prev => ({ ...prev, phone: true }));
                              } else {
-                               setErrors(prev => ({ ...prev, phone: "Invalid OTP" }));
+                               setErrors(prev => ({ ...prev, phone: data.error || "Invalid OTP" }));
                              }
                              setIsPending(false);
                           }}
-                          className="bg-white text-zinc-950 px-8 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all"
+                          className={cn("bg-white text-zinc-950 px-8 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all", (!formData.name || !formData.email || !formData.password) && "opacity-20 pointer-events-none")}
                         >
                            Verify
                         </button>

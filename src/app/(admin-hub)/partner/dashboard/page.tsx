@@ -5,7 +5,8 @@ import { cn } from "@/lib/utils";
 import { OtpVerification } from "@/components/partner/OtpVerification";
 import { GymSetup } from "@/components/partner/GymSetup";
 import { cookies } from "next/headers";
-import { Link, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
+import Link from "next/link";
 import { GymStatus, BookingStatus } from "@prisma/client";
 
 export default async function PartnerDashboardPage() {
