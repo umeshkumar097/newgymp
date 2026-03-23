@@ -27,24 +27,26 @@ model User {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   bookings     Booking[]
+  reviews      Review[]
   gyms         Gym[]         @relation("GymOwner")
   transactions Transaction[]
 }
 
 model Gym {
-  id          String     @id @default(cuid())
-  name        String
-  description String?
-  location    String
-  latitude    Float?
-  longitude   Float?
-  imageUrls   String[]
-  ownerId     String
+  id                   String     @id @default(cuid())
+  name                 String
+  description          String?
+  location             String
+  latitude             Float?
+  longitude            Float?
+  imageUrls            String[]
+  ownerId              String
   status               GymStatus  @default(PENDING)
   onboardingFeeAmount  Float?
   onboardingFeePaid    Boolean    @default(false)
   commissionFreeUntil  DateTime?
   baseCommissionRate   Float      @default(15.0)
+  isPaused             Boolean    @default(false)
   
   // KYC & Legal
   panNumber            String?
@@ -53,13 +55,29 @@ model Gym {
   bankIfscCode         String?
   bankProofUrl         String?
   registrationDocUrl   String?
+  moUrl                String?    // Agreement Document
 
   createdAt            DateTime   @default(now())
   updatedAt            DateTime   @updatedAt
-  bookings    Booking[]
-  owner       User       @relation("GymOwner", fields: [ownerId], references: [id])
-  addons      GymAddon[]
-  plans       Plan[]
+  bookings             Booking[]
+  reviews              Review[]
+  totalRating          Float      @default(0)
+  numReviews           Int        @default(0)
+  avgRating            Float      @default(0)
+  owner                User       @relation("GymOwner", fields: [ownerId], references: [id])
+  addons               GymAddon[]
+  plans                Plan[]
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  gymId     String
+  userId    String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  gym       Gym      @relation(fields: [gymId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Plan {
@@ -91,6 +109,7 @@ model Booking {
   planId         String
   bookingDate    DateTime
   status         BookingStatus @default(BOOKED)
+  paymentType    PaymentType   @default(ONLINE)
   paymentId      String?
   otp            String?
   qrCode         String?
@@ -128,6 +147,12 @@ enum GymStatus {
   AWAITING_PAYMENT
   APPROVED
   REJECTED
+  SUSPENDED
+}
+
+enum PaymentType {
+  ONLINE
+  PAY_AT_GYM
 }
 
 enum PlanType {

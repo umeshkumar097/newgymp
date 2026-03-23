@@ -57,7 +57,7 @@ export function Footer() {
             <li><Link href="/terms" className="hover:text-brand-green transition-colors">Terms of Service</Link></li>
             <li><Link href="/refund" className="hover:text-brand-green transition-colors">Refund Policy</Link></li>
             <li className="pt-2">
-              <Link href="/partner/onboarding" className="inline-flex items-center space-x-2 text-brand-green hover:text-white transition-colors">
+              <Link href="/partner/login" className="inline-flex items-center space-x-2 text-brand-green hover:text-white transition-all">
                 <ShieldCheck size={16} />
                 <span>Gym Owner Login</span>
               </Link>
