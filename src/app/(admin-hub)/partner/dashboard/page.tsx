@@ -79,26 +79,23 @@ export default async function PartnerDashboardPage() {
     );
   }
   
-  // Enforce Activation Wall
-  if (gym.status === "AWAITING_PAYMENT") {
-    redirect("/partner/checkout");
-  }
-  
+  // Check for Activation Wall (Approval Pending)
   if (gym.status === "PENDING") {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center space-y-6">
-         <div className="w-24 h-24 rounded-[2.5rem] bg-orange-500/10 flex items-center justify-center text-orange-500 animate-pulse border border-orange-500/20 shadow-2xl shadow-orange-500/10">
+      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6 text-center space-y-6">
+         <div className="w-24 h-24 rounded-[3rem] bg-orange-500/10 flex items-center justify-center text-orange-500 animate-pulse border border-orange-500/20 shadow-2xl shadow-orange-500/10">
             <Clock size={48} />
          </div>
-         <div className="space-y-2">
-            <h2 className="text-3xl font-black uppercase tracking-tighter">Under Review</h2>
-            <p className="text-zinc-500 text-sm font-medium max-w-sm">
-                Our team is currently verifying your gym details. We will notify you on WhatsApp once approved!
+         <div className="space-y-4">
+            <h2 className="text-3xl font-black uppercase tracking-tighter italic">Application Under Review</h2>
+            <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest max-w-sm mx-auto leading-relaxed">
+                Our legal team is verifying your documents. You will receive a notification within 24 hours.
             </p>
          </div>
-         <div className="p-4 bg-zinc-900 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest text-zinc-500">
+         <div className="p-5 bg-zinc-900 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest text-zinc-500">
             Estimated wait: &lt; 24 Hours
          </div>
+         <button onClick={() => redirect("/partner/onboarding")} className="text-[10px] font-black text-brand-green uppercase tracking-widest hover:underline cursor-pointer">View Submission</button>
       </div>
     );
   }

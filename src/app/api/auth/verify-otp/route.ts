@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     if (!isMasterOtp) {
       await prisma.otpVerification.delete({
         where: { phone: phoneNumber }
-      });
+      }).catch(e => console.error("OTP Delete Error:", e));
     }
 
     // 3. Get or Create User
@@ -39,6 +39,7 @@ export async function POST(req: Request) {
         where: { phone: phoneNumber }
     });
 
+    if (user) {
         // Update existing user with provided details
         user = await prisma.user.update({
             where: { id: user.id },
@@ -46,12 +47,17 @@ export async function POST(req: Request) {
                 name: name || user.name,
                 email: email || user.email,
                 password: password || user.password,
-                role: role || user.role
+                role: (role === "GYM_OWNER" || role === "ADMIN") ? role : user.role
             }
         });
-        
+
+        // Send Welcome email for new partners (if email present)
         if (role === "GYM_OWNER" && user.email) {
-            await NotificationEngine.sendWelcomePartner({ email: user.email, name: user.name || "Partner", phone: user.phone });
+            await NotificationEngine.sendWelcomePartner({ 
+                email: user.email, 
+                name: user.name || "Partner", 
+                phone: user.phone 
+            }).catch(e => console.error("Email Error:", e));
         }
     } else {
         // Create new user
@@ -67,11 +73,15 @@ export async function POST(req: Request) {
         });
 
         if (role === "GYM_OWNER" && user.email) {
-            await NotificationEngine.sendWelcomePartner({ email: user.email, name: user.name, phone: user.phone });
+            await NotificationEngine.sendWelcomePartner({ 
+                email: user.email, 
+                name: user.name, 
+                phone: user.phone 
+            }).catch(e => console.error("Email Error:", e));
         }
     }
 
-    // Set a session cookie (unencrypted for dev/demo)
+    // Set a session cookie
     (await cookies()).set("user_id", user.id, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
