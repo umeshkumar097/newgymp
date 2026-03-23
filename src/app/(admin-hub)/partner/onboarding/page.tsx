@@ -17,7 +17,11 @@ export default function PartnerOnboardingPage() {
 
   // Form State
   const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
     phone: "",
+    otp: "",
     gymName: "",
     location: "",
     latitude: null as number | null,
@@ -53,6 +57,13 @@ export default function PartnerOnboardingPage() {
 
   const validateStep = () => {
     const newErrors: Record<string, string> = {};
+    if (step === 1) {
+      if (!formData.name || formData.name.length < 2) newErrors.name = "Enter your full name";
+      if (!formData.email || !formData.email.includes("@")) newErrors.email = "Valid email required";
+      if (!formData.password || formData.password.length < 6) newErrors.password = "Password min 6 chars";
+      if (formData.phone.length < 10) newErrors.phone = "Valid phone required";
+      if (!verifiedFields.phone) newErrors.phone = "Phone verification required";
+    }
     if (step === 2) {
       if (!formData.gymName || formData.gymName.length < 3) newErrors.gymName = "Gym Name must be at least 3 characters";
       if (!formData.location || formData.location.length < 10) newErrors.location = "Full address required (min 10 chars)";
@@ -200,20 +211,125 @@ export default function PartnerOnboardingPage() {
 
           <div className="relative z-10 h-full">
             {step === 1 && (
-              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 py-10">
-                <div className="text-center space-y-4">
-                  <div className="w-20 h-20 rounded-[2.5rem] bg-brand-green/10 flex items-center justify-center text-brand-green mx-auto border border-brand-green/20 shadow-xl shadow-brand-green/5">
-                    <Zap size={32} />
-                  </div>
-                  <h2 className="text-3xl font-black uppercase tracking-tight">Access Verification</h2>
-                  <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest text-center">Verify your phone to start the application</p>
+              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 py-4">
+                <div className="space-y-2">
+                  <h2 className="text-3xl font-black uppercase tracking-tight italic flex items-center">
+                    <User className="mr-3 text-brand-green" size={28} />
+                    Personal Info
+                  </h2>
+                  <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest pl-10">Create your administrative partner account</p>
                 </div>
-                <PartnerPhoneAuth 
-                  onSuccess={(phone) => {
-                    updateForm({ phone });
-                    setStep(2);
-                  }} 
-                />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Full Name</label>
+                    <input type="text" value={formData.name} onChange={(e) => updateForm({ name: e.target.value })} placeholder="JONATHAN DOE" className={cn("w-full bg-zinc-950 border border-white/5 p-5 rounded-2xl text-xs font-black uppercase outline-none focus:border-brand-green/30 transition-all", errors.name && "border-red-500/50")} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Email Address</label>
+                    <input type="email" value={formData.email} onChange={(e) => updateForm({ email: e.target.value })} placeholder="PARTNER@PASSFIT.IN" className={cn("w-full bg-zinc-950 border border-white/5 p-5 rounded-2xl text-xs font-black uppercase outline-none focus:border-brand-green/30 transition-all", errors.email && "border-red-500/50")} />
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">WhatsApp Phone Number</label>
+                    <div className="flex gap-2">
+                       <div className={cn("flex-1 flex items-center space-x-4 bg-zinc-950 border p-5 rounded-2xl transition-all", verifiedFields.phone ? "border-brand-green/30" : (errors.phone ? "border-red-500/50" : "border-white/5"))}>
+                         <Phone size={18} className="text-zinc-700" />
+                         <input type="tel" value={formData.phone} onChange={(e) => updateForm({ phone: e.target.value })} placeholder="84494 88090" className="bg-transparent border-none outline-none text-sm font-bold text-white w-full" maxLength={10} disabled={verifiedFields.phone} />
+                       </div>
+                       {!verifiedFields.phone && (
+                         <button 
+                           onClick={async () => {
+                              if (formData.phone.length < 10) return;
+                              setIsPending(true);
+                              const res = await fetch("/api/auth/send-otp", {
+                                method: "POST",
+                                body: JSON.stringify({ phoneNumber: formData.phone })
+                              });
+                              if (res.ok) setVerifiedFields(prev => ({ ...prev, phoneRequestSent: true }));
+                              setIsPending(false);
+                           }}
+                           className="bg-brand-green text-zinc-950 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all"
+                         >
+                            {isPending ? <Loader2 className="animate-spin" size={16} /> : "Get OTP"}
+                         </button>
+                       )}
+                    </div>
+                  </div>
+
+                  {verifiedFields.phoneRequestSent && !verifiedFields.phone && (
+                    <div className="space-y-2 animate-in slide-in-from-top-4 duration-300">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-brand-green px-1">Verify OTP Code</label>
+                      <div className="flex gap-2">
+                        <input 
+                          type="text" 
+                          value={formData.otp} 
+                          onChange={(e) => updateForm({ otp: e.target.value })} 
+                          placeholder="0000" 
+                          maxLength={4} 
+                          className="flex-1 bg-zinc-950 border border-brand-green/30 p-5 rounded-2xl text-xl font-black text-brand-green tracking-[0.5em] text-center outline-none" 
+                        />
+                        <button 
+                          onClick={async () => {
+                             if (formData.otp.length !== 4) return;
+                             setIsPending(true);
+                             const res = await fetch("/api/auth/verify-otp", {
+                               method: "POST",
+                               body: JSON.stringify({ 
+                                 phoneNumber: formData.phone, 
+                                 otp: formData.otp, 
+                                 name: formData.name,
+                                 email: formData.email,
+                                 password: formData.password,
+                                 role: "GYM_OWNER"
+                               })
+                             });
+                             const data = await res.json();
+                             if (data.success) setVerifiedFields(prev => ({ ...prev, phone: true }));
+                             else setErrors(prev => ({ ...prev, phone: "Invalid OTP" }));
+                             setIsPending(false);
+                          }}
+                          className="bg-white text-zinc-950 px-8 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all"
+                        >
+                           Verify
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1">Security Password</label>
+                    <div className="flex items-center space-x-4 bg-zinc-950 border border-white/5 p-5 rounded-2xl focus-within:border-brand-green/30 transition-all">
+                      <Lock size={18} className="text-zinc-700" />
+                      <input type="password" value={formData.password} onChange={(e) => updateForm({ password: e.target.value })} placeholder="••••••••" className={cn("bg-transparent border-none outline-none text-sm font-bold text-white w-full", errors.password && "text-red-500")} />
+                    </div>
+                  </div>
+
+                  <div 
+                    onClick={() => updateForm({ agreed: !formData.agreed })}
+                    className={cn("p-6 rounded-[2rem] bg-zinc-950/50 border flex items-start space-x-4 cursor-pointer group transition-all", errors.agreed ? "border-red-500/50" : "border-white/5 hover:bg-zinc-900/50")}
+                  >
+                    <div className={cn(
+                    "w-5 h-5 rounded flex items-center justify-center transition-all mt-0.5 shrink-0",
+                    formData.agreed ? "bg-brand-green" : (errors.agreed ? "bg-red-500/20 border border-red-500/50" : "bg-zinc-900 border border-zinc-800")
+                    )}>
+                    {formData.agreed && <Check size={14} className="text-zinc-950 font-black" />}
+                    </div>
+                    <p className="text-[10px] font-bold text-zinc-500 leading-relaxed uppercase tracking-tight">
+                        I acknowledge that I am a legal representative of this gym and agree to PassFit's <span className="text-brand-green underline uppercase tracking-widest font-black">Partner Terms of Service</span>.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-4">
+                  <button onClick={handleNext} disabled={!verifiedFields.phone || !formData.agreed} className={cn("w-full py-7 rounded-[2rem] font-black text-[10px] uppercase tracking-[0.3em] transition-all shadow-2xl flex items-center justify-center space-x-2", (verifiedFields.phone && formData.agreed) ? "bg-brand-green text-zinc-950 shadow-brand-green/10" : "bg-zinc-900 text-zinc-700 pointer-events-none")}>
+                     <span>Create Account & Continue</span>
+                     <ArrowRight size={16} />
+                  </button>
+                  {errors.phone && <p className="text-center text-red-500 text-[9px] font-black uppercase mt-4 tracking-widest">{errors.phone}</p>}
+                </div>
               </div>
             )}
 
