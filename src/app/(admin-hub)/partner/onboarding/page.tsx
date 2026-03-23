@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { OnboardingStepper } from "@/components/partner/OnboardingStepper";
 import { PartnerPhoneAuth } from "@/components/partner/PartnerPhoneAuth";
 import { AgreementModal } from "@/components/partner/AgreementModal";
-import { MapPin, Clock, Camera, CreditCard, ShieldCheck, ArrowRight, ArrowLeft, Loader2, CheckCircle2, Upload, Trash2, Zap, Check, Eye, FileText, Ban, Building } from "lucide-react";
+import { MapPin, Clock, Camera, CreditCard, ShieldCheck, ArrowRight, ArrowLeft, Loader2, CheckCircle2, Upload, Trash2, Zap, Check, Eye, FileText, Ban, Building, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
@@ -23,11 +23,9 @@ export default function PartnerOnboardingPage() {
     longitude: null as number | null,
     openTime: "06:00",
     closeTime: "22:00",
-    // Post-approval assets
     images: [] as string[],
     amenities: [] as string[],
     dayPassPrice: "0", 
-    // KYC
     panNumber: "",
     bankAccount: "",
     ifscCode: "",
@@ -37,8 +35,39 @@ export default function PartnerOnboardingPage() {
     agreed: false
   });
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const updateForm = (updates: Partial<typeof formData>) => {
     setFormData(prev => ({ ...prev, ...updates }));
+    // Clear error for the field being updated
+    const field = Object.keys(updates)[0];
+    if (field) setErrors(prev => ({ ...prev, [field]: "" }));
+  };
+
+  const validateStep = () => {
+    const newErrors: Record<string, string> = {};
+    if (step === 2) {
+      if (!formData.gymName || formData.gymName.length < 3) newErrors.gymName = "Gym Name must be at least 3 characters";
+      if (!formData.location || formData.location.length < 10) newErrors.location = "Full address required (min 10 chars)";
+    }
+    if (step === 3) {
+      if (formData.panNumber.length !== 10) newErrors.panNumber = "Valid 10-digit PAN required";
+      if (formData.bankAccount.length < 8) newErrors.bankAccount = "Enter a valid Bank Account number";
+      if (formData.ifscCode.length !== 11) newErrors.ifscCode = "Valid 11-digit IFSC required (e.g. HDFC0001234)";
+      if (!formData.panPhoto) newErrors.panPhoto = "PAN Card photo required";
+      if (!formData.chequePhoto) newErrors.chequePhoto = "Bank proof/Cheque photo required";
+      if (!formData.registrationDoc) newErrors.registrationDoc = "Business Registration Doc required";
+      if (!formData.agreed) newErrors.agreed = "Agreement must be accepted";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNext = () => {
+    if (validateStep()) {
+      setStep(prev => prev + 1);
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: keyof typeof formData) => {
@@ -46,6 +75,7 @@ export default function PartnerOnboardingPage() {
     if (!file) return;
 
     setIsPending(true);
+    setErrors(prev => ({ ...prev, [field]: "" }));
     try {
       const body = new FormData();
       body.append("file", file);
@@ -55,12 +85,14 @@ export default function PartnerOnboardingPage() {
       updateForm({ [field]: data.url });
     } catch (err) {
       console.error("Upload failed", err);
+      setErrors(prev => ({ ...prev, [field]: "Upload failed" }));
     } finally {
       setIsPending(false);
     }
   };
 
   const handleFinalSubmit = async () => {
+    if (!validateStep()) return;
     setIsPending(true);
     try {
       const res = await fetch("/api/partner/onboarding", {
@@ -77,20 +109,6 @@ export default function PartnerOnboardingPage() {
       console.error("Submit failed", err);
     } finally {
       setIsPending(false);
-    }
-  };
-
-  const canContinue = () => {
-    switch (step) {
-      case 2: return formData.gymName.length > 2 && formData.location.length > 10;
-      case 3: return formData.panNumber.length >= 10 && 
-                     formData.bankAccount.length >= 4 && 
-                     formData.ifscCode.length >= 4 && 
-                     formData.panPhoto !== "" && 
-                     formData.chequePhoto !== "" && 
-                     formData.registrationDoc !== "" &&
-                     formData.agreed;
-      default: return true;
     }
   };
 
@@ -167,11 +185,13 @@ export default function PartnerOnboardingPage() {
                  <div className="space-y-6">
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1 font-outfit">Official Gym Name *</label>
-                      <input type="text" value={formData.gymName} onChange={(e) => updateForm({ gymName: e.target.value })} placeholder="e.g. Iron Paradise Fitness" className="w-full bg-zinc-950 border border-white/5 p-6 rounded-2xl text-sm font-bold focus:border-brand-green/30 outline-none transition-all placeholder:text-zinc-900" />
+                      <input type="text" value={formData.gymName} onChange={(e) => updateForm({ gymName: e.target.value })} placeholder="e.g. Iron Paradise Fitness" className={cn("w-full bg-zinc-950 border p-6 rounded-2xl text-sm font-bold outline-none transition-all placeholder:text-zinc-900", errors.gymName ? "border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.1)]" : "border-white/5 focus:border-brand-green/30")} />
+                      {errors.gymName && <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider pl-1 flex items-center"><AlertCircle size={10} className="mr-1" /> {errors.gymName}</p>}
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1 font-outfit">Full Operational Address *</label>
-                      <textarea value={formData.location} onChange={(e) => updateForm({ location: e.target.value })} placeholder="Street, Area, City, Pincode" className="w-full bg-zinc-950 border border-white/5 p-6 rounded-2xl text-sm font-bold focus:border-brand-green/30 outline-none transition-all h-32 resize-none placeholder:text-zinc-900" />
+                      <textarea value={formData.location} onChange={(e) => updateForm({ location: e.target.value })} placeholder="Street, Area, City, Pincode" className={cn("w-full bg-zinc-950 border p-6 rounded-2xl text-sm font-bold outline-none transition-all h-32 resize-none placeholder:text-zinc-900", errors.location ? "border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.1)]" : "border-white/5 focus:border-brand-green/30")} />
+                      {errors.location && <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider pl-1 flex items-center"><AlertCircle size={10} className="mr-1" /> {errors.location}</p>}
                     </div>
                  </div>
               </div>
@@ -190,13 +210,14 @@ export default function PartnerOnboardingPage() {
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1 font-outfit">PAN Number *</label>
-                        <input type="text" value={formData.panNumber} onChange={(e) => updateForm({ panNumber: e.target.value.toUpperCase() })} placeholder="ABCDE1234F" className="w-full bg-zinc-950 border border-white/5 p-5 rounded-2xl text-xs font-black outline-none transition-all focus:border-brand-green/20" maxLength={10} />
+                        <input type="text" value={formData.panNumber} onChange={(e) => updateForm({ panNumber: e.target.value.toUpperCase() })} placeholder="ABCDE1234F" className={cn("w-full bg-zinc-950 border p-5 rounded-2xl text-xs font-black outline-none transition-all", errors.panNumber ? "border-red-500/50" : "border-white/5 focus:border-brand-green/20")} maxLength={10} />
+                        {errors.panNumber && <p className="text-[9px] text-red-500 font-bold uppercase pl-1">{errors.panNumber}</p>}
                     </div>
                     <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1 font-outfit">PAN Card Photo *</label>
-                        <label className="w-full bg-zinc-950 border border-white/5 p-5 rounded-2xl flex items-center justify-between cursor-pointer hover:border-brand-green/30 transition-all overflow-hidden">
-                            <span className={cn("text-[10px] font-black truncate pr-4", formData.panPhoto ? "text-brand-green" : "text-zinc-800 uppercase italic")}>
-                                {formData.panPhoto ? "Uploaded ✅" : "Select image"}
+                        <label className={cn("w-full bg-zinc-950 border p-5 rounded-2xl flex items-center justify-between cursor-pointer hover:border-brand-green/30 transition-all overflow-hidden", errors.panPhoto ? "border-red-500/50" : "border-white/5")}>
+                            <span className={cn("text-[10px] font-black truncate pr-4", formData.panPhoto ? "text-brand-green" : (errors.panPhoto ? "text-red-500" : "text-zinc-800 uppercase italic"))}>
+                                {formData.panPhoto ? "Uploaded ✅" : (errors.panPhoto || "Select image")}
                             </span>
                             <Upload size={14} className={formData.panPhoto ? "text-brand-green" : "text-zinc-800"} />
                             <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, "panPhoto")} className="hidden" />
@@ -207,11 +228,11 @@ export default function PartnerOnboardingPage() {
                  <div className="space-y-4">
                     <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1 font-outfit">Gym Registration Document (GST/Udyam/Trade) *</label>
-                        <label className="w-full bg-zinc-950 border border-white/5 p-6 rounded-2xl flex items-center justify-between cursor-pointer hover:border-brand-blue/30 transition-all overflow-hidden group">
+                        <label className={cn("w-full bg-zinc-950 border p-6 rounded-2xl flex items-center justify-between cursor-pointer transition-all overflow-hidden group", errors.registrationDoc ? "border-red-500/50" : "border-white/5 hover:border-brand-blue/30")}>
                             <div className="flex items-center">
-                                <FileText className={cn("mr-3", formData.registrationDoc ? "text-brand-blue" : "text-zinc-800")} size={18} />
-                                <span className={cn("text-xs font-black uppercase", formData.registrationDoc ? "text-white" : "text-zinc-800 italic")}>
-                                    {formData.registrationDoc ? "Doc Attached ✅" : "Upload Business Certificate"}
+                                <FileText className={cn("mr-3", formData.registrationDoc ? "text-brand-blue" : (errors.registrationDoc ? "text-red-500" : "text-zinc-800"))} size={18} />
+                                <span className={cn("text-xs font-black uppercase", formData.registrationDoc ? "text-white" : (errors.registrationDoc ? "text-red-500" : "text-zinc-800 italic"))}>
+                                    {formData.registrationDoc ? "Doc Attached ✅" : (errors.registrationDoc || "Upload Business Certificate")}
                                 </span>
                             </div>
                             <Upload size={16} className="text-zinc-800 group-hover:text-brand-blue" />
@@ -222,23 +243,36 @@ export default function PartnerOnboardingPage() {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1 font-outfit">Bank Account *</label>
-                            <input type="text" value={formData.bankAccount} onChange={(e) => updateForm({ bankAccount: e.target.value })} placeholder="Account Num" className="w-full bg-zinc-950 border border-white/5 p-5 rounded-2xl text-xs font-black outline-none" />
+                            <input type="text" value={formData.bankAccount} onChange={(e) => updateForm({ bankAccount: e.target.value })} placeholder="Account Num" className={cn("w-full bg-zinc-950 border p-5 rounded-2xl text-xs font-black outline-none", errors.bankAccount ? "border-red-500/50" : "border-white/5")} />
+                            {errors.bankAccount && <p className="text-[9px] text-red-500 font-bold uppercase pl-1">{errors.bankAccount}</p>}
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1 font-outfit">IFS Code *</label>
-                            <input type="text" value={formData.ifscCode} onChange={(e) => updateForm({ ifscCode: e.target.value.toUpperCase() })} placeholder="HDFC000..." className="w-full bg-zinc-950 border border-white/5 p-5 rounded-2xl text-xs font-black outline-none" maxLength={11} />
+                            <input type="text" value={formData.ifscCode} onChange={(e) => updateForm({ ifscCode: e.target.value.toUpperCase() })} placeholder="HDFC000..." className={cn("w-full bg-zinc-950 border p-5 rounded-2xl text-xs font-black outline-none", errors.ifscCode ? "border-red-500/50" : "border-white/5")} maxLength={11} />
+                            {errors.ifscCode && <p className="text-[9px] text-red-500 font-bold uppercase pl-1">{errors.ifscCode}</p>}
                         </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1 font-outfit">Cancelled Cheque Photo *</label>
+                        <label className={cn("w-full bg-zinc-950 border p-5 rounded-2xl flex items-center justify-between cursor-pointer transition-all overflow-hidden", errors.chequePhoto ? "border-red-500/50" : "border-white/5")}>
+                            <span className={cn("text-[10px] font-black truncate pr-4", formData.chequePhoto ? "text-brand-green" : (errors.chequePhoto ? "text-red-500" : "text-zinc-800 uppercase italic"))}>
+                                {formData.chequePhoto ? "Uploaded ✅" : (errors.chequePhoto || "Select image")}
+                            </span>
+                            <Upload size={14} className={formData.chequePhoto ? "text-brand-green" : "text-zinc-800"} />
+                            <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, "chequePhoto")} className="hidden" />
+                        </label>
                     </div>
 
                     <div 
                         onClick={() => updateForm({ agreed: !formData.agreed })}
-                        className="p-6 rounded-[2rem] bg-zinc-950 border border-white/5 flex items-start space-x-4 cursor-pointer group hover:bg-zinc-900/50 transition-all"
+                        className={cn("p-6 rounded-[2rem] bg-zinc-950 border flex items-start space-x-4 cursor-pointer group transition-all", errors.agreed ? "border-red-500/50" : "border-white/5 hover:bg-zinc-900/50")}
                     >
                         <div className={cn(
-                        "w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all mt-0.5 shrink-0",
-                        formData.agreed ? "bg-brand-green border-brand-green" : "border-zinc-800"
+                        "w-5 h-5 rounded flex items-center justify-center transition-all mt-0.5 shrink-0",
+                        formData.agreed ? "bg-brand-green" : (errors.agreed ? "bg-red-500/20 border border-red-500/50" : "bg-zinc-900 border border-zinc-800")
                         )}>
-                        {formData.agreed && <Check size={16} className="text-zinc-950 font-black" />}
+                        {formData.agreed && <Check size={14} className="text-zinc-950 font-black" />}
                         </div>
                         <p className="text-[10px] font-bold text-zinc-500 leading-relaxed uppercase tracking-tight">
                             I agree to the <span onClick={(e) => { e.stopPropagation(); setIsAgreementOpen(true); }} className="text-brand-green underline uppercase tracking-widest font-black cursor-pointer hover:text-white transition-colors">Partner Tie-up Agreement</span>
@@ -252,14 +286,16 @@ export default function PartnerOnboardingPage() {
               <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 text-center">
                     <h2 className="text-3xl font-black uppercase tracking-tight italic">Final Review</h2>
                     <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em]">Ready for PassFit submission</p>
-                    <div className="p-10 rounded-[3rem] bg-zinc-950 border border-white/5 space-y-4 text-left">
-                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                    <div className="p-10 rounded-[3rem] bg-zinc-950 border border-white/5 space-y-4 text-left shadow-2xl">
+                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest px-4 py-2 border-b border-white/5">
                             <span className="text-zinc-500">Business</span>
                             <span className="text-white">{formData.gymName}</span>
                         </div>
-                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest px-4 py-2">
                             <span className="text-zinc-500">KYC Status</span>
-                            <span className="text-brand-green italic">Bundle Ready</span>
+                            <span className="text-brand-green italic flex items-center font-black animate-pulse">
+                                Verified <ShieldCheck size={12} className="ml-1" />
+                            </span>
                         </div>
                     </div>
                     <p className="text-[10px] font-bold text-zinc-600 uppercase italic">Notifications will be sent via WhatsApp and Email upon approval.</p>
@@ -268,18 +304,22 @@ export default function PartnerOnboardingPage() {
 
             {step > 1 && step < 5 && (
               <div className="flex gap-4 pt-10">
-                <button onClick={() => setStep(prev => prev - 1)} className="flex-1 bg-zinc-950 border border-white/10 text-white font-black py-6 rounded-3xl text-[10px] uppercase tracking-[0.2em] active:scale-95 transition-all">Back</button>
-                <button onClick={() => { if (step === 4) handleFinalSubmit(); else if (canContinue()) setStep(prev => prev + 1); }} disabled={isPending || (step < 4 && !canContinue())} className={cn("flex-[2.5] text-zinc-950 font-black py-6 rounded-3xl text-[10px] uppercase tracking-[0.3em] active:scale-95 transition-all", step === 4 ? "bg-white" : "bg-brand-green")}>
-                  {isPending ? <Loader2 className="animate-spin" size={20} /> : (step === 4 ? "Submit Now" : "Continue")}
+                <button onClick={() => setStep(prev => prev - 1)} className="flex-1 bg-zinc-950 border border-white/10 text-white font-black py-7 rounded-[2rem] text-[10px] uppercase tracking-[0.2em] active:scale-95 transition-all">Back</button>
+                <button onClick={() => { if (step === 4) handleFinalSubmit(); else handleNext(); }} disabled={isPending} className={cn("flex-[2.5] text-zinc-950 font-black py-7 rounded-[2rem] text-[10px] uppercase tracking-[0.3em] active:scale-95 transition-all shadow-xl", step === 4 ? "bg-white shadow-white/5" : "bg-brand-green shadow-brand-green/10")}>
+                  {isPending ? <Loader2 className="animate-spin mx-auto" size={20} /> : (step === 4 ? "Submit Now" : "Continue")}
                 </button>
               </div>
             )}
 
             {step === 5 && (
-              <div className="flex flex-col items-center justify-center text-center space-y-8 pt-16 animate-in zoom-in duration-500">
-                 <CheckCircle2 size={64} className="text-brand-green" />
-                 <h2 className="text-4xl font-black uppercase tracking-tighter italic">Review Pending</h2>
-                 <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.3em]">Check your Email & WhatsApp for updates.</p>
+              <div className="flex flex-col items-center justify-center text-center space-y-8 pt-16 animate-in zoom-in duration-700">
+                 <div className="w-24 h-24 rounded-[3rem] bg-brand-green/10 border border-brand-green/20 flex items-center justify-center text-brand-green shadow-2xl shadow-brand-green/5">
+                    <CheckCircle2 size={48} className="animate-in zoom-in spin-in-90 duration-700" />
+                 </div>
+                 <div className="space-y-4">
+                    <h2 className="text-4xl font-black uppercase tracking-tighter italic">Application Sent</h2>
+                    <p className="max-w-xs mx-auto text-zinc-500 text-[10px] font-black uppercase tracking-[0.3em] leading-relaxed">Our legal team is reviewing your documents. You will receive a notification within 24 hours.</p>
+                 </div>
               </div>
             )}
           </div>
