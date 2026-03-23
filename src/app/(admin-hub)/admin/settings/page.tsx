@@ -8,6 +8,7 @@ export default function AdminSettingsPage() {
   const [isPending, setIsPending] = useState(false);
   const [tax, setTax] = useState("15");
   const [currency, setCurrency] = useState("INR");
+  const [onboardingFee, setOnboardingFee] = useState("4999");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -15,9 +16,11 @@ export default function AdminSettingsPage() {
       const settings = await getPlatformSettings();
       const taxSetting = settings.find((s: any) => s.key === "COMMISSION_RATE");
       const currencySetting = settings.find((s: any) => s.key === "OPERATIONAL_CURRENCY");
+      const feeSetting = settings.find((s: any) => s.key === "DEFAULT_ONBOARDING_FEE");
       
       if (taxSetting) setTax(taxSetting.value);
       if (currencySetting) setCurrency(currencySetting.value);
+      if (feeSetting) setOnboardingFee(feeSetting.value);
       setIsLoading(false);
     }
     loadSettings();
@@ -28,7 +31,8 @@ export default function AdminSettingsPage() {
     try {
       await Promise.all([
         updatePlatformSetting("COMMISSION_RATE", tax),
-        updatePlatformSetting("OPERATIONAL_CURRENCY", currency)
+        updatePlatformSetting("OPERATIONAL_CURRENCY", currency),
+        updatePlatformSetting("DEFAULT_ONBOARDING_FEE", onboardingFee)
       ]);
       alert("Platform settings updated successfully");
     } catch (error) {
@@ -98,7 +102,7 @@ export default function AdminSettingsPage() {
            </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           <div className="space-y-4">
             <label className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-500 px-2">PLATFORM TAX / COMMISSION (%)</label>
             <div className="p-6 bg-zinc-950 border border-white/10 rounded-2xl group focus-within:border-brand-green/30 transition-all shadow-inner">
@@ -125,6 +129,21 @@ export default function AdminSettingsPage() {
                </div>
             </div>
             <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest px-2">LOCALIZATION SYMBOLS FOR VOUCHERS</p>
+          </div>
+          <div className="space-y-4">
+            <label className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-500 px-2">DEFAULT ONBOARDING FEE</label>
+            <div className="p-6 bg-zinc-950 border border-white/10 rounded-2xl group focus-within:border-orange-500/30 transition-all shadow-inner">
+               <div className="flex items-center space-x-4">
+                  <span className="text-2xl font-black text-orange-500 italic">₹</span>
+                  <input 
+                    type="text" 
+                    value={onboardingFee} 
+                    onChange={(e) => setOnboardingFee(e.target.value)}
+                    className="bg-transparent border-none outline-none text-2xl font-black text-white w-full tracking-tighter uppercase" 
+                  />
+               </div>
+            </div>
+            <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest px-2">BASE COST FOR NEW HUB ACTIVATION</p>
           </div>
         </div>
 

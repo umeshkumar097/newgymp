@@ -7,7 +7,15 @@ import {
 import { GymReviewModal } from "../GymReviewModal";
 import Image from "next/image";
 
-export function VerificationDesk({ gyms, waitTime = "2.4 Hours" }: { gyms: any[], waitTime?: string }) {
+export function VerificationDesk({ 
+  gyms, 
+  waitTime = "2.4 Hours",
+  defaultOnboardingFee = 4999
+}: { 
+  gyms: any[], 
+  waitTime?: string,
+  defaultOnboardingFee?: number 
+}) {
   const [selectedGym, setSelectedGym] = useState<any>(null);
 
   return (
@@ -119,6 +127,7 @@ export function VerificationDesk({ gyms, waitTime = "2.4 Hours" }: { gyms: any[]
           gym={selectedGym} 
           isOpen={!!selectedGym} 
           onClose={() => setSelectedGym(null)} 
+          defaultOnboardingFee={defaultOnboardingFee}
         />
       )}
     </div>

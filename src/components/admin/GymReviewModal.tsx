@@ -13,12 +13,21 @@ interface GymReviewModalProps {
   gym: any;
   isOpen: boolean;
   onClose: () => void;
+  defaultOnboardingFee?: number;
 }
 
-export function GymReviewModal({ gym, isOpen, onClose }: GymReviewModalProps) {
+export function GymReviewModal({ gym, isOpen, onClose, defaultOnboardingFee = 4999 }: GymReviewModalProps) {
   const [activePhoto, setActivePhoto] = useState(0);
-  const [setupFee, setSetupFee] = useState(gym.onboardingFeeAmount?.toString() || "4999");
+  const [setupFee, setSetupFee] = useState(gym.onboardingFeeAmount?.toString() || defaultOnboardingFee.toString());
+  const [discount, setDiscount] = useState("0");
   const [isPending, setIsPending] = useState(false);
+
+  React.useEffect(() => {
+    if (discount && !isNaN(parseFloat(discount))) {
+      const discountedFee = defaultOnboardingFee * (1 - parseFloat(discount) / 100);
+      setSetupFee(Math.round(discountedFee).toString());
+    }
+  }, [discount, defaultOnboardingFee]);
 
   if (!isOpen) return null;
 
@@ -175,22 +184,38 @@ export function GymReviewModal({ gym, isOpen, onClose }: GymReviewModalProps) {
               </section>
 
               <section className="bg-slate-950 p-8 rounded-[2.5rem] border border-white/5 space-y-8 shadow-inner">
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <div className="flex justify-between items-end">
-                    <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-green">Action Center</h4>
-                    <span className="text-[9px] font-bold text-slate-700 uppercase">Step 1: Set Activation Fee</span>
+                    <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-green">Pricing Engine</h4>
+                    <span className="text-[9px] font-bold text-slate-700 uppercase italic">Base: ₹{defaultOnboardingFee}</span>
                   </div>
                   
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-4 bg-slate-900 border border-white/5 p-5 rounded-2xl focus-within:border-brand-green/30 transition-all shadow-xl">
-                       <DollarSign size={24} className="text-slate-700" />
-                       <input 
-                         type="number" 
-                         value={setupFee}
-                         onChange={(e) => setSetupFee(e.target.value)}
-                         className="bg-transparent border-none outline-none text-2xl font-black text-white w-full placeholder:text-slate-800 tracking-tighter" 
-                       />
-                       <span className="text-xs font-black text-slate-600 uppercase pr-2">INR</span>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                       <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest px-1">Apply Discount (%)</p>
+                       <div className="flex items-center space-x-4 bg-slate-900 border border-white/5 p-4 rounded-xl focus-within:border-brand-blue/30 transition-all shadow-lg">
+                          <input 
+                            type="number" 
+                            placeholder="0"
+                            value={discount}
+                            onChange={(e) => setDiscount(e.target.value)}
+                            className="bg-transparent border-none outline-none text-xl font-black text-brand-blue w-full placeholder:text-slate-800 tracking-tighter" 
+                          />
+                          <span className="text-xs font-black text-slate-700 uppercase">%</span>
+                       </div>
+                    </div>
+
+                    <div className="space-y-2">
+                       <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest px-1">Final Activation Fee</p>
+                       <div className="flex items-center space-x-4 bg-slate-900 border border-white/5 p-4 rounded-xl focus-within:border-brand-green/30 transition-all shadow-lg">
+                          <input 
+                            type="number" 
+                            value={setupFee}
+                            onChange={(e) => setSetupFee(e.target.value)}
+                            className="bg-transparent border-none outline-none text-xl font-black text-white w-full placeholder:text-slate-800 tracking-tighter" 
+                          />
+                          <span className="text-xs font-black text-slate-700 uppercase">INR</span>
+                       </div>
                     </div>
                   </div>
                 </div>

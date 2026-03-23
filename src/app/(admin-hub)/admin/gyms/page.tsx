@@ -11,7 +11,7 @@ export default async function AdminGymsPage() {
     totalGymsCount,
     userCount,
     totalRevenueResult,
-    settings
+    platformSettings
   ] = await Promise.all([
     prisma.gym.findMany({
       where: { status: GymStatus.PENDING },
@@ -43,12 +43,20 @@ export default async function AdminGymsPage() {
     prisma.gym.count({ where: { status: "APPROVED" as any } } as any),
     prisma.user.count({ where: { role: "USER" as any } } as any),
     prisma.booking.aggregate({ _sum: { totalAmount: true } }),
-    (prisma as any).platformSetting.findUnique({ where: { key: "COMMISSION_RATE" } })
+    (prisma as any).platformSetting.findMany({
+      where: {
+        key: { in: ["COMMISSION_RATE", "DEFAULT_ONBOARDING_FEE"] }
+      }
+    })
   ]);
 
+  const commissionSetting = platformSettings.find((s: any) => s.key === "COMMISSION_RATE");
+  const feeSetting = platformSettings.find((s: any) => s.key === "DEFAULT_ONBOARDING_FEE");
+
+  const commissionRate = commissionSetting ? parseFloat(commissionSetting.value) : 15.0;
+  const defaultOnboardingFee = feeSetting ? parseFloat(feeSetting.value) : 4999.0;
+
   const totalRevenue = totalRevenueResult._sum.totalAmount || 0;
-  // Dynamic commission calculation from settings
-  const commissionRate = settings ? parseFloat(settings.value) : 15.0;
   const revShare = totalRevenue * (commissionRate / 100);
 
   const stats = {
@@ -67,6 +75,7 @@ export default async function AdminGymsPage() {
         suspendedGyms={suspendedGyms}
         stats={stats}
         commissionRate={commissionRate}
+        defaultOnboardingFee={defaultOnboardingFee}
       />
     </div>
   );
