@@ -14,9 +14,9 @@ export default function AdminLayout({
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex font-outfit">
+    <div className="min-h-screen bg-[#0B0F19] text-zinc-100 flex font-outfit">
       {/* Sidebar - Desktop */}
-      <aside className="w-64 bg-zinc-900 border-r border-white/5 flex flex-col hidden md:flex sticky top-0 h-screen">
+      <aside className="w-64 bg-[#0F172A] border-r border-white/5 flex flex-col hidden md:flex sticky top-0 h-screen">
         <div className="p-8 border-b border-white/5">
           <h1 className="text-xl font-black uppercase tracking-tighter">
             PassFit <span className="text-brand-green italic">Admin</span>
