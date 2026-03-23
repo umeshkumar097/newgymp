@@ -1,7 +1,21 @@
 import React from "react";
 import { BarChart3, TrendingUp, Users, DollarSign, ArrowUpRight, ArrowDownRight, Zap } from "lucide-react";
+import { prisma } from "@/lib/prisma";
 
-export default function AdminAnalyticsPage() {
+export default async function AdminAnalyticsPage() {
+  const [revenue, userCount, bookingCount, recentBookings] = await Promise.all([
+    prisma.booking.aggregate({ _sum: { totalAmount: true } }),
+    prisma.user.count(),
+    prisma.booking.count(),
+    prisma.booking.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+      include: { user: true, gym: true }
+    })
+  ]);
+
+  const totalRevenue = revenue._sum.totalAmount || 0;
+  const conversionRate = userCount > 0 ? ((bookingCount / userCount) * 100).toFixed(1) : "0";
   return (
     <div className="space-y-10 font-outfit">
       <div>
@@ -11,10 +25,10 @@ export default function AdminAnalyticsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: "Total Revenue", value: "₹4,28,450", trend: "+12.5%", icon: DollarSign, color: "text-brand-green" },
-          { label: "Active Users", value: "2,845", trend: "+5.2%", icon: Users, color: "text-brand-blue" },
-          { label: "Bookings", value: "1,150", trend: "+8.1%", icon: Zap, color: "text-purple-500" },
-          { label: "Conversion", value: "4.2%", trend: "-2.4%", icon: TrendingUp, color: "text-orange-500", down: true },
+          { label: "Total Revenue", value: `₹${totalRevenue.toLocaleString()}`, trend: "+12.5%", icon: DollarSign, color: "text-brand-green" },
+          { label: "Active Users", value: userCount.toString(), trend: "+5.2%", icon: Users, color: "text-brand-blue" },
+          { label: "Bookings", value: bookingCount.toString(), trend: "+8.1%", icon: Zap, color: "text-purple-500" },
+          { label: "Conversion", value: `${conversionRate}%`, trend: "-2.4%", icon: TrendingUp, color: "text-orange-500", down: true },
         ].map((stat) => (
           <div key={stat.label} className="p-8 rounded-[2.5rem] bg-zinc-900/60 border border-white/5 space-y-4">
             <div className={`w-12 h-12 rounded-2xl bg-zinc-950 flex items-center justify-center border border-white/5 ${stat.color}`}>

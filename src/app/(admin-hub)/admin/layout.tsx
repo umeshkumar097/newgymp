@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { LayoutDashboard, Store, Users, BarChart, Settings, Bell, LogOut } from "lucide-react";
+import { LayoutDashboard, Store, Users, BarChart, Settings, Bell, LogOut, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -28,6 +28,7 @@ export default function AdminLayout({
             { name: "Gym Moderation", icon: Store, href: "/admin/gyms" },
             { name: "User Management", icon: Users, href: "/admin/users" },
             { name: "Analytics", icon: BarChart, href: "/admin/analytics" },
+            { name: "Support Tickets", icon: MessageSquare, href: "/admin/support" },
             { name: "Settings", icon: Settings, href: "/admin/settings" },
           ].map((item) => {
             const Icon = item.icon;
