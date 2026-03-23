@@ -1,8 +1,10 @@
 import React from "react";
-import { BarChart3, TrendingUp, Users, DollarSign, ArrowUpRight, ArrowDownRight, Zap } from "lucide-react";
+import { BarChart3, TrendingUp, Users, DollarSign, ArrowUpRight, ArrowDownRight, Zap, ShieldCheck } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { cn } from "@/lib/utils";
 
 export default async function AdminAnalyticsPage() {
+// ... existing code ...
   // ... (fetch logic remains same)
   const [revenue, userCount, bookingCount, recentBookings, gymStats, gymCount] = await Promise.all([
     prisma.booking.aggregate({ _sum: { totalAmount: true } }),
@@ -130,6 +132,4 @@ export default async function AdminAnalyticsPage() {
       </div>
     </div>
   );
-}
- );
 }

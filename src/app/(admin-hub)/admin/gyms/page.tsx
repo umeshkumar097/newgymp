@@ -57,7 +57,7 @@ export default async function AdminGymsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950/20">
+    <div className="bg-[#0B0F19] min-h-screen -m-8 p-8">
       <GymManagementTabs 
         pendingGyms={pendingGyms}
         activeGyms={activeGyms}
