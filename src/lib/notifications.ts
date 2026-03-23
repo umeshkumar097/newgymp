@@ -8,7 +8,8 @@ import {
   sendBookingExpired as sendWSBookingExpired, 
   sendPostWorkoutReview, 
   sendGymApproved, 
-  sendGymRejected 
+  sendGymRejected,
+  sendAbandonedBookingNudge as sendWSAbandonedBookingNudge
 } from "./whatsapp";
 
 export const NotificationEngine = {
@@ -161,7 +162,7 @@ export const NotificationEngine = {
     `;
     await sendEmail(user.email, subject, html);
     if (user.phone) {
-      await sendWhatsAppTemplate(user.phone, "booking_abandoned_recovery", [user.name, gymName, bookingUrl]);
+      await sendWSAbandonedBookingNudge(user.phone, user.name, gymName, bookingUrl);
     }
   }
 };

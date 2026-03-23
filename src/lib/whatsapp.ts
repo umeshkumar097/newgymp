@@ -103,6 +103,11 @@ export async function sendGymRejected(phoneNumber: string, name: string, gymName
   return sendWhatsAppTemplate(phoneNumber, "gym_reject", [name, gymName, reason]);
 }
 
+// 9. Abandoned Booking Recovery Nudge
+export async function sendAbandonedBookingNudge(phoneNumber: string, name: string, gymName: string, bookingUrl: string) {
+  return sendWhatsAppTemplate(phoneNumber, "booking_abandoned_recovery", [name, gymName, bookingUrl]);
+}
+
 export async function sendWhatsAppTemplate(phoneNumber: string, templateName: string, parameters: any[]) {
   try {
     const response = await axios.post(
