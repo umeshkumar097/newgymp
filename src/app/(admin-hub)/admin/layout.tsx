@@ -3,7 +3,7 @@
 import React from "react";
 import { LayoutDashboard, Store, Users, BarChart, Settings, Bell, LogOut, MessageSquare, Zap } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 export default function AdminLayout({
@@ -12,6 +12,21 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+      });
+      if (response.ok) {
+        router.refresh();
+        router.push("/auth");
+      }
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#0B0F19] text-zinc-100 flex font-outfit">
@@ -52,7 +67,10 @@ export default function AdminLayout({
           })}
         </nav>
         <div className="p-4 border-t border-white/5">
-          <button className="flex items-center space-x-3 px-4 py-3 w-full text-zinc-500 hover:text-red-400 text-sm font-bold transition-colors">
+          <button 
+            onClick={handleLogout}
+            className="flex items-center space-x-3 px-4 py-3 w-full text-zinc-500 hover:text-red-400 text-sm font-bold transition-colors"
+          >
             <LogOut size={18} />
             <span>Logout</span>
           </button>
