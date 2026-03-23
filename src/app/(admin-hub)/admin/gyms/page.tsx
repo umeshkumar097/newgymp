@@ -19,9 +19,9 @@ export default async function AdminGymsPage() {
     }),
     prisma.gym.findMany({
       where: { 
-        status: GymStatus.APPROVED,
-        isPaused: false
-      },
+        status: "APPROVED" as any,
+        isPaused: false as any
+      } as any,
       include: { 
         owner: true, 
         bookings: { select: { totalAmount: true } },
@@ -32,15 +32,15 @@ export default async function AdminGymsPage() {
     prisma.gym.findMany({
       where: { 
         OR: [
-          { status: GymStatus.SUSPENDED },
-          { isPaused: true }
+          { status: "SUSPENDED" as any },
+          { isPaused: true as any }
         ]
-      },
+      } as any,
       include: { owner: true },
       orderBy: { updatedAt: "desc" }
     }),
-    prisma.gym.count({ where: { status: GymStatus.APPROVED } }),
-    prisma.user.count({ where: { role: "USER" } }),
+    prisma.gym.count({ where: { status: "APPROVED" as any } } as any),
+    prisma.user.count({ where: { role: "USER" as any } } as any),
     prisma.booking.aggregate({ _sum: { totalAmount: true } })
   ]);
 

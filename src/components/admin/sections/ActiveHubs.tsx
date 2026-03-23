@@ -22,98 +22,98 @@ export function ActiveHubs({ gyms }: { gyms: any[] }) {
   };
 
   return (
-    <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-10 animate-in slide-in-from-bottom-4 duration-500">
       
-      <div className="flex items-center justify-between mb-8">
-         <div className="space-y-1">
-            <h2 className="text-2xl font-extrabold font-heading text-white uppercase tracking-tighter">Active Hubs</h2>
-            <p className="text-sm font-medium text-slate-500">Manage live gym partners and facility operational status.</p>
+      <div className="flex items-center justify-between mb-10 px-4">
+         <div className="space-y-2">
+            <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic">Active Hubs</h2>
+            <p className="text-sm font-medium text-slate-400">Manage live gym partners and facility operational status.</p>
          </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
         {gyms.filter(g => g.status === "APPROVED").length === 0 ? (
-           <div className="col-span-full p-20 bg-slate-900 rounded-[2.5rem] border border-white/5 flex flex-col items-center justify-center opacity-20">
-              <Store size={48} className="mb-4" />
-              <p className="text-sm font-bold uppercase tracking-widest">No active hubs found</p>
+           <div className="col-span-full p-28 bg-zinc-900 border border-white/10 border-dashed rounded-[3.5rem] flex flex-col items-center justify-center opacity-20 text-center">
+              <Store size={72} className="mb-6 stroke-1" />
+              <p className="text-sm font-black uppercase tracking-[0.4em]">No active hubs discovered</p>
            </div>
         ) : (
           gyms.filter(g => g.status === "APPROVED").map((gym: any) => (
-            <div key={gym.id} className="bg-slate-900 border border-white/5 rounded-[2.5rem] p-8 space-y-8 shadow-2xl relative overflow-hidden group">
+            <div key={gym.id} className="bg-zinc-900 border border-white/10 rounded-[3rem] p-10 space-y-10 shadow-3xl relative overflow-hidden group hover:border-white/20 transition-all">
                
                {/* Kill Switch Overlay */}
                {gym.isPaused && (
-                  <div className="absolute inset-0 bg-[#0F172A]/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center space-y-4">
-                     <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center text-red-500 animate-pulse">
-                        <Power size={32} />
+                  <div className="absolute inset-0 bg-zinc-950/90 backdrop-blur-md z-10 flex flex-col items-center justify-center space-y-6 animate-in fade-in duration-500">
+                     <div className="w-20 h-20 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 animate-pulse shadow-[0_0_30px_rgba(239,68,68,0.2)]">
+                        <Power size={36} />
                      </div>
-                     <div className="text-center">
-                        <p className="text-lg font-extrabold text-white uppercase tracking-tighter">Hub Suspended</p>
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Hidden from PassFit Marketplace</p>
+                     <div className="text-center space-y-2 px-10">
+                        <p className="text-2xl font-black text-white uppercase tracking-tighter italic">Hub Deactivated</p>
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] leading-relaxed">This facility is currently shielded from the public marketplace.</p>
                      </div>
                      <button 
                         onClick={() => handleTogglePause(gym.id, true)}
-                        className="bg-white text-[#0F172A] px-6 py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-brand-green transition-all shadow-xl"
+                        className="bg-white text-zinc-950 px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-brand-green transition-all shadow-3xl active:scale-95"
                      >
-                        Reactivate Hub
+                        Reactivate Access
                      </button>
                   </div>
                )}
 
                <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-6">
-                     <div className="w-20 h-20 rounded-3xl bg-slate-800 border border-white/5 overflow-hidden shadow-2xl">
+                  <div className="flex items-center space-x-8">
+                     <div className="w-24 h-24 rounded-3xl bg-zinc-950 border border-white/5 overflow-hidden shadow-2xl relative">
                         {gym.imageUrls && gym.imageUrls[0] ? (
-                           <img src={gym.imageUrls[0]} alt="" className="w-full h-full object-cover" />
+                           <img src={gym.imageUrls[0]} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                         ) : (
-                           <Store size={32} className="text-slate-600 m-6" />
+                           <Store size={36} className="text-slate-800 absolute inset-0 m-auto" />
                         )}
                      </div>
                      <div>
-                        <div className="flex items-center space-x-3 mb-1">
-                           <h3 className="text-xl font-extrabold text-white uppercase tracking-tight">{gym.name}</h3>
-                           <div className="px-2 py-0.5 rounded-md bg-brand-green/10 text-brand-green text-[9px] font-extrabold uppercase tracking-widest border border-brand-green/20">LIVE</div>
+                        <div className="flex items-center space-x-4 mb-2">
+                           <h3 className="text-2xl font-black text-white uppercase tracking-tight">{gym.name}</h3>
+                           <div className="px-3 py-1 rounded-xl bg-brand-green/10 text-brand-green text-[9px] font-black uppercase tracking-widest border border-brand-green/20 shadow-inner">LIVE</div>
                         </div>
-                        <p className="text-xs font-medium text-slate-500 flex items-center tracking-tight">
-                           <MapPin size={12} className="mr-1.5" />
+                        <p className="text-sm font-medium text-slate-400 flex items-center tracking-tight">
+                           <MapPin size={16} className="mr-2.5 text-brand-blue" />
                            {gym.location}
                         </p>
                      </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                     <button className="w-10 h-10 rounded-2xl bg-slate-800 text-slate-500 hover:text-white flex items-center justify-center transition-all">
-                        <MoreHorizontal size={20} />
+                  <div className="flex items-center space-x-3">
+                     <button className="w-12 h-12 rounded-2xl bg-zinc-950 border border-white/5 text-slate-500 hover:text-white flex items-center justify-center transition-all hover:border-white/10 shadow-xl">
+                        <MoreHorizontal size={22} />
                      </button>
                      <button 
                         onClick={() => handleTogglePause(gym.id, gym.isPaused)}
                         className={cn(
-                           "w-10 h-10 rounded-2xl flex items-center justify-center transition-all shadow-xl",
-                           gym.isPaused ? "bg-white text-red-500" : "bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white"
+                           "w-12 h-12 rounded-2xl flex items-center justify-center transition-all shadow-3xl border",
+                           gym.isPaused ? "bg-white text-red-500 border-white" : "bg-red-500/10 text-red-500 border-red-500/20 hover:bg-red-500 hover:text-white"
                         )}
                      >
-                        <Power size={20} />
+                        <Power size={22} />
                      </button>
                   </div>
                </div>
 
-               <div className="grid grid-cols-3 gap-4 border-t border-white/5 pt-8">
-                  <div className="space-y-1">
-                     <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center">
-                        <Zap size={10} className="mr-1 text-orange-500" />
-                        Passes Sold
+               <div className="grid grid-cols-3 gap-6 border-t border-white/5 pt-10">
+                  <div className="space-y-2">
+                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center">
+                        <Zap size={12} className="mr-2 text-brand-green" />
+                        Platform Reach
                      </p>
-                     <p className="text-2xl font-black text-white">{gym._count?.bookings || "242"}</p>
+                     <p className="text-3xl font-black text-white tracking-tight">{gym._count?.bookings || "0"} <span className="text-[10px] text-slate-600 font-bold ml-1 uppercase">Passes</span></p>
                   </div>
-                   <div className="space-y-1">
-                      <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center">
-                         <Star size={10} className="mr-1 text-yellow-500" />
-                         User Rating
+                   <div className="space-y-2">
+                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center">
+                         <Star size={12} className="mr-2 text-brand-blue" />
+                         User Sentiment
                       </p>
-                      <p className="text-2xl font-black text-white">{gym.avgRating ? gym.avgRating.toFixed(1) : "N/A"}</p>
+                      <p className="text-3xl font-black text-white tracking-tight">{gym.avgRating ? gym.avgRating.toFixed(1) : "0.0"}</p>
                    </div>
-                   <div className="space-y-1 text-right">
-                      <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Rev. Contribution</p>
-                      <p className="text-2xl font-black text-brand-green">
+                   <div className="space-y-2 text-right">
+                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Net Share</p>
+                      <p className="text-3xl font-black text-brand-green tracking-tight italic">
                          ₹{gym.bookings?.reduce((acc: number, b: any) => acc + b.totalAmount, 0) * 0.15 > 999 
                            ? `${((gym.bookings?.reduce((acc: number, b: any) => acc + b.totalAmount, 0) * 0.15) / 1000).toFixed(1)}k`
                            : (gym.bookings?.reduce((acc: number, b: any) => acc + b.totalAmount, 0) * 0.15 || 0).toFixed(0)}
@@ -121,17 +121,17 @@ export function ActiveHubs({ gyms }: { gyms: any[] }) {
                    </div>
                </div>
 
-               <div className="flex gap-3 pt-2">
-                  <button className="flex-1 bg-slate-800/50 hover:bg-slate-800 text-white font-bold py-3.5 rounded-2xl text-[10px] uppercase tracking-widest transition-all flex items-center justify-center space-x-2">
-                     <BarChart size={14} />
-                     <span>Analytics</span>
+               <div className="flex gap-4 pt-4 relative z-0">
+                  <button className="flex-1 bg-zinc-950 border border-white/5 hover:border-brand-green/30 text-slate-400 hover:text-white font-black py-4.5 rounded-2xl text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center space-x-3 group relative overflow-hidden">
+                     <BarChart size={16} className="text-brand-green group-hover:scale-110 transition-transform" />
+                     <span>Analytics Deep-Dive</span>
                   </button>
-                  <button className="flex-1 bg-slate-800/50 hover:bg-slate-800 text-white font-bold py-3.5 rounded-2xl text-[10px] uppercase tracking-widest transition-all flex items-center justify-center space-x-2">
-                     <User size={14} />
-                     <span>Edit Profile</span>
+                  <button className="flex-1 bg-zinc-950 border border-white/5 hover:border-brand-blue/30 text-slate-400 hover:text-white font-black py-4.5 rounded-2xl text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center space-x-3 group">
+                     <User size={16} className="text-brand-blue group-hover:scale-110 transition-transform" />
+                     <span>Governance</span>
                   </button>
-                  <button className="w-12 bg-slate-800/50 hover:bg-slate-800 text-white font-bold rounded-2xl flex items-center justify-center transition-all">
-                     <ExternalLink size={16} />
+                  <button className="w-16 bg-zinc-950 border border-white/5 hover:border-white/20 text-slate-400 hover:text-white rounded-2xl flex items-center justify-center transition-all group shadow-xl">
+                     <ExternalLink size={18} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                   </button>
                </div>
 
