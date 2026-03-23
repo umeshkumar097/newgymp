@@ -95,12 +95,12 @@ export async function sendPostWorkoutReview(phoneNumber: string, gymName: string
 
 // 7. Gym Approval Final
 export async function sendGymApproved(phoneNumber: string, name: string, gymName: string) {
-  return sendWhatsAppTemplate(phoneNumber, "gym_approved_final", [name, gymName]);
+  return sendWhatsAppTemplate(phoneNumber, "gym_approve", [name, gymName]);
 }
 
 // 8. Gym Rejected Final
 export async function sendGymRejected(phoneNumber: string, name: string, gymName: string, reason: string) {
-  return sendWhatsAppTemplate(phoneNumber, "gym_rejected_final", [name, gymName, reason]);
+  return sendWhatsAppTemplate(phoneNumber, "gym_reject", [name, gymName, reason]);
 }
 
 export async function sendWhatsAppTemplate(phoneNumber: string, templateName: string, parameters: any[]) {
