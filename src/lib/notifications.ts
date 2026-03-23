@@ -15,7 +15,7 @@ export const NotificationEngine = {
             <li>KYC Verification (PAN, Bank)</li>
             <li>Legal Agreement</li>
         </ul>
-        <a href="https://newpassfit.in/partner/onboarding" style="display: inline-block; padding: 12px 24px; background: #10b981; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;">Complete Onboarding Now</a>
+        <a href="https://passfit.in/partner/onboarding" style="display: inline-block; padding: 12px 24px; background: #10b981; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;">Complete Onboarding Now</a>
         <br/><br/>
         <p>Once you submit the details, our team will review your application within 24 hours.</p>
         <p>Best Regards,<br/>Team PassFit</p>
@@ -59,7 +59,7 @@ export const NotificationEngine = {
             <p style="margin: 0; font-size: 12px; color: #6b7280;">Activation Fee</p>
             <p style="margin: 5px 0 0 0; font-size: 24px; font-weight: 800; color: #10b981;">₹${fee}</p>
         </div>
-        <a href="https://www.passfit.in/gym-login" style="display: inline-block; padding: 12px 24px; background: #10b981; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;">Login & Activate Now</a>
+        <a href="https://passfit.in/gym-login" style="display: inline-block; padding: 12px 24px; background: #10b981; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;">Login & Activate Now</a>
       </div>
     `;
 
