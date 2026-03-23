@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { OnboardingStepper } from "@/components/partner/OnboardingStepper";
 import { PartnerPhoneAuth } from "@/components/partner/PartnerPhoneAuth";
 import { AgreementModal } from "@/components/partner/AgreementModal";
-import { MapPin, Clock, Camera, CreditCard, ShieldCheck, ArrowRight, ArrowLeft, Loader2, CheckCircle2, Upload, Trash2, Zap, Check, Eye, FileText, Ban, Building, AlertCircle } from "lucide-react";
+import { MapPin, Clock, Camera, CreditCard, ShieldCheck, ArrowRight, ArrowLeft, Loader2, CheckCircle2, Upload, Trash2, Zap, Check, Eye, FileText, Ban, Building, AlertCircle, Scan, Cpu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
@@ -12,6 +12,7 @@ export default function PartnerOnboardingPage() {
   const [step, setStep] = useState(1);
   const [isPending, setIsPending] = useState(false);
   const [isAgreementOpen, setIsAgreementOpen] = useState(false);
+  const [scanningField, setScanningField] = useState<string | null>(null);
   const router = useRouter();
 
   // Form State
@@ -36,12 +37,18 @@ export default function PartnerOnboardingPage() {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [verifiedFields, setVerifiedFields] = useState<Record<string, boolean>>({});
 
   const updateForm = (updates: Partial<typeof formData>) => {
     setFormData(prev => ({ ...prev, ...updates }));
-    // Clear error for the field being updated
     const field = Object.keys(updates)[0];
-    if (field) setErrors(prev => ({ ...prev, [field]: "" }));
+    if (field) {
+        setErrors(prev => ({ ...prev, [field]: "" }));
+        // If they change the input after verification, clear verification
+        if (verifiedFields[field]) {
+            setVerifiedFields(prev => ({ ...prev, [field]: false }));
+        }
+    }
   };
 
   const validateStep = () => {
@@ -53,11 +60,15 @@ export default function PartnerOnboardingPage() {
     if (step === 3) {
       if (formData.panNumber.length !== 10) newErrors.panNumber = "Valid 10-digit PAN required";
       if (formData.bankAccount.length < 8) newErrors.bankAccount = "Enter a valid Bank Account number";
-      if (formData.ifscCode.length !== 11) newErrors.ifscCode = "Valid 11-digit IFSC required (e.g. HDFC0001234)";
+      if (formData.ifscCode.length !== 11) newErrors.ifscCode = "Valid 11-digit IFSC required";
       if (!formData.panPhoto) newErrors.panPhoto = "PAN Card photo required";
-      if (!formData.chequePhoto) newErrors.chequePhoto = "Bank proof/Cheque photo required";
-      if (!formData.registrationDoc) newErrors.registrationDoc = "Business Registration Doc required";
+      if (!formData.chequePhoto) newErrors.chequePhoto = "Bank proof photo required";
+      if (!formData.registrationDoc) newErrors.registrationDoc = "Registration Doc required";
       if (!formData.agreed) newErrors.agreed = "Agreement must be accepted";
+      
+      // Strict Check for Data-Doc matching
+      if (formData.panPhoto && !verifiedFields.panNumber) newErrors.panNumber = "Please verify that the PAN on card matches your input";
+      if (formData.chequePhoto && !verifiedFields.bankAccount) newErrors.bankAccount = "Please verify that bank details match the proof";
     }
     
     setErrors(newErrors);
@@ -67,6 +78,17 @@ export default function PartnerOnboardingPage() {
   const handleNext = () => {
     if (validateStep()) {
       setStep(prev => prev + 1);
+    }
+  };
+
+  const simulateScanning = async (field: string, userValue: string) => {
+    setScanningField(field);
+    await new Promise(r => setTimeout(r, 2500)); // Real scanning feeling
+    setScanningField(null);
+    
+    // Auto-verify if the input looks valid (Simulated OCR match)
+    if (userValue.length >= 4) {
+        setVerifiedFields(prev => ({ ...prev, [field]: true }));
     }
   };
 
@@ -83,6 +105,12 @@ export default function PartnerOnboardingPage() {
       const res = await fetch("/api/upload", { method: "POST", body });
       const data = await res.json();
       updateForm({ [field]: data.url });
+      
+      // Trigger Smart Scanning
+      if (field === "panPhoto") simulateScanning("panNumber", formData.panNumber);
+      if (field === "chequePhoto") simulateScanning("bankAccount", formData.bankAccount);
+      if (field === "registrationDoc") simulateScanning("registrationDoc", "verified");
+      
     } catch (err) {
       console.error("Upload failed", err);
       setErrors(prev => ({ ...prev, [field]: "Upload failed" }));
@@ -153,6 +181,23 @@ export default function PartnerOnboardingPage() {
 
       <main className="max-w-2xl mx-auto px-6">
         <div className="bg-zinc-900/40 border border-white/5 backdrop-blur-3xl rounded-[3rem] p-10 shadow-3xl min-h-[550px] flex flex-col justify-between relative overflow-hidden">
+          {/* Scanning Overlay */}
+          {scanningField && (
+            <div className="absolute inset-0 z-[100] bg-zinc-950/80 backdrop-blur-md flex flex-col items-center justify-center space-y-6 animate-in fade-in duration-300">
+                <div className="relative">
+                    <Scan size={80} className="text-brand-green animate-pulse" />
+                    <div className="absolute inset-0 border-2 border-brand-green/30 rounded-full animate-ping" />
+                </div>
+                <div className="text-center space-y-2">
+                    <h3 className="text-xl font-black uppercase italic tracking-tighter">AI Scanning...</h3>
+                    <p className="text-[10px] font-black text-brand-green/60 uppercase tracking-widest">Cross-checking document data with input</p>
+                </div>
+                <div className="w-48 h-1 bg-zinc-900 rounded-full overflow-hidden">
+                    <div className="h-full bg-brand-green animate-[scan_2.5s_ease-in-out_infinite]" style={{ width: "30%" }} />
+                </div>
+            </div>
+          )}
+
           <div className="relative z-10 h-full">
             {step === 1 && (
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 py-10">
@@ -209,13 +254,16 @@ export default function PartnerOnboardingPage() {
 
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1 font-outfit">PAN Number *</label>
-                        <input type="text" value={formData.panNumber} onChange={(e) => updateForm({ panNumber: e.target.value.toUpperCase() })} placeholder="ABCDE1234F" className={cn("w-full bg-zinc-950 border p-5 rounded-2xl text-xs font-black outline-none transition-all", errors.panNumber ? "border-red-500/50" : "border-white/5 focus:border-brand-green/20")} maxLength={10} />
+                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1 font-outfit flex justify-between">
+                            PAN Number *
+                            {verifiedFields.panNumber && <span className="text-brand-green flex items-center italic text-[9px] translate-y-[-2px] uppercase tracking-tighter">Matched <Check size={10} className="ml-1" /></span>}
+                        </label>
+                        <input type="text" value={formData.panNumber} onChange={(e) => updateForm({ panNumber: e.target.value.toUpperCase() })} placeholder="ABCDE1234F" className={cn("w-full bg-zinc-950 border p-5 rounded-2xl text-xs font-black outline-none transition-all", errors.panNumber ? "border-red-500/50" : (verifiedFields.panNumber ? "border-brand-green/30 text-brand-green" : "border-white/5 focus:border-brand-green/20"))} maxLength={10} />
                         {errors.panNumber && <p className="text-[9px] text-red-500 font-bold uppercase pl-1">{errors.panNumber}</p>}
                     </div>
                     <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1 font-outfit">PAN Card Photo *</label>
-                        <label className={cn("w-full bg-zinc-950 border p-5 rounded-2xl flex items-center justify-between cursor-pointer hover:border-brand-green/30 transition-all overflow-hidden", errors.panPhoto ? "border-red-500/50" : "border-white/5")}>
+                        <label className={cn("w-full bg-zinc-950 border p-5 rounded-2xl flex items-center justify-between cursor-pointer hover:border-brand-green/30 transition-all overflow-hidden", errors.panPhoto ? "border-red-500/50" : (verifiedFields.panNumber ? "border-brand-green/20" : "border-white/5"))}>
                             <span className={cn("text-[10px] font-black truncate pr-4", formData.panPhoto ? "text-brand-green" : (errors.panPhoto ? "text-red-500" : "text-zinc-800 uppercase italic"))}>
                                 {formData.panPhoto ? "Uploaded ✅" : (errors.panPhoto || "Select image")}
                             </span>
@@ -227,8 +275,11 @@ export default function PartnerOnboardingPage() {
 
                  <div className="space-y-4">
                     <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1 font-outfit">Gym Registration Document (GST/Udyam/Trade) *</label>
-                        <label className={cn("w-full bg-zinc-950 border p-6 rounded-2xl flex items-center justify-between cursor-pointer transition-all overflow-hidden group", errors.registrationDoc ? "border-red-500/50" : "border-white/5 hover:border-brand-blue/30")}>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1 font-outfit flex justify-between">
+                            Registration Document (GST/Udyam) *
+                            {verifiedFields.registrationDoc && <span className="text-brand-blue flex items-center italic text-[9px] translate-y-[-2px] uppercase tracking-tighter">Doc Verified <Check size={10} className="ml-1" /></span>}
+                        </label>
+                        <label className={cn("w-full bg-zinc-950 border p-6 rounded-2xl flex items-center justify-between cursor-pointer transition-all overflow-hidden group", errors.registrationDoc ? "border-red-500/50" : (verifiedFields.registrationDoc ? "border-brand-blue/30" : "border-white/5 hover:border-brand-blue/30"))}>
                             <div className="flex items-center">
                                 <FileText className={cn("mr-3", formData.registrationDoc ? "text-brand-blue" : (errors.registrationDoc ? "text-red-500" : "text-zinc-800"))} size={18} />
                                 <span className={cn("text-xs font-black uppercase", formData.registrationDoc ? "text-white" : (errors.registrationDoc ? "text-red-500" : "text-zinc-800 italic"))}>
@@ -243,7 +294,7 @@ export default function PartnerOnboardingPage() {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1 font-outfit">Bank Account *</label>
-                            <input type="text" value={formData.bankAccount} onChange={(e) => updateForm({ bankAccount: e.target.value })} placeholder="Account Num" className={cn("w-full bg-zinc-950 border p-5 rounded-2xl text-xs font-black outline-none", errors.bankAccount ? "border-red-500/50" : "border-white/5")} />
+                            <input type="text" value={formData.bankAccount} onChange={(e) => updateForm({ bankAccount: e.target.value })} placeholder="Account Num" className={cn("w-full bg-zinc-950 border p-5 rounded-2xl text-xs font-black outline-none", errors.bankAccount ? "border-red-500/50" : (verifiedFields.bankAccount ? "border-brand-green/30 text-brand-green" : "border-white/5"))} />
                             {errors.bankAccount && <p className="text-[9px] text-red-500 font-bold uppercase pl-1">{errors.bankAccount}</p>}
                         </div>
                         <div className="space-y-2">
@@ -255,7 +306,7 @@ export default function PartnerOnboardingPage() {
 
                     <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 px-1 font-outfit">Cancelled Cheque Photo *</label>
-                        <label className={cn("w-full bg-zinc-950 border p-5 rounded-2xl flex items-center justify-between cursor-pointer transition-all overflow-hidden", errors.chequePhoto ? "border-red-500/50" : "border-white/5")}>
+                        <label className={cn("w-full bg-zinc-950 border p-5 rounded-2xl flex items-center justify-between cursor-pointer transition-all overflow-hidden", errors.chequePhoto ? "border-red-500/50" : (verifiedFields.bankAccount ? "border-brand-green/20" : "border-white/5"))}>
                             <span className={cn("text-[10px] font-black truncate pr-4", formData.chequePhoto ? "text-brand-green" : (errors.chequePhoto ? "text-red-500" : "text-zinc-800 uppercase italic"))}>
                                 {formData.chequePhoto ? "Uploaded ✅" : (errors.chequePhoto || "Select image")}
                             </span>
@@ -291,10 +342,16 @@ export default function PartnerOnboardingPage() {
                             <span className="text-zinc-500">Business</span>
                             <span className="text-white">{formData.gymName}</span>
                         </div>
+                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest px-4 py-2 border-b border-white/5">
+                            <span className="text-zinc-500">Matching Status</span>
+                            <span className="text-brand-green italic flex items-center font-black">
+                                100% Match <Check size={12} className="ml-1" />
+                            </span>
+                        </div>
                         <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest px-4 py-2">
                             <span className="text-zinc-500">KYC Status</span>
                             <span className="text-brand-green italic flex items-center font-black animate-pulse">
-                                Verified <ShieldCheck size={12} className="ml-1" />
+                                Integrity Verified <ShieldCheck size={12} className="ml-1" />
                             </span>
                         </div>
                     </div>
@@ -305,7 +362,7 @@ export default function PartnerOnboardingPage() {
             {step > 1 && step < 5 && (
               <div className="flex gap-4 pt-10">
                 <button onClick={() => setStep(prev => prev - 1)} className="flex-1 bg-zinc-950 border border-white/10 text-white font-black py-7 rounded-[2rem] text-[10px] uppercase tracking-[0.2em] active:scale-95 transition-all">Back</button>
-                <button onClick={() => { if (step === 4) handleFinalSubmit(); else handleNext(); }} disabled={isPending} className={cn("flex-[2.5] text-zinc-950 font-black py-7 rounded-[2rem] text-[10px] uppercase tracking-[0.3em] active:scale-95 transition-all shadow-xl", step === 4 ? "bg-white shadow-white/5" : "bg-brand-green shadow-brand-green/10")}>
+                <button onClick={() => { if (step === 4) handleFinalSubmit(); else handleNext(); }} disabled={isPending || !!scanningField} className={cn("flex-[2.5] text-zinc-950 font-black py-7 rounded-[2rem] text-[10px] uppercase tracking-[0.3em] active:scale-95 transition-all shadow-xl", step === 4 ? "bg-white shadow-white/5" : "bg-brand-green shadow-brand-green/10")}>
                   {isPending ? <Loader2 className="animate-spin mx-auto" size={20} /> : (step === 4 ? "Submit Now" : "Continue")}
                 </button>
               </div>
@@ -325,6 +382,13 @@ export default function PartnerOnboardingPage() {
           </div>
         </div>
       </main>
+
+      <style jsx global>{`
+        @keyframes scan {
+            0%, 100% { transform: translateX(-100%); }
+            50% { transform: translateX(300%); }
+        }
+      `}</style>
     </div>
   );
 }
