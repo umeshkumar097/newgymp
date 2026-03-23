@@ -16,10 +16,10 @@ export default async function ExplorePage() {
   });
 
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-950 p-6 space-y-8 pb-32 font-outfit">
+    <div className="flex flex-col min-h-screen bg-zinc-950 p-6 space-y-8 pb-32 font-sans">
       <div className="space-y-2 mt-8">
-        <h1 className="text-4xl font-black text-white italic tracking-tighter">EXPLORE</h1>
-        <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.3em] opacity-80 pl-1">Elite Fitness Hubs Near You</p>
+        <h1 className="text-4xl font-extrabold font-heading text-white tracking-tighter uppercase">EXPLORE</h1>
+        <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-[0.3em] opacity-80 pl-1">Elite Fitness Hubs Near You</p>
       </div>
 
       {/* Search Bar */}
@@ -28,7 +28,7 @@ export default async function ExplorePage() {
         <input 
           type="text" 
           placeholder="SEARCH GYMS, MMA, CROSSFIT..." 
-          className="w-full bg-zinc-900/50 border border-white/5 rounded-[2rem] py-5 pl-14 pr-6 text-white text-xs font-black focus:outline-none focus:border-brand-green/40 transition-all placeholder:text-zinc-800 tracking-widest uppercase shadow-2xl"
+          className="w-full bg-zinc-900/50 border border-white/5 rounded-[2rem] py-5 pl-14 pr-6 text-white text-xs font-bold focus:outline-none focus:border-brand-green/40 transition-all placeholder:text-zinc-800 tracking-widest uppercase shadow-2xl"
         />
         <button className="absolute right-6 top-1/2 -translate-y-1/2 text-brand-green">
           <Filter size={20} />
@@ -38,7 +38,7 @@ export default async function ExplorePage() {
       {/* Categories */}
       <div className="flex space-x-3 overflow-x-auto scrollbar-hide pb-4">
         {["All Hubs", "Luxury Gyms", "Yoga Studios", "Swimming", "Crossfit", "Combat Ops"].map((cat) => (
-          <button key={cat} className="whitespace-nowrap px-8 py-3 rounded-2xl bg-zinc-900 border border-white/5 text-[9px] font-black uppercase tracking-widest text-zinc-600 hover:text-white hover:border-brand-green/30 transition-all shadow-lg active:scale-95">
+          <button key={cat} className="whitespace-nowrap px-8 py-3 rounded-2xl bg-zinc-900 border border-white/5 text-[9px] font-bold uppercase tracking-widest text-zinc-600 hover:text-white hover:border-brand-green/30 transition-all shadow-lg active:scale-95">
             {cat}
           </button>
         ))}
@@ -62,8 +62,8 @@ export default async function ExplorePage() {
 
             <div className="flex-1 py-1 flex flex-col justify-between relative z-10">
                <div className="space-y-1">
-                  <h3 className="font-black text-white text-lg italic leading-tight tracking-tight uppercase">{gym.name}</h3>
-                  <div className="flex items-center text-zinc-500 text-[10px] font-black tracking-widest uppercase italic">
+                  <h3 className="font-extrabold font-heading text-white text-lg leading-tight tracking-tight uppercase">{gym.name}</h3>
+                  <div className="flex items-center text-zinc-500 text-[10px] font-bold tracking-widest uppercase">
                     <MapPin size={12} className="mr-1.5 text-brand-green" />
                     {gym.location}
                   </div>
@@ -71,18 +71,18 @@ export default async function ExplorePage() {
                <div className="flex justify-between items-center pt-4 border-t border-white/5">
                   <div className="flex items-center space-x-2 bg-white/5 px-2 py-0.5 rounded-lg">
                     <Star size={12} className="fill-brand-green text-brand-green" />
-                    <span className="text-[10px] font-black text-white">4.9</span>
+                    <span className="text-[10px] font-extrabold text-white">4.9</span>
                   </div>
                   <div className="flex flex-col items-end">
-                    <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Starting</span>
-                    <div className="text-brand-green font-black text-lg italic tracking-tighter">₹{gym.plans[0]?.price || 299}</div>
+                    <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest">Starting</span>
+                    <div className="text-brand-green font-extrabold font-heading text-lg tracking-tighter">₹{gym.plans[0]?.price || 299}</div>
                   </div>
                </div>
             </div>
           </Link>
         )) : (
           <div className="py-20 text-center space-y-4 rounded-[3rem] border border-dashed border-white/10 bg-zinc-900/20">
-             <div className="text-zinc-700 font-black text-xs uppercase tracking-[0.5em]">No Elite Hubs Found</div>
+             <div className="text-zinc-700 font-bold text-xs uppercase tracking-[0.5em]">No Elite Hubs Found</div>
              <p className="text-zinc-800 text-[10px] uppercase font-bold tracking-widest">We are currently auditing new partners in your area.</p>
           </div>
         )}

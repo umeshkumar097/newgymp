@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Outfit } from "next/font/google";
+import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "../globals.css";
 import { GoogleMapsProvider } from "@/components/providers/GoogleMapsProvider";
 import { cookies } from "next/headers";
@@ -10,7 +10,7 @@ import { MobileContainer } from "@/components/layout/MobileContainer";
 import { BottomNav } from "@/components/layout/BottomNav";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
+const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-plus-jakarta" });
 
 export default async function MainLayout({
   children,
@@ -30,7 +30,7 @@ export default async function MainLayout({
     : "JD";
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex flex-col">
+    <div className={`${inter.variable} ${plusJakarta.variable} min-h-screen bg-zinc-950 flex flex-col font-sans`}>
       {/* Top Navigation */}
       <Header userInitials={initials} isLoggedIn={!!user} />
 

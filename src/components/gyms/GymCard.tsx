@@ -26,10 +26,10 @@ export function GymCard({ gym }: GymCardProps) {
           
           <div className="absolute top-5 right-5 bg-zinc-950/40 backdrop-blur-xl px-3 py-1.5 rounded-2xl flex items-center space-x-2 border border-white/10 group-hover:border-brand-green/50 transition-all shadow-xl">
             <Star size={14} className="fill-brand-green text-brand-green" />
-            <span className="text-[10px] font-black text-white italic">4.9</span>
+            <span className="text-[10px] font-extrabold text-white">4.9</span>
           </div>
 
-          <div className="absolute top-5 left-5 bg-brand-blue/10 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-brand-blue/20 text-brand-blue text-[8px] font-black uppercase tracking-[0.2em] shadow-lg flex items-center space-x-2">
+          <div className="absolute top-5 left-5 bg-brand-blue/10 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-brand-blue/20 text-brand-blue text-[8px] font-extrabold uppercase tracking-[0.2em] shadow-lg flex items-center space-x-2">
             <ShieldCheck size={12} fill="currentColor" className="text-brand-blue" />
             <span>Verified Hub</span>
           </div>
@@ -37,9 +37,9 @@ export function GymCard({ gym }: GymCardProps) {
 
         <div className="p-8 flex flex-col flex-1 justify-between space-y-6">
           <div>
-            <h3 className="font-outfit font-black text-2xl leading-[0.9] text-white group-hover:text-brand-green transition-colors uppercase tracking-tighter italic mb-3">{gym.name}</h3>
+            <h3 className="font-heading font-extrabold text-2xl leading-[0.9] text-white group-hover:text-brand-green transition-colors uppercase tracking-tight mb-3">{gym.name}</h3>
             
-            <div className="flex items-center text-zinc-500 text-[9px] font-black uppercase tracking-[0.2em] italic space-x-3 opacity-70">
+            <div className="flex items-center text-zinc-500 text-[9px] font-bold uppercase tracking-[0.2em] space-x-3 opacity-70">
               <span className="flex items-center">
                 <MapPin size={12} className="mr-1.5 text-brand-green" />
                 {gym.location}
@@ -49,10 +49,10 @@ export function GymCard({ gym }: GymCardProps) {
 
           <div className="flex justify-between items-center pt-6 border-t border-white/5">
             <div>
-              <span className="text-[8px] text-zinc-600 block uppercase tracking-[0.3em] font-black mb-1 italic">Single Entry</span>
+              <span className="text-[8px] text-zinc-600 block uppercase tracking-[0.3em] font-bold mb-1">Single Entry</span>
               <div className="flex items-baseline space-x-1">
-                <span className="text-3xl font-outfit font-black text-white tracking-tighter italic">₹{price}</span>
-                <span className="text-[10px] text-zinc-700 font-black uppercase tracking-widest pl-1">/Session</span>
+                <span className="text-3xl font-heading font-extrabold text-white tracking-tighter">₹{price}</span>
+                <span className="text-[10px] text-zinc-700 font-bold uppercase tracking-widest pl-1">/Session</span>
               </div>
             </div>
             <div className="w-14 h-14 rounded-2xl bg-zinc-950 border border-white/5 flex items-center justify-center text-zinc-700 group-hover:bg-brand-green group-hover:text-zinc-950 group-hover:border-brand-green transition-all transform group-hover:rotate-12 shadow-inner group-hover:shadow-brand-green/20">
