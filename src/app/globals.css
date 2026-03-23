@@ -39,10 +39,10 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --color-brand-blue: #2563eb;
-  --color-brand-green: #22c55e;
-  --color-brand-teal: #14b8a6;
-  --color-brand-gradient: linear-gradient(to right, #2563eb, #22c55e);
+  --color-brand-blue: #3B82F6;
+  --color-brand-green: #10B981;
+  --color-brand-teal: #14B8A6;
+  --color-brand-gradient: linear-gradient(to right, #3B82F6, #10B981);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -88,7 +88,7 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  --background: #0F172A;
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
@@ -126,7 +126,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-zinc-950 text-zinc-100 font-sans antialiased selection:bg-orange-500/30 tracking-tight;
+    @apply bg-[#0F172A] text-slate-200 font-sans antialiased selection:bg-brand-green/30 tracking-tight;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading font-extrabold tracking-tight text-white;

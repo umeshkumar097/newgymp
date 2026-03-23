@@ -14,7 +14,7 @@ export function GymCard({ gym }: GymCardProps) {
 
   return (
     <Link href={`/gyms/${gym.id}`} className="block group">
-      <div className="bg-zinc-900/40 border border-white/5 rounded-[2.5rem] overflow-hidden hover:border-brand-green/30 transition-all duration-700 active:scale-[0.98] shadow-2xl hover:shadow-brand-green/10 flex flex-col h-full bg-gradient-to-b from-transparent to-zinc-900/10 relative">
+      <div className="bg-slate-900/60 border border-white/5 rounded-[2.5rem] overflow-hidden hover:border-brand-green/30 transition-all duration-700 active:scale-[0.98] shadow-2xl hover:shadow-brand-green/10 flex flex-col h-full bg-gradient-to-b from-transparent to-slate-900/10 relative">
         <div className="relative h-64 overflow-hidden">
           <Image 
             src={image} 
@@ -39,7 +39,7 @@ export function GymCard({ gym }: GymCardProps) {
           <div>
             <h3 className="font-heading font-extrabold text-2xl leading-[0.9] text-white group-hover:text-brand-green transition-colors uppercase tracking-tight mb-3">{gym.name}</h3>
             
-            <div className="flex items-center text-zinc-500 text-[9px] font-bold uppercase tracking-[0.2em] space-x-3 opacity-70">
+            <div className="flex items-center text-slate-500 text-[9px] font-bold uppercase tracking-[0.2em] space-x-3 opacity-70">
               <span className="flex items-center">
                 <MapPin size={12} className="mr-1.5 text-brand-green" />
                 {gym.location}
@@ -49,13 +49,13 @@ export function GymCard({ gym }: GymCardProps) {
 
           <div className="flex justify-between items-center pt-6 border-t border-white/5">
             <div>
-              <span className="text-[8px] text-zinc-600 block uppercase tracking-[0.3em] font-bold mb-1">Single Entry</span>
+              <span className="text-[8px] text-slate-600 block uppercase tracking-[0.3em] font-bold mb-1">Single Entry</span>
               <div className="flex items-baseline space-x-1">
                 <span className="text-3xl font-heading font-extrabold text-white tracking-tighter">₹{price}</span>
-                <span className="text-[10px] text-zinc-700 font-bold uppercase tracking-widest pl-1">/Session</span>
+                <span className="text-[10px] text-slate-700 font-bold uppercase tracking-widest pl-1">/Session</span>
               </div>
             </div>
-            <div className="w-14 h-14 rounded-2xl bg-zinc-950 border border-white/5 flex items-center justify-center text-zinc-700 group-hover:bg-brand-green group-hover:text-zinc-950 group-hover:border-brand-green transition-all transform group-hover:rotate-12 shadow-inner group-hover:shadow-brand-green/20">
+            <div className="w-14 h-14 rounded-2xl bg-slate-950 border border-white/5 flex items-center justify-center text-slate-700 group-hover:bg-brand-green group-hover:text-slate-950 group-hover:border-brand-green transition-all transform group-hover:rotate-12 shadow-inner group-hover:shadow-brand-green/20">
                <Zap size={22} fill="currentColor" />
             </div>
           </div>

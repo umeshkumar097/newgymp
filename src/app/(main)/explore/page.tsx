@@ -16,19 +16,19 @@ export default async function ExplorePage() {
   });
 
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-950 p-6 space-y-8 pb-32 font-sans">
+    <div className="flex flex-col min-h-screen bg-[#0F172A] p-6 space-y-8 pb-32 font-sans">
       <div className="space-y-2 mt-8">
         <h1 className="text-4xl font-extrabold font-heading text-white tracking-tighter uppercase">EXPLORE</h1>
-        <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-[0.3em] opacity-80 pl-1">Elite Fitness Hubs Near You</p>
+        <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em] opacity-80 pl-1">Elite Fitness Hubs Near You</p>
       </div>
 
       {/* Search Bar */}
       <div className="relative group">
-        <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-brand-green transition-colors" size={20} />
+        <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-brand-green transition-colors" size={20} />
         <input 
           type="text" 
           placeholder="SEARCH GYMS, MMA, CROSSFIT..." 
-          className="w-full bg-zinc-900/50 border border-white/5 rounded-[2rem] py-5 pl-14 pr-6 text-white text-xs font-bold focus:outline-none focus:border-brand-green/40 transition-all placeholder:text-zinc-800 tracking-widest uppercase shadow-2xl"
+          className="w-full bg-slate-900/50 border border-white/5 rounded-[2rem] py-5 pl-14 pr-6 text-white text-xs font-bold focus:outline-none focus:border-brand-green/40 transition-all placeholder:text-slate-800 tracking-widest uppercase shadow-2xl"
         />
         <button className="absolute right-6 top-1/2 -translate-y-1/2 text-brand-green">
           <Filter size={20} />

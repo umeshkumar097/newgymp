@@ -12,7 +12,7 @@ export function GymDetailClient({ gym }: { gym: any }) {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
 
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-950 text-zinc-100 font-sans">
+    <div className="flex flex-col min-h-screen bg-[#0F172A] text-slate-200 font-sans">
       
       {/* Container for Desktop Split Layout */}
       <div className="max-w-7xl mx-auto w-full px-6 py-8 md:py-12 flex flex-col lg:flex-row gap-12">
@@ -82,24 +82,24 @@ export function GymDetailClient({ gym }: { gym: any }) {
 
           {/* Quick Stats Block */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-6 rounded-[2.5rem] bg-zinc-900 border border-white/5 space-y-2 shadow-2xl">
-               <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600">Starting Price</div>
+            <div className="p-6 rounded-[2.5rem] bg-slate-900 border border-white/5 space-y-2 shadow-2xl">
+               <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600">Starting Price</div>
                <div className="text-3xl font-extrabold font-heading text-white">₹{gym.plans[0]?.price || 299}</div>
             </div>
-            <div className="p-6 rounded-[2.5rem] bg-zinc-900 border border-white/5 space-y-2 shadow-2xl">
-               <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600">Daily Access</div>
+            <div className="p-6 rounded-[2.5rem] bg-slate-900 border border-white/5 space-y-2 shadow-2xl">
+               <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600">Daily Access</div>
                <div className="text-3xl font-extrabold font-heading text-white">Valid</div>
             </div>
           </div>
 
           {/* Description Section */}
-          <div className="space-y-4 p-8 rounded-[3rem] bg-zinc-900/40 border border-white/5 relative overflow-hidden">
+          <div className="space-y-4 p-8 rounded-[3rem] bg-slate-900/40 border border-white/5 relative overflow-hidden">
              <div className="absolute top-0 right-0 w-32 h-32 bg-brand-green/5 blur-3xl rounded-full" />
              <h3 className="text-lg font-extrabold font-heading uppercase tracking-widest flex items-center text-white/90">
                 <Info size={18} className="mr-2 text-brand-green" />
                 ABOUT THIS HUB
              </h3>
-             <p className="text-sm text-zinc-500 leading-relaxed font-medium opacity-80">
+             <p className="text-sm text-slate-500 leading-relaxed font-medium opacity-80">
                 {gym.description} Experience luxury fitness with elite amenities and certified trainers. This facility is a premium PassFit partner offering instant daily access.
              </p>
           </div>
@@ -109,23 +109,23 @@ export function GymDetailClient({ gym }: { gym: any }) {
             <h3 className="text-2xl font-extrabold font-heading text-white uppercase tracking-tighter">CHOOSE YOUR HUB PASS</h3>
             <div className="space-y-4">
               {gym.plans.length > 0 ? gym.plans.map((plan: any) => (
-                <div key={plan.id} className="group p-6 rounded-[2.5rem] bg-zinc-900 border border-white/5 hover:border-brand-green/40 transition-all cursor-pointer flex justify-between items-center shadow-xl hover:shadow-brand-green/5">
+                <div key={plan.id} className="group p-6 rounded-[2.5rem] bg-slate-900 border border-white/5 hover:border-brand-green/40 transition-all cursor-pointer flex justify-between items-center shadow-xl hover:shadow-brand-green/5">
                   <div className="flex items-center space-x-4">
                     <div className="w-14 h-14 rounded-[1.5rem] bg-brand-green/10 flex items-center justify-center border border-brand-green/20 group-hover:bg-brand-green group-hover:text-white transition-all shadow-lg">
                        <Zap size={22} />
                     </div>
                     <div>
                       <div className="text-sm font-bold text-white uppercase">{plan.type} Hub Pass</div>
-                      <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">All Facilities Included</div>
+                      <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">All Facilities Included</div>
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="text-3xl font-extrabold font-heading text-white group-hover:text-brand-green transition-colors">₹{plan.price}</div>
-                    <div className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest">Inclusive GST</div>
+                    <div className="text-[9px] text-slate-600 font-bold uppercase tracking-widest">Inclusive GST</div>
                   </div>
                 </div>
               )) : (
-                <div className="p-8 text-center text-zinc-500 font-bold text-xs uppercase tracking-widest border border-dashed border-white/10 rounded-[2.5rem]">
+                <div className="p-8 text-center text-slate-500 font-bold text-xs uppercase tracking-widest border border-dashed border-white/10 rounded-[2.5rem]">
                    No plans available for this hub yet.
                 </div>
               )}
@@ -133,7 +133,7 @@ export function GymDetailClient({ gym }: { gym: any }) {
 
             <button 
               onClick={() => setIsBookingOpen(true)}
-              className="w-full bg-gradient-to-r from-brand-blue to-teal-500 text-white font-bold py-7 rounded-[2.5rem] shadow-2xl shadow-brand-blue/30 hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-[0.3em] text-xs flex items-center justify-center space-x-3 group"
+              className="w-full bg-gradient-to-r from-brand-blue/90 to-brand-green/90 text-white font-bold py-7 rounded-[2.5rem] shadow-2xl shadow-brand-blue/20 hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-[0.3em] text-xs flex items-center justify-center space-x-3 group backdrop-blur-sm"
             >
               <span>Instant Hub Access</span>
               <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
@@ -141,12 +141,12 @@ export function GymDetailClient({ gym }: { gym: any }) {
           </div>
 
           {/* Safety Checklist */}
-          <div className="flex items-center space-x-4 p-6 rounded-3xl bg-zinc-950 border border-white/5 shadow-inner">
+          <div className="flex items-center space-x-4 p-6 rounded-3xl bg-slate-950 border border-white/5 shadow-inner">
              <div className="w-12 h-12 rounded-2xl bg-brand-green/10 flex items-center justify-center text-brand-green border border-brand-green/20">
                <Shield size={24} />
              </div>
-             <p className="text-[10px] text-zinc-500 font-bold uppercase leading-relaxed tracking-widest">
-               PassFit Safety Verified<br/><span className="text-zinc-600">ID Verification Required at Entrance</span>
+             <p className="text-[10px] text-slate-500 font-bold uppercase leading-relaxed tracking-widest">
+               PassFit Safety Verified<br/><span className="text-slate-600">ID Verification Required at Entrance</span>
              </p>
           </div>
         </div>

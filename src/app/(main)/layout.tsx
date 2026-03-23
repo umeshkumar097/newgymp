@@ -30,7 +30,7 @@ export default async function MainLayout({
     : "JD";
 
   return (
-    <div className={`${inter.variable} ${plusJakarta.variable} min-h-screen bg-zinc-950 flex flex-col font-sans`}>
+    <div className={`${inter.variable} ${plusJakarta.variable} min-h-screen bg-[#0F172A] flex flex-col font-sans`}>
       {/* Top Navigation */}
       <Header userInitials={initials} isLoggedIn={!!user} />
 
