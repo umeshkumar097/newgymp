@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 import { nudgeIntent } from "@/app/actions/admin";
 import { revalidatePath } from "next/cache";
 
+export const dynamic = "force-dynamic";
+
 export default async function AbandonedBookingsPage() {
   const intents = await (prisma as any).bookingIntent.findMany({
     where: {
