@@ -63,6 +63,46 @@ export async function sendWhatsAppOTP(phoneNumber: string, otp: string, gymName:
   }
 }
 
+// 1. Welcome Message
+export async function sendWelcomeMessage(phoneNumber: string, name: string) {
+  return sendWhatsAppTemplate(phoneNumber, "welcome_message", [name]);
+}
+
+// 2. First Booking Celebration
+export async function sendFirstBookingCelebration(phoneNumber: string, name: string, gymName: string) {
+  return sendWhatsAppTemplate(phoneNumber, "first_booking_celebration", [name, gymName]);
+}
+
+// 3. Workout Reminder
+export async function sendWorkoutReminder(phoneNumber: string, name: string, gymName: string) {
+  return sendWhatsAppTemplate(phoneNumber, "workout_reminder", [name, gymName]);
+}
+
+// 4. Booking Confirmation
+export async function sendBookingConfirmed(phoneNumber: string, planName: string, gymName: string, entryId: string) {
+  return sendWhatsAppTemplate(phoneNumber, "booking_confirmed1", [planName, gymName, entryId]);
+}
+
+// 5. Booking Expired
+export async function sendBookingExpired(phoneNumber: string, name: string, gymName: string) {
+  return sendWhatsAppTemplate(phoneNumber, "booking_expired", [name, gymName]);
+}
+
+// 6. Post Workout Review
+export async function sendPostWorkoutReview(phoneNumber: string, gymName: string) {
+  return sendWhatsAppTemplate(phoneNumber, "post_workout_review", [gymName]);
+}
+
+// 7. Gym Approval Final
+export async function sendGymApproved(phoneNumber: string, name: string, gymName: string) {
+  return sendWhatsAppTemplate(phoneNumber, "gym_approved_final", [name, gymName]);
+}
+
+// 8. Gym Rejected Final
+export async function sendGymRejected(phoneNumber: string, name: string, gymName: string, reason: string) {
+  return sendWhatsAppTemplate(phoneNumber, "gym_rejected_final", [name, gymName, reason]);
+}
+
 export async function sendWhatsAppTemplate(phoneNumber: string, templateName: string, parameters: any[]) {
   try {
     const response = await axios.post(

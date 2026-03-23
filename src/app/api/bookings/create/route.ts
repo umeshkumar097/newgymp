@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sendWhatsAppOTP } from "@/lib/whatsapp";
+import { NotificationEngine } from "@/lib/notifications";
 import { cookies } from "next/headers";
 
 export async function POST(req: Request) {
@@ -52,17 +52,36 @@ export async function POST(req: Request) {
       },
     });
 
-    // 4. Send WhatsApp Notification to the REAL user phone
+    // 4. Send Enhanced WhatsApp Notifications
     try {
       if (user.phone) {
-        await sendWhatsAppOTP(
-          user.phone, 
-          otp, 
-          gymName || "PassFit Gym"
+        // Check if first booking
+        const previousBookingsCount = await prisma.booking.count({
+          where: { userId: user.id, id: { not: booking.id } }
+        });
+
+        const planName = planId.includes("day") ? "Day Pass" : 
+                         planId.includes("week") ? "Weekly Pass" : 
+                         planId.includes("month") ? "Monthly Pass" : "Gym Pass";
+
+        // 4a. Send Official Confirmation
+        await NotificationEngine.sendBookingConfirmation(
+          { phone: user.phone, name: user.name || "Customer" },
+          planName,
+          gymName || "PassFit Gym",
+          otp
         );
+
+        // 4b. Send Celebration if first booking
+        if (previousBookingsCount === 0) {
+          await NotificationEngine.sendBookingCelebration(
+            { phone: user.phone, name: user.name || "Customer" },
+            gymName || "the Gym"
+          );
+        }
       }
     } catch (wsError) {
-      console.error("Failed to send WhatsApp OTP:", wsError);
+      console.error("Failed to send WhatsApp notifications:", wsError);
     }
 
     return NextResponse.json({ 

@@ -1,7 +1,19 @@
 import { sendEmail } from "./email";
-import { sendWhatsAppTemplate } from "./whatsapp";
+import { 
+  sendWhatsAppTemplate, 
+  sendWelcomeMessage, 
+  sendFirstBookingCelebration, 
+  sendWorkoutReminder as sendWSWorkoutReminder, 
+  sendBookingConfirmed, 
+  sendBookingExpired as sendWSBookingExpired, 
+  sendPostWorkoutReview, 
+  sendGymApproved, 
+  sendGymRejected 
+} from "./whatsapp";
 
 export const NotificationEngine = {
+  // --- PARTNER NOTIFICATIONS ---
+
   // 0. Welcome & Account Activation (Onboarding Step 1)
   async sendWelcomePartner(user: { email: string; name: string; phone: string | null }) {
     const subject = "Activate Your PassFit Partner Account! 🚀";
@@ -23,7 +35,7 @@ export const NotificationEngine = {
     `;
     await sendEmail(user.email, subject, html);
     if (user.phone) {
-      await sendWhatsAppTemplate(user.phone, "welcome_partner", [user.name]);
+      await sendWelcomeMessage(user.phone, user.name);
     }
   },
 
@@ -47,7 +59,7 @@ export const NotificationEngine = {
     }
   },
 
-  // 2. Approval & Activation Fee
+  // 2. Approval (Activation Fee Pending)
   async sendApprovalNotification(user: { email: string; name: string; phone: string | null }, gymName: string, fee: number) {
     const subject = "Action Required: Your Gym is Approved! 🚀";
     const html = `
@@ -65,11 +77,28 @@ export const NotificationEngine = {
 
     await sendEmail(user.email, subject, html);
     if (user.phone) {
-      await sendWhatsAppTemplate(user.phone, "gym_approved", [user.name, gymName, fee.toString()]);
+      await sendGymApproved(user.phone, user.name, gymName);
     }
   },
 
-  // 3. Activation Success (Hub Live)
+  // 3. Rejection Notification
+  async sendRejectionNotification(user: { email: string; name: string; phone: string | null }, gymName: string, reason: string) {
+    const subject = "PassFit Application Update - Action Required 🛡️";
+    const html = `
+      <div style="font-family: sans-serif; max-width: 600px; padding: 20px;">
+        <h3 style="color: #ef4444;">Application Update</h3>
+        <p>Hi ${user.name}, we reviewed your application for <strong>${gymName}</strong>.</p>
+        <p>Unfortunately, we could not approve it at this time due to: <strong>${reason}</strong></p>
+        <p>Please log in to your dashboard to resolve this or contact support.</p>
+      </div>
+    `;
+    await sendEmail(user.email, subject, html);
+    if (user.phone) {
+      await sendGymRejected(user.phone, user.name, gymName, reason);
+    }
+  },
+
+  // 4. Activation Success (Hub Live)
   async sendActivationSuccess(user: { email: string; name: string; phone: string | null }, gymName: string) {
     const subject = "Your Hub is LIVE! Welcome to PassFit 🏙️";
     const html = `
@@ -90,5 +119,31 @@ export const NotificationEngine = {
     if (user.phone) {
       await sendWhatsAppTemplate(user.phone, "gym_activated", [user.name, gymName]);
     }
+  },
+
+  // --- USER NOTIFICATIONS ---
+
+  async sendUserWelcome(phoneNumber: string, name: string) {
+    await sendWelcomeMessage(phoneNumber, name);
+  },
+
+  async sendBookingCelebration(user: { phone: string; name: string }, gymName: string) {
+     await sendFirstBookingCelebration(user.phone, user.name, gymName);
+  },
+
+  async sendBookingConfirmation(user: { phone: string; name: string }, planName: string, gymName: string, entryId: string) {
+     await sendBookingConfirmed(user.phone, planName, gymName, entryId);
+  },
+
+  async sendWorkoutReminder(user: { phone: string; name: string }, gymName: string) {
+     await sendWSWorkoutReminder(user.phone, user.name, gymName);
+  },
+
+  async sendBookingExpiredNotification(user: { phone: string; name: string }, gymName: string) {
+     await sendWSBookingExpired(user.phone, user.name, gymName);
+  },
+
+  async sendReviewRequestNotification(user: { phone: string; name: string }, gymName: string) {
+     await sendPostWorkoutReview(user.phone, gymName);
   }
 };

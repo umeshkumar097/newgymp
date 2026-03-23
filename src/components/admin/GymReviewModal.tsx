@@ -20,6 +20,7 @@ export function GymReviewModal({ gym, isOpen, onClose, defaultOnboardingFee = 49
   const [activePhoto, setActivePhoto] = useState(0);
   const [setupFee, setSetupFee] = useState(gym.onboardingFeeAmount?.toString() || defaultOnboardingFee.toString());
   const [discount, setDiscount] = useState("0");
+  const [rejectionReason, setRejectionReason] = useState("");
   const [isPending, setIsPending] = useState(false);
 
   React.useEffect(() => {
@@ -43,10 +44,15 @@ export function GymReviewModal({ gym, isOpen, onClose, defaultOnboardingFee = 49
   };
 
   const handleReject = async () => {
+    if (!rejectionReason.trim()) {
+      alert("Please provide a reason for rejection.");
+      return;
+    }
     if (!confirm("Reject this application?")) return;
     setIsPending(true);
-    const res = await rejectGym(gym.id);
+    const res = await rejectGym(gym.id, rejectionReason);
     if (res.success) onClose();
+    else alert(res.error);
     setIsPending(false);
   };
 
@@ -220,26 +226,38 @@ export function GymReviewModal({ gym, isOpen, onClose, defaultOnboardingFee = 49
                   </div>
                 </div>
 
-                <div className="flex gap-4">
-                   <button 
-                     disabled={isPending}
-                     onClick={handleReject}
-                     className="flex-1 bg-red-500/10 border border-red-500/20 text-red-500 font-bold py-5 rounded-2xl text-[10px] uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all active:scale-95"
-                   >
-                     Reject Application
-                   </button>
-                   <button 
-                     disabled={isPending}
-                     onClick={handleApprove}
-                     className="flex-[2] bg-brand-green text-[#0F172A] font-black py-5 rounded-2xl text-[10px] uppercase tracking-widest active:scale-95 transition-all shadow-2xl shadow-brand-green/20 flex items-center justify-center space-x-3"
-                   >
-                     {isPending ? <Loader2 className="animate-spin" size={20} /> : (
-                       <>
-                         <span>Approve & Request Fee</span>
-                         <ChevronRight size={18} />
-                       </>
-                     )}
-                   </button>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest px-1">Rejection Reason (Internal & Partner Notification)</p>
+                    <textarea 
+                      placeholder="e.g. KYC Documents blurry, GST number mismatch..."
+                      value={rejectionReason}
+                      onChange={(e) => setRejectionReason(e.target.value)}
+                      className="w-full bg-slate-900 border border-white/5 p-4 rounded-xl focus:border-red-500/30 transition-all shadow-lg text-sm font-medium text-white placeholder:text-slate-700 min-h-[100px] outline-none"
+                    />
+                  </div>
+
+                  <div className="flex gap-4">
+                    <button 
+                      disabled={isPending}
+                      onClick={handleReject}
+                      className="flex-1 bg-red-500/10 border border-red-500/20 text-red-500 font-bold py-5 rounded-2xl text-[10px] uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all active:scale-95"
+                    >
+                      Reject Application
+                    </button>
+                    <button 
+                      disabled={isPending}
+                      onClick={handleApprove}
+                      className="flex-[2] bg-brand-green text-[#0F172A] font-black py-5 rounded-2xl text-[10px] uppercase tracking-widest active:scale-95 transition-all shadow-2xl shadow-brand-green/20 flex items-center justify-center space-x-3"
+                    >
+                      {isPending ? <Loader2 className="animate-spin" size={20} /> : (
+                        <>
+                          <span>Approve & Request Fee</span>
+                          <ChevronRight size={18} />
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </section>
             </div>

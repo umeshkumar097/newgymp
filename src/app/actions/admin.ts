@@ -69,15 +69,30 @@ export async function sendDuesReminder(gymId: string) {
   }
 }
 
-export async function rejectGym(gymId: string) {
+export async function rejectGym(gymId: string, reason: string) {
   try {
-    await (prisma.gym as any).update({
+    const gym = await (prisma.gym as any).update({
       where: { id: gymId },
       data: { status: "REJECTED" as any },
+      include: { owner: true }
     });
+
+    if (gym.owner?.email) {
+        await NotificationEngine.sendRejectionNotification(
+            { 
+                email: gym.owner.email, 
+                name: gym.owner.name || "Partner", 
+                phone: gym.owner.phone || null
+            },
+            gym.name,
+            reason
+        );
+    }
+
     revalidatePath("/admin/gyms");
     return { success: true };
   } catch (error: any) {
+    console.error("Rejection Error:", error);
     return { success: false, error: error.message };
   }
 }
