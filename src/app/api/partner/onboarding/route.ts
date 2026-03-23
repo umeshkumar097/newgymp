@@ -43,10 +43,15 @@ export async function POST(req: Request) {
       }
     });
 
-    // 3. Update User Role to GYM_OWNER
+    // 3. Update User details & Role
     await prisma.user.update({
       where: { id: userId },
-      data: { role: "GYM_OWNER" }
+      data: { 
+          role: "GYM_OWNER",
+          name: data.name || undefined,
+          email: data.email || undefined,
+          password: data.password || undefined
+      }
     });
 
     // 5. Send Notification (Under Review)
