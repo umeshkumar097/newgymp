@@ -56,7 +56,7 @@ export async function POST(req: Request) {
             await NotificationEngine.sendWelcomePartner({ 
                 email: user.email, 
                 name: user.name || "Partner", 
-                phone: user.phone 
+                phone: user.phone || ""
             }).catch(e => console.error("Email Error:", e));
         }
     } else {
@@ -75,8 +75,8 @@ export async function POST(req: Request) {
         if (role === "GYM_OWNER" && user.email) {
             await NotificationEngine.sendWelcomePartner({ 
                 email: user.email, 
-                name: user.name, 
-                phone: user.phone 
+                name: user.name || "Partner", 
+                phone: user.phone || ""
             }).catch(e => console.error("Email Error:", e));
         }
     }
