@@ -289,9 +289,6 @@ export default function PartnerOnboardingPage() {
                              const data = await res.json();
                              if (data.success) {
                                setVerifiedFields(prev => ({ ...prev, phone: true }));
-                               // Redirect to dashboard to allow flexible onboarding
-                               router.push("/partner/dashboard");
-                               router.refresh();
                              } else {
                                setErrors(prev => ({ ...prev, phone: "Invalid OTP" }));
                              }

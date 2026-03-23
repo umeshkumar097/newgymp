@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { OtpVerification } from "@/components/partner/OtpVerification";
 import { GymSetup } from "@/components/partner/GymSetup";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { Link, redirect } from "next/navigation";
 import { GymStatus, BookingStatus } from "@prisma/client";
 
 export default async function PartnerDashboardPage() {
@@ -68,12 +68,12 @@ export default async function PartnerDashboardPage() {
            ))}
         </div>
 
-        <button 
-          onClick={() => redirect("/partner/onboarding")} 
-          className="bg-white text-zinc-950 font-black px-12 py-6 rounded-[2.5rem] text-xs uppercase tracking-[0.3em] shadow-2xl hover:scale-105 active:scale-95 transition-all"
+        <Link 
+          href="/partner/onboarding"
+          className="bg-white text-zinc-950 font-black px-12 py-6 rounded-[2.5rem] text-xs uppercase tracking-[0.3em] shadow-2xl hover:scale-105 active:scale-95 transition-all text-center"
         >
            Start Onboarding
-        </button>
+        </Link>
 
         <p className="text-[9px] font-black text-zinc-700 uppercase tracking-widest">Typical review time: &lt; 24 Hours</p>
       </div>
@@ -116,12 +116,12 @@ export default async function PartnerDashboardPage() {
             </div>
          </div>
 
-         <button 
-           onClick={() => redirect("/partner/onboarding")} 
+         <Link 
+           href="/partner/onboarding"
            className="text-[10px] font-black text-zinc-600 uppercase tracking-widest hover:text-white transition-all underline underline-offset-8"
          >
             Edit Application
-         </button>
+         </Link>
       </div>
     );
   }
