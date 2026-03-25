@@ -99,13 +99,20 @@ export async function rejectGym(gymId: string, reason: string) {
 
 export async function deleteUser(userId: string) {
   try {
-    // Delete related records first if needed, though Prisma cascade should handle it if configured
-    // For now, simple delete
-    await prisma.user.delete({
+    // Using deleteMany to avoid "Record to delete does not exist" errors
+    // and ensuring we only target the specific user
+    const result = await prisma.user.deleteMany({
       where: { id: userId }
     });
+    
     revalidatePath("/admin/users");
-    return { success: true };
+    revalidatePath("/admin/dashboard");
+    
+    return { 
+      success: true, 
+      count: result.count,
+      message: result.count > 0 ? "User deleted successfully" : "User already deleted"
+    };
   } catch (error: any) {
     console.error("User Deletion Error:", error);
     return { success: false, error: error.message };

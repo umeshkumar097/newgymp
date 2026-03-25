@@ -66,7 +66,7 @@ model Gym {
   totalRating         Float      @default(0)
   bookings            Booking[]
   intents             BookingIntent[]
-  owner               User       @relation("GymOwner", fields: [ownerId], references: [id])
+  owner               User       @relation("GymOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   addons              GymAddon[]
   plans               Plan[]
   reviews             Review[]
@@ -80,7 +80,7 @@ model Review {
   comment   String?
   createdAt DateTime @default(now())
   gym       Gym      @relation(fields: [gymId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Plan {
@@ -124,7 +124,7 @@ model Booking {
   paymentType    PaymentType   @default(ONLINE)
   gym            Gym           @relation(fields: [gymId], references: [id])
   plan           Plan          @relation(fields: [planId], references: [id])
-  user           User          @relation(fields: [userId], references: [id])
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Transaction {
@@ -215,7 +215,7 @@ model BookingIntent {
   status         IntentStatus @default(PENDING)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
-  user           User         @relation(fields: [userId], references: [id])
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   gym            Gym          @relation(fields: [gymId], references: [id])
 
   @@index([userId])
