@@ -22,6 +22,10 @@ export async function sendWhatsAppOTP(phoneNumber: string, otp: string, gymName:
               parameters: [
                 {
                   type: "text",
+                  text: gymName,
+                },
+                {
+                  type: "text",
                   text: otp,
                 },
               ],
