@@ -22,11 +22,11 @@ export async function sendWhatsAppOTP(phoneNumber: string, otp: string, gymName:
               parameters: [
                 {
                   type: "text",
-                  text: gymName,
+                  text: otp,
                 },
                 {
                   type: "text",
-                  text: otp,
+                  text: "9871881183",
                 },
               ],
             },
