@@ -22,25 +22,6 @@ export async function sendWhatsAppOTP(phoneNumber: string, otp: string, gymName:
               parameters: [
                 {
                   type: "text",
-                  text: gymName,
-                },
-                {
-                  type: "text",
-                  text: otp,
-                },
-                {
-                  type: "text",
-                  text: "Helping number - 919871881183",
-                },
-              ],
-            },
-            {
-              type: "button",
-              sub_type: "url",
-              index: "0",
-              parameters: [
-                {
-                  type: "text",
                   text: otp,
                 },
               ],
@@ -58,7 +39,11 @@ export async function sendWhatsAppOTP(phoneNumber: string, otp: string, gymName:
 
     return response.data;
   } catch (error: any) {
-    console.error("WhatsApp API Error:", error.response?.data || error.message);
+    if (error.response) {
+      console.error("WhatsApp API Detailed Error:", JSON.stringify(error.response.data, null, 2));
+    } else {
+      console.error("WhatsApp API Error:", error.message);
+    }
     throw new Error("Failed to send WhatsApp message");
   }
 }
