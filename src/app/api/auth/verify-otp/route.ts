@@ -5,11 +5,14 @@ import { NotificationEngine } from "@/lib/notifications";
 
 export async function POST(req: Request) {
   try {
-    const { phoneNumber, otp, name, email, password, role, mode } = await req.json();
+    let { phoneNumber, otp, name, email, password, role, mode } = await req.json();
 
     if (!phoneNumber || !otp) {
       return NextResponse.json({ error: "Phone number and OTP are required" }, { status: 400 });
     }
+
+    // Normalize: Same as send-otp to match records
+    phoneNumber = phoneNumber.replace(/^\+91|^91/, "");
 
     // 1. Verify OTP
     const verification = await prisma.otpVerification.findUnique({

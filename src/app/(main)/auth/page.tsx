@@ -21,7 +21,7 @@ export default function AuthPage() {
 
   const handleSendOtp = async () => {
     if (!phoneNumber || phoneNumber.length < 10) {
-      setError("Please enter a valid phone number");
+      setError("Please enter a valid 10-digit phone number");
       return;
     }
 
@@ -37,6 +37,7 @@ export default function AuthPage() {
         const data = await res.json();
         if (data.success) {
           setStep("OTP");
+          setError(null);
         } else {
           setError(data.error || "Failed to send OTP");
         }
@@ -225,6 +226,19 @@ export default function AuthPage() {
                     </>
                   )}
                </button>
+
+               <div className="flex flex-col items-center space-y-4 pt-4 border-t border-white/5">
+                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest text-center">
+                   Didn't receive the code?
+                 </p>
+                 <button 
+                   onClick={handleSendOtp}
+                   disabled={isPending}
+                   className="text-xs font-extrabold text-brand-green uppercase tracking-widest hover:underline disabled:opacity-50"
+                 >
+                   Resend Code via WhatsApp
+                 </button>
+               </div>
              </div>
            )}
 
@@ -237,7 +251,7 @@ export default function AuthPage() {
 
       {/* Footer Branding */}
       <div className="absolute bottom-10 text-[9px] text-slate-800 font-bold uppercase tracking-[1em] z-10">
-         Version 3.1.0
+         Version 3.1.2
       </div>
     </div>
   );

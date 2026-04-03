@@ -4,11 +4,14 @@ import { sendWhatsAppOTP } from "@/lib/whatsapp";
 
 export async function POST(req: Request) {
   try {
-    const { phoneNumber, role } = await req.json();
+    let { phoneNumber, role } = await req.json();
 
     if (!phoneNumber) {
       return NextResponse.json({ error: "Phone number is required" }, { status: 400 });
     }
+
+    // Normalize: Strip +91 or 91 if present for consistent DB records
+    phoneNumber = phoneNumber.replace(/^\+91|^91/, "");
 
     // Role Check for Partners/Admins
     if (role === "GYM_OWNER" || role === "ADMIN") {
