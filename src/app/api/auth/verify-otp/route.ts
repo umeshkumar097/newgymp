@@ -41,11 +41,11 @@ export async function POST(req: Request) {
       // Create new user for first-time signups
       user = await prisma.user.create({
         data: {
+          clerkId: `passfit_${normalizedPhone}`,
           phone: normalizedPhone,
           name: name || "User",
           email: email || `${normalizedPhone}@passfit.in`,
-          role: "CUSTOMER",
-          status: "ACTIVE"
+          role: "USER",
         }
       });
       console.log(`[AUTH] New user created: ${normalizedPhone}`);
