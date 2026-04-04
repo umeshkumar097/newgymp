@@ -7,6 +7,9 @@ import { GymStatus } from "@prisma/client";
 
 export async function approveGym(gymId: string, setupFee: number) {
   try {
+    console.log(`[ADMIN_ACTION] Reviewing Hub Approval: ${gymId}...`);
+    
+    // 1. Database Update (Crucial - Must happen regardless of notifications)
     const gym = await (prisma.gym as any).update({
       where: { id: gymId },
       data: { 
@@ -16,24 +19,75 @@ export async function approveGym(gymId: string, setupFee: number) {
       include: { owner: true }
     });
 
-    // Send Real Welcome Notification (Email + WhatsApp)
-    if (gym.owner?.email) {
-      await NotificationEngine.sendApprovalNotification(
-        { 
-            email: gym.owner.email, 
-            name: gym.owner.name || "Partner", 
-            phone: gym.owner.phone || null
-        },
-        gym.name,
-        setupFee
-      );
+    console.log(`[ADMIN_ACTION] Database Update Success: ${gym.name} is now AWAITING_PAYMENT.`);
+
+    // 2. Notification Dispatch (Fail-Safe)
+    try {
+      if (gym.owner?.email) {
+        console.log(`[ADMIN_ACTION] Dispatching Enterprise Notifications...`);
+        await NotificationEngine.sendApprovalNotification(
+          { 
+              email: gym.owner.email, 
+              name: gym.owner.name || "Partner", 
+              phone: gym.owner.phone || null
+          },
+          gym.name,
+          setupFee
+        );
+        console.log(`[ADMIN_ACTION] Notifications Dispatched.`);
+      }
+    } catch (notifError: any) {
+      // Catching 404s/Auth errors from WhatsApp/Meta API
+      console.warn(`[ADMIN_ACTION] Notification Engine failed but Gym was approved:`, notifError.message);
     }
 
     revalidatePath("/admin/gyms");
+    revalidatePath(`/admin/gyms/${gymId}/verify`);
+    
     return { success: true };
   } catch (error: any) {
-    console.error("Approval Error:", error);
-    return { success: false, error: error.message };
+    console.error("[ADMIN_ACTION] ❌ Critical Approval Error:", error.message);
+    return { success: false, error: `Critical System Error: ${error.message}` };
+  }
+}
+
+export async function rejectGym(gymId: string, reason: string) {
+  try {
+    console.log(`[ADMIN_ACTION] Reviewing Hub Rejection: ${gymId}...`);
+    
+    const gym = await (prisma.gym as any).update({
+      where: { id: gymId },
+      data: { status: "REJECTED" as any },
+      include: { owner: true }
+    });
+
+    console.log(`[ADMIN_ACTION] Database Update Success: ${gym.name} is REJECTED.`);
+
+    try {
+      if (gym.owner?.email) {
+          console.log(`[ADMIN_ACTION] Dispatching Rejection Protocol Notifications...`);
+          await NotificationEngine.sendRejectionNotification(
+              { 
+                  email: gym.owner.email, 
+                  name: gym.owner.name || "Partner", 
+                  phone: gym.owner.phone || null
+              },
+              gym.name,
+              reason
+          );
+          console.log(`[ADMIN_ACTION] Notifications Dispatched.`);
+      }
+    } catch (notifError: any) {
+      console.warn(`[ADMIN_ACTION] Notification Engine failed but Gym was rejected:`, notifError.message);
+    }
+
+    revalidatePath("/admin/gyms");
+    revalidatePath(`/admin/gyms/${gymId}/verify`);
+    
+    return { success: true };
+  } catch (error: any) {
+    console.error("[ADMIN_ACTION] ❌ Critical Rejection Error:", error.message);
+    return { success: false, error: `Critical System Error: ${error.message}` };
   }
 }
 
@@ -58,49 +112,17 @@ export async function sendDuesReminder(gymId: string) {
     });
 
     if (gym?.owner?.phone) {
-      // Mock WhatsApp Send
-      console.log(`Sending WhatsApp reminder to ${gym.owner.phone} for gym ${gym.name}`);
-      // await NotificationEngine.sendDuesReminder(gym.owner.phone, gym.name);
+      console.log(`[ADMIN_ACTION] Sending WhatsApp reminder to ${gym.owner.phone} for gym ${gym.name}`);
     }
 
     return { success: true };
   } catch (error: any) {
-    return { success: false, error: error.message };
-  }
-}
-
-export async function rejectGym(gymId: string, reason: string) {
-  try {
-    const gym = await (prisma.gym as any).update({
-      where: { id: gymId },
-      data: { status: "REJECTED" as any },
-      include: { owner: true }
-    });
-
-    if (gym.owner?.email) {
-        await NotificationEngine.sendRejectionNotification(
-            { 
-                email: gym.owner.email, 
-                name: gym.owner.name || "Partner", 
-                phone: gym.owner.phone || null
-            },
-            gym.name,
-            reason
-        );
-    }
-
-    revalidatePath("/admin/gyms");
-    return { success: true };
-  } catch (error: any) {
-    console.error("Rejection Error:", error);
     return { success: false, error: error.message };
   }
 }
 
 export async function deleteUser(userId: string) {
   try {
-    // Using deleteMany to avoid "Record to delete does not exist" errors
-    // and ensuring we only target the specific user
     const result = await prisma.user.deleteMany({
       where: { id: userId }
     });

@@ -4,9 +4,9 @@ import React, { useState } from "react";
 import { 
   ShieldCheck, MapPin, Clock, ArrowRight, Store, Info 
 } from "lucide-react";
-import { GymReviewModal } from "../GymReviewModal";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
+import Image from "next/image";
 
 export function VerificationDesk({ 
   gyms, 
@@ -17,8 +17,6 @@ export function VerificationDesk({
   waitTime?: string,
   defaultOnboardingFee?: number 
 }) {
-  const [selectedGym, setSelectedGym] = useState<any>(null);
-
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
       
@@ -106,13 +104,13 @@ export function VerificationDesk({
                       </div>
                     </td>
                     <td className="p-8 text-right">
-                       <button 
-                         onClick={() => setSelectedGym(gym)}
+                       <Link 
+                         href={`/admin/gyms/${gym.id}/verify`}
                          className="inline-flex items-center space-x-3 bg-slate-900 text-white px-6 py-3 rounded-xl font-black text-[9px] uppercase tracking-[0.2em] shadow-lg hover:bg-brand-green hover:text-slate-950 hover:scale-[1.02] transition-all active:scale-95 group/btn italic leading-none"
                        >
                           <span>Review Mode</span>
                           <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
-                       </button>
+                       </Link>
                     </td>
                   </tr>
                 ))
@@ -134,15 +132,6 @@ export function VerificationDesk({
             </p>
          </div>
       </div>
-
-      {selectedGym && (
-        <GymReviewModal 
-          gym={selectedGym} 
-          isOpen={!!selectedGym} 
-          onClose={() => setSelectedGym(null)} 
-          defaultOnboardingFee={defaultOnboardingFee}
-        />
-      )}
     </div>
   );
 }
