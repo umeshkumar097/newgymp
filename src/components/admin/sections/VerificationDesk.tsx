@@ -25,19 +25,19 @@ export function VerificationDesk({
          <div className="space-y-3">
             <div className="flex items-center space-x-3 text-brand-green">
                <ShieldCheck size={18} />
-               <span className="text-[10px] font-black uppercase tracking-[0.3em]">Governance Protocol</span>
+               <span className="text-[10px] font-black uppercase tracking-[0.3em]">Governance Hub</span>
             </div>
-            <h2 className="text-3xl md:text-4xl font-black text-slate-900 uppercase tracking-tighter italic leading-none">Verification <span className="text-brand-green underline decoration-slate-100 underline-offset-8">Desk</span></h2>
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest italic">Reviewing high-intent partner applications for network entry.</p>
+            <h2 className="text-3xl md:text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none">Verification <span className="text-brand-green underline decoration-slate-100 underline-offset-8">Desk</span></h2>
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest leading-none">Reviewing partner applications for network entry.</p>
          </div>
          <div className="flex items-center bg-white border border-slate-200/60 rounded-2xl px-6 py-4 shadow-sm space-x-8">
             <div className="flex items-center space-x-3 border-r border-slate-100 pr-8">
                <div className="w-2.5 h-2.5 rounded-full bg-brand-green animate-pulse" />
-               <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest italic">Live Queue: {gyms.length} Nodes</span>
+               <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Live Queue: {gyms.length} Units</span>
             </div>
             <div className="hidden sm:flex items-center space-x-3">
-               <Clock size={16} className="text-slate-300" />
-               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Avg Speed: {waitTime}</span>
+               <Clock size={16} className="text-slate-400" />
+               <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Avg Speed: {waitTime}</span>
             </div>
          </div>
       </div>
@@ -47,11 +47,11 @@ export function VerificationDesk({
           <table className="w-full text-left border-collapse">
             <thead className="bg-slate-50/50 border-b border-slate-100">
               <tr>
-                <th className="p-8 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 italic">Facility Node</th>
-                <th className="p-8 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 italic">Owner Identity</th>
-                <th className="p-8 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 italic">Onboarding Logic</th>
-                <th className="p-8 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 italic">Status</th>
-                <th className="p-8 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 italic text-right">Audit</th>
+                <th className="p-8 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Facility Unit</th>
+                <th className="p-8 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Owner Identity</th>
+                <th className="p-8 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Onboarding Date</th>
+                <th className="p-8 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Status</th>
+                <th className="p-8 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
@@ -60,7 +60,7 @@ export function VerificationDesk({
                   <td colSpan={5} className="p-28 text-center bg-white">
                     <div className="flex flex-col items-center space-y-6 opacity-20">
                       <ShieldCheck size={32} strokeWidth={1} className="text-slate-400" />
-                      <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500 italic">Queue Fully Audited</p>
+                      <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500">Queue Fully Audited</p>
                     </div>
                   </td>
                 </tr>
@@ -79,9 +79,9 @@ export function VerificationDesk({
                            )}
                         </div>
                         <div className="space-y-1">
-                          <p className="text-base font-black text-slate-900 uppercase italic tracking-tight leading-none group-hover:text-brand-green transition-colors">{gym.name}</p>
-                          <div className="flex items-center text-[10px] font-bold text-slate-400 uppercase italic tracking-widest whitespace-nowrap">
-                             <MapPin size={12} className="mr-2 text-brand-green/40" />
+                          <p className="text-base font-black text-slate-900 uppercase tracking-tight leading-none group-hover:text-brand-green transition-colors">{gym.name}</p>
+                          <div className="flex items-center text-[10px] font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">
+                             <MapPin size={12} className="mr-2 text-brand-green/60" />
                              {gym.location.substring(0, 25)}{gym.location.length > 25 ? "..." : ""}
                           </div>
                         </div>
@@ -89,14 +89,14 @@ export function VerificationDesk({
                     </td>
                     <td className="p-8">
                       <div className="space-y-1.5">
-                        <p className="text-[11px] font-black text-slate-900 uppercase italic tracking-tight leading-none">{gym.owner?.name || "Credential Missing"}</p>
-                        <p className="text-[10px] font-bold text-slate-400 italic lowercase tracking-tight">{gym.owner?.email || "No Email"}</p>
+                        <p className="text-[11px] font-black text-slate-900 uppercase tracking-tight leading-none">{gym.owner?.name || "Credential Missing"}</p>
+                        <p className="text-[10px] font-bold text-slate-600 lowercase tracking-tight">{gym.owner?.email || "No Email"}</p>
                       </div>
                     </td>
                     <td className="p-8">
                        <div className="inline-flex flex-col">
-                          <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1.5">Node Creation</span>
-                          <span className="text-xs font-black text-slate-900 uppercase italic leading-none">{new Date(gym.createdAt).toLocaleDateString()}</span>
+                          <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1.5">Creation Date</span>
+                          <span className="text-xs font-black text-slate-900 uppercase leading-none">{new Date(gym.createdAt).toLocaleDateString()}</span>
                        </div>
                     </td>
                     <td className="p-8">
@@ -122,9 +122,9 @@ export function VerificationDesk({
                     <td className="p-8 text-right">
                        <Link 
                          href={`/admin/gyms/${gym.id}/verify`}
-                         className="inline-flex items-center space-x-3 bg-slate-900 text-white px-6 py-3 rounded-xl font-black text-[9px] uppercase tracking-[0.2em] shadow-lg hover:bg-brand-green hover:text-slate-950 hover:scale-[1.02] transition-all active:scale-95 group/btn italic leading-none"
+                         className="inline-flex items-center space-x-3 bg-slate-900 text-white px-6 py-3 rounded-xl font-black text-[9px] uppercase tracking-[0.2em] shadow-lg hover:bg-brand-green hover:text-slate-950 hover:scale-[1.02] transition-all active:scale-95 group/btn leading-none"
                        >
-                          <span>Review Mode</span>
+                          <span>Review & Audit</span>
                           <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
                        </Link>
                     </td>
@@ -144,23 +144,23 @@ export function VerificationDesk({
                   <ShieldCheck size={28} />
                </div>
                <div className="space-y-1">
-                  <h4 className="text-2xl font-black uppercase tracking-tighter text-white italic leading-none">Security <br/> Protocol</h4>
-                  <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest underline decoration-slate-800 underline-offset-4">Governance Level 4</p>
+                  <h4 className="text-2xl font-black uppercase tracking-tighter text-white leading-none">Security <br/> Governance</h4>
+                  <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest underline decoration-slate-800 underline-offset-4">Security Level 4</p>
                </div>
             </div>
-            <p className="text-[11px] font-bold text-slate-400 leading-relaxed uppercase tracking-widest italic relative z-10">
-               All facility documentation is encrypted. Approval triggers **Immediate Deployment**. The node will be LIVE and ready to accept bookings instantly upon Audit completion.
+            <p className="text-[11px] font-bold text-slate-400 leading-relaxed uppercase tracking-widest relative z-10">
+               All facility documentation is encrypted. Approval triggers **Immediate Deployment**. The unit will be LIVE and ready to accept bookings instantly upon Audit completion.
             </p>
          </div>
 
          <div className="bg-slate-50 border border-slate-100 rounded-[2rem] p-10 flex flex-col justify-center space-y-8 shadow-sm group">
             <div className="space-y-1">
-               <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] italic">Audit Queue Statistics</p>
-               <p className="text-5xl font-black text-slate-900 uppercase tracking-tighter italic leading-none">
-                  {gyms.filter(g => g.status === "PENDING").length} <span className="text-slate-200">Active</span>
+               <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Audit Queue Statistics</p>
+               <p className="text-5xl font-black text-slate-900 uppercase tracking-tighter leading-none">
+                  {gyms.filter(g => g.status === "PENDING").length} <span className="text-slate-200">Pending</span>
                </p>
             </div>
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed italic">
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest leading-relaxed">
                Maintaining a <span className="text-brand-green">100% Audit Integrity</span> across the PassFit Network. Every hub is manually vetted for enterprise-grade standards.
             </p>
          </div>

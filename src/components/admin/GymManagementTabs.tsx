@@ -68,8 +68,8 @@ export function GymManagementTabs({
             </div>
             
             <div className="relative z-10 space-y-1">
-               <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 italic mb-1">{stat.label}</div>
-               <div className="text-3xl font-black text-slate-900 tracking-tighter italic leading-none">{stat.value}</div>
+               <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1">{stat.label}</div>
+               <div className="text-3xl font-black text-slate-900 tracking-tighter leading-none">{stat.value}</div>
             </div>
           </div>
         ))}
@@ -83,13 +83,13 @@ export function GymManagementTabs({
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
               className={cn(
-                "flex items-center space-x-3 px-8 py-4 rounded-2xl transition-all text-[10px] font-black uppercase tracking-widest italic",
+                "flex items-center space-x-3 px-8 py-4 rounded-2xl transition-all text-[10px] font-black uppercase tracking-widest",
                 activeTab === tab.id 
                   ? "bg-slate-900 text-white shadow-xl shadow-slate-200/60 scale-[1.02]" 
-                  : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
+                  : "text-slate-500 hover:text-slate-600 hover:bg-slate-50"
               )}
             >
-              <tab.icon size={16} className={cn(activeTab === tab.id ? "text-brand-green" : "text-slate-300")} />
+              <tab.icon size={16} className={cn(activeTab === tab.id ? "text-brand-green" : "text-slate-400")} />
               <span>{tab.label}</span>
               {tab.count !== undefined && (
                 <span className={cn("ml-2 w-5 h-5 rounded-lg flex items-center justify-center text-[9px] font-black leading-none", 
@@ -110,8 +110,8 @@ export function GymManagementTabs({
                 <ShieldCheck size={18} />
              </div>
              <div>
-                <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Verification Speed</p>
-                <p className="text-sm font-black text-slate-900 tracking-tight italic tabular-nums">{stats.waitTime}</p>
+                <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Verification Speed</p>
+                <p className="text-sm font-black text-slate-900 tracking-tight tabular-nums">{stats.waitTime}</p>
              </div>
           </div>
         )}
