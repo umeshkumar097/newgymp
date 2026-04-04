@@ -129,7 +129,7 @@ model Booking {
   userId          String
   gymId           String
   planId          String
-  amount          Float
+  totalAmount     Float
   status          BookingStatus @default(BOOKED)
   paymentId       String?
   orderId         String?       @unique
@@ -253,7 +253,7 @@ model BookingIntent {
   userId         String
   gymId          String
   planId         String
-  amount         Float
+  totalAmount    Float
   members        Int          @default(1)
   selectedAddons Json?
   status         IntentStatus @default(PENDING)
