@@ -13,24 +13,13 @@ export async function sendWhatsAppOTP(phoneNumber: string, otp: string) {
         to: phoneNumber.startsWith("+") ? phoneNumber : `+91${phoneNumber}`,
         type: "template",
         template: {
-          name: process.env.WHATSAPP_OTP_TEMPLATE || "passfit_auth_otp",
+          name: (process.env.WHATSAPP_OTP_TEMPLATE || "passfit_auth_otp").trim(),
           language: {
-            code: "en_US",
+            code: "en",
           },
           components: [
             {
               type: "body",
-              parameters: [
-                {
-                  type: "text",
-                  text: otp,
-                },
-              ],
-            },
-            {
-              type: "button",
-              sub_type: "url",
-              index: "0",
               parameters: [
                 {
                   type: "text",
