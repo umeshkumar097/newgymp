@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useTransition } from "react";
-import { User, Phone, ArrowRight, ShieldCheck, Mail, Lock, CheckCircle2, Loader2, ArrowLeft, Zap } from "lucide-react";
+import { User, Phone, ArrowRight, ShieldCheck, Mail, Lock, CheckCircle2, Loader2, ArrowLeft, Zap, MessageCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { auth } from "@/lib/firebase";
@@ -24,14 +24,14 @@ export default function AuthPage() {
 
   useEffect(() => {
     // Setup Invisible ReCAPTCHA once when the component mounts
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        'size': 'invisible',
-        'callback': (response: any) => {
-          // reCAPTCHA solved, allow signInWithPhoneNumber.
-          console.log("ReCAPTCHA solved");
-        }
-      });
+    if (typeof window !== "undefined" && !window.recaptchaVerifier) {
+      try {
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+          'size': 'invisible'
+        });
+      } catch (err) {
+        console.error("ReCAPTCHA Link Fail:", err);
+      }
     }
   }, []);
 
@@ -46,6 +46,7 @@ export default function AuthPage() {
     setError(null);
     startTransition(async () => {
       try {
+        if (!window.recaptchaVerifier) throw new Error("Recaptcha not ready");
         const appVerifier = window.recaptchaVerifier;
         const result = await signInWithPhoneNumber(auth, fullPhone, appVerifier);
         setConfirmationResult(result);
@@ -58,43 +59,67 @@ export default function AuthPage() {
         } else if (errorCode === "auth/too-many-requests") {
           setError("Too many attempts. Please wait 10 minutes.");
         } else if (errorCode === "auth/unauthorized-domain") {
-          setError("Domain passfit.in not authorized in Firebase Console.");
+          setError("Domain passfit.in not authorized in Firebase.");
+        } else if (errorCode === "auth/billing-not-enabled") {
+          setError("SMS Quota full. Try the WhatsApp button below.");
         } else {
-          setError(`Error (${errorCode}): Please try again later.`);
+          setError(`Error (${errorCode}): Please use WhatsApp.`);
         }
       }
     });
   };
 
-  const handleVerifyOtp = async () => {
-    if (otp.length !== 6) {
-      setError("Please enter the 6-digit code from your SMS");
-      return;
-    }
+  const handleWhatsAppFallback = async () => {
+    if (!phoneNumber) return;
+    setError(null);
+    startTransition(async () => {
+      try {
+        const res = await fetch("/api/auth/send-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phoneNumber }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setStep("OTP");
+          setConfirmationResult(null); // Signal it's NOT a Firebase session
+          setError(null);
+        } else {
+          setError(data.error || "WhatsApp delivery failed.");
+        }
+      } catch (err) {
+        setError("WhatsApp delivery failed. Try again.");
+      }
+    });
+  };
 
-    if (!confirmationResult) {
-      setError("Session expired. Please try again.");
+  const handleVerifyOtp = async () => {
+    // Firebase uses 6 digits, our WhatsApp fallback uses 4 digits
+    const expectedLength = confirmationResult ? 6 : 4;
+    if (otp.length !== expectedLength) {
+      setError(`Please enter the ${expectedLength}-digit code`);
       return;
     }
 
     setError(null);
     startTransition(async () => {
       try {
-        // 1. Verify with Firebase
-        const credential = await confirmationResult.confirm(otp);
-        const userToken = await credential.user.getIdToken();
+        let payload: any = { phoneNumber, name, email, mode };
 
-        // 2. Finalize with our Backend
+        if (confirmationResult) {
+          // A. Verify with Firebase
+          const credential = await confirmationResult.confirm(otp);
+          payload.idToken = await credential.user.getIdToken();
+        } else {
+          // B. Verify with our Backend (WhatsApp/Custom Fallback)
+          payload.otp = otp;
+        }
+
+        // Finalize with our Backend
         const res = await fetch("/api/auth/verify-otp", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-            phoneNumber, 
-            idToken: userToken, 
-            name, 
-            email, 
-            mode 
-          }),
+          body: JSON.stringify(payload),
         });
 
         const data = await res.json();
@@ -114,17 +139,15 @@ export default function AuthPage() {
   return (
     <div className="flex flex-col min-h-screen bg-[#0F172A] items-center justify-center p-6 relative overflow-hidden font-sans">
       
-      {/* Required for Firebase ReCAPTCHA */}
       <div id="recaptcha-container"></div>
 
-      {/* Background Brand Gradients */}
+      {/* Brand Gradients */}
       <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-brand-blue/5 blur-[150px] rounded-full" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-brand-green/5 blur-[150px] rounded-full" />
 
-      {/* Main Container */}
       <div className="w-full max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center gap-20 relative z-10">
         
-        {/* Brand Side (Desktop Only) */}
+        {/* Desk Side */}
         <div className="hidden md:flex flex-col space-y-8 max-w-md">
            <div className="w-16 h-16 rounded-[2rem] bg-brand-green flex items-center justify-center shadow-2xl shadow-brand-green/20">
               <Zap size={32} className="text-[#0F172A] fill-[#0F172A]" />
@@ -137,15 +160,11 @@ export default function AuthPage() {
                  Join thousands of users accessing premium fitness centers across the country. One account, infinite access.
               </p>
            </div>
-           <div className="flex flex-col space-y-4 pt-4">
-              {[
-                { icon: CheckCircle2, text: "Instant Entry via QR Code" },
-                { icon: CheckCircle2, text: "No Long-term Commitments" },
-                { icon: CheckCircle2, text: "Pay per Session Model" }
-              ].map((item, i) => (
-                <div key={i} className="flex items-center space-x-3 text-sm font-bold text-slate-400">
-                   <item.icon size={18} className="text-brand-green" />
-                   <span>{item.text}</span>
+           <div className="flex flex-col space-y-4 pt-4 text-xs font-bold text-slate-400">
+              {[ "Instant Entry via QR", "No Commitments", "Pay per Session" ].map((t, i) => (
+                <div key={i} className="flex items-center space-x-3">
+                   <CheckCircle2 size={18} className="text-brand-green" />
+                   <span>{t}</span>
                 </div>
               ))}
            </div>
@@ -154,142 +173,98 @@ export default function AuthPage() {
         {/* Auth Card */}
         <div className="w-full max-w-md bg-slate-900/40 backdrop-blur-3xl border border-white/5 rounded-[3rem] p-10 shadow-2xl relative">
            
-           {/* Header for Mobile */}
-           <div className="md:hidden text-center space-y-4 mb-10">
-              <h1 className="text-4xl font-extrabold font-heading text-white tracking-tighter uppercase">
+           <div className="text-center space-y-2 mb-10">
+              <h1 className="text-4xl font-extrabold font-heading text-white tracking-tighter uppercase leading-none">
                  Pass<span className="text-brand-green">Fit</span>
               </h1>
-              <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">
-                {step === "PHONE" ? "Ready to workout?" : "Verification Code"}
+              <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest px-1">
+                 {step === "PHONE" ? (mode === "login" ? "Welcome Back" : "Create Account") : "Verification Code"}
               </p>
            </div>
 
            {step === "PHONE" ? (
              <div className="space-y-8">
-               {/* Mode Toggle */}
                <div className="flex p-1 bg-slate-900 border border-white/5 rounded-2xl">
-                  <button 
-                    onClick={() => setMode("login")}
-                    className={cn(
-                      "flex-1 py-3 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all",
-                      mode === "login" ? "bg-white text-[#0F172A]" : "text-slate-500"
-                    )}
-                  >
-                    Login
-                  </button>
-                  <button 
-                    onClick={() => setMode("register")}
-                    className={cn(
-                      "flex-1 py-3 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all",
-                      mode === "register" ? "bg-white text-[#0F172A]" : "text-slate-500"
-                    )}
-                  >
-                    Register
-                  </button>
+                  {["login", "register"].map((m) => (
+                    <button key={m} onClick={() => setMode(m as any)} className={cn("flex-1 py-3 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all", mode === m ? "bg-white text-slate-950" : "text-slate-500")}>
+                      {m}
+                    </button>
+                  ))}
                </div>
 
-                {/* Inputs */}
                <div className="space-y-4">
                  {mode === "register" && (
                    <>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-slate-600 px-1">Full Name</label>
-                      <div className="flex items-center space-x-4 bg-white/5 border border-white/5 p-5 rounded-2xl focus-within:border-brand-green/30 transition-all">
-                        <User size={18} className="text-slate-700" />
-                        <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter Name" className="bg-transparent border-none outline-none text-sm font-bold text-white w-full" />
-                      </div>
+                      <label className="text-[10px] items-center flex font-bold uppercase tracking-widest text-slate-600 px-1 ml-1"><User size={10} className="mr-2"/> Full Name</label>
+                      <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Full Name" className="w-full bg-white/5 border border-white/5 p-5 rounded-2xl text-sm font-bold text-white outline-none focus:border-brand-green/30" />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-slate-600 px-1">Email</label>
-                      <div className="flex items-center space-x-4 bg-white/5 border border-white/5 p-5 rounded-2xl focus-within:border-brand-green/30 transition-all">
-                        <Mail size={18} className="text-slate-700" />
-                        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email Address" className="bg-transparent border-none outline-none text-sm font-bold text-white w-full" />
-                      </div>
+                       <label className="text-[10px] items-center flex font-bold uppercase tracking-widest text-slate-600 px-1 ml-1"><Mail size={10} className="mr-2"/> Email</label>
+                       <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email Address" className="w-full bg-white/5 border border-white/5 p-5 rounded-2xl text-sm font-bold text-white outline-none focus:border-brand-green/30" />
                     </div>
                    </>
                  )}
                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-600 px-1">WhatsApp Phone</label>
-                    <div className="flex items-center space-x-4 bg-white/5 border border-white/5 p-5 rounded-2xl focus-within:border-brand-green/30 transition-all">
-                      <Phone size={18} className="text-slate-700" />
-                      <input type="tel" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="Phone Number" className="bg-transparent border-none outline-none text-sm font-bold text-white w-full" maxLength={10} />
-                    </div>
+                    <label className="text-[10px] items-center flex font-bold uppercase tracking-widest text-slate-600 px-1 ml-1"><Phone size={10} className="mr-2"/> WhatsApp Phone</label>
+                    <input type="tel" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="Phone Number" className="w-full bg-white/5 border border-white/5 p-5 rounded-2xl text-sm font-bold text-white outline-none focus:border-brand-green/30" maxLength={10} />
                  </div>
                </div>
 
-               {error && <p className="text-red-500 text-[10px] font-bold uppercase text-center">{error}</p>}
+               {error && (
+                 <div className="space-y-4">
+                   <p className="text-red-500 text-[10px] font-bold uppercase text-center leading-relaxed">{error}</p>
+                   {error.includes("SMS Quota") || error.includes("Error") ? (
+                     <button 
+                       onClick={handleWhatsAppFallback}
+                       className="w-full py-4 border border-brand-green/30 rounded-2xl flex items-center justify-center space-x-3 text-brand-green text-[10px] font-bold uppercase tracking-widest hover:bg-brand-green/10 transition-all"
+                     >
+                       <MessageCircle size={14} />
+                       <span>Get Code via WhatsApp instead</span>
+                     </button>
+                   ) : null}
+                 </div>
+               )}
 
                <button 
                   onClick={handleSendOtp}
                   disabled={isPending}
-                  className="w-full bg-gradient-to-r from-brand-blue/90 to-brand-green/90 text-white font-bold py-5 rounded-[2rem] shadow-2xl shadow-brand-blue/20 flex items-center justify-center space-x-3 active:scale-95 transition-all text-sm uppercase tracking-widest backdrop-blur-sm"
+                  className="w-full bg-gradient-to-r from-brand-blue/90 to-brand-green/90 text-white font-bold py-5 rounded-[2rem] shadow-2xl flex items-center justify-center space-x-3 active:scale-95 transition-all text-sm uppercase tracking-widest"
                >
-                  {isPending ? <Loader2 className="animate-spin" size={20} /> : (
-                    <>
-                      <span>Get Access Code</span>
-                      <ArrowRight size={18} />
-                    </>
-                  )}
+                  {isPending ? <Loader2 className="animate-spin" size={20} /> : <><span>Get Verification Code</span> <ArrowRight size={18}/></>}
                </button>
              </div>
            ) : (
              <div className="space-y-8">
-               <div className="flex justify-between items-center">
-                 <h2 className="text-sm font-bold uppercase tracking-widest text-white">Enter SMS Code</h2>
+               <div className="flex justify-between items-center px-1">
+                 <h2 className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{confirmationResult ? "6-Digit SMS Code" : "4-Digit WhatsApp Code"}</h2>
                  <button onClick={() => setStep("PHONE")} className="text-[10px] font-bold text-brand-green uppercase tracking-widest flex items-center">
-                   <ArrowLeft size={12} className="mr-1" />
-                   Change
+                   <ArrowLeft size={10} className="mr-2" /> Change
                  </button>
                </div>
                
                <input 
-                  type="text" 
-                  value={otp} 
-                  onChange={(e) => setOtp(e.target.value)} 
-                  placeholder="000000" 
-                  maxLength={6} 
-                  className="w-full bg-white/5 border border-white/10 p-8 rounded-[2rem] text-5xl text-center font-bold text-brand-green tracking-[0.4em] outline-none placeholder:text-slate-800" 
+                  type="text" value={otp} onChange={(e) => setOtp(e.target.value)} placeholder={confirmationResult ? "000000" : "0000"} 
+                  maxLength={confirmationResult ? 6 : 4} 
+                  className="w-full bg-white/5 border border-white/10 p-8 rounded-[2rem] text-4xl text-center font-bold text-brand-green tracking-[0.4em] outline-none" 
                />
 
                {error && <p className="text-red-500 text-[10px] font-bold uppercase text-center">{error}</p>}
 
                <button 
                   onClick={handleVerifyOtp}
-                  disabled={isPending || otp.length !== 6}
-                  className="w-full bg-white text-[#0F172A] font-bold py-6 rounded-[2.5rem] shadow-2xl flex items-center justify-center space-x-3 active:scale-95 transition-all text-sm uppercase tracking-[0.2em]"
+                  disabled={isPending || otp.length < 4}
+                  className="w-full bg-white text-slate-950 font-bold py-6 rounded-[2.5rem] shadow-2xl flex items-center justify-center space-x-3 active:scale-95 transition-all text-sm uppercase tracking-widest"
                >
-                  {isPending ? <Loader2 className="animate-spin" size={20} /> : (
-                    <>
-                      <span>Secure Access</span>
-                      <ShieldCheck size={18} />
-                    </>
-                  )}
+                  {isPending ? <Loader2 className="animate-spin" size={20} /> : <><span>Enter Dashboard</span> <ShieldCheck size={18} /></>}
                </button>
-
-               <div className="flex flex-col items-center space-y-4 pt-4 border-t border-white/5">
-                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest text-center">
-                   Didn't receive the SMS?
-                 </p>
-                 <button 
-                   onClick={handleSendOtp}
-                   disabled={isPending}
-                   className="text-xs font-extrabold text-brand-green uppercase tracking-widest hover:underline disabled:opacity-50"
-                 >
-                   Resend Code 
-                 </button>
-               </div>
              </div>
            )}
-
-           <div className="flex items-center justify-center space-x-2 text-slate-700 mt-10">
-              <Lock size={12} />
-              <span className="text-[9px] font-bold uppercase tracking-widest">End-to-End Encrypted Auth</span>
-           </div>
         </div>
       </div>
 
-      <div className="absolute bottom-10 text-[9px] text-slate-800 font-bold uppercase tracking-[1em] z-10">
-         Version 3.2.0 (Powered by Firebase)
+      <div className="absolute bottom-8 text-[8px] text-slate-800 font-bold uppercase tracking-[1.5em] z-10">
+         Version 3.2.1-Failover
       </div>
     </div>
   );

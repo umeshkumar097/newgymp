@@ -5,26 +5,43 @@ import { NotificationEngine } from "@/lib/notifications";
 
 export async function POST(req: Request) {
   try {
-    let { phoneNumber, idToken, name, email, password, role, mode } = await req.json();
+    let { phoneNumber, idToken, otp, name, email, password, role, mode } = await req.json();
 
-    if (!idToken) {
-      return NextResponse.json({ error: "Verification token is required" }, { status: 400 });
+    if (!idToken && !otp) {
+      return NextResponse.json({ error: "Verification token or OTP is required" }, { status: 400 });
     }
 
-    // 1. Verify with Firebase Admin
-    const { adminAuth } = await import("@/lib/firebase-admin");
     let verifiedPhone;
 
-    try {
-      const decodedToken = await adminAuth.verifyIdToken(idToken);
-      verifiedPhone = decodedToken.phone_number;
-      
-      if (!verifiedPhone) {
-        return NextResponse.json({ error: "Phone number not found in token" }, { status: 400 });
+    if (idToken) {
+      // 1A. Verify with Firebase Admin
+      const { adminAuth } = await import("@/lib/firebase-admin");
+      try {
+        const decodedToken = await adminAuth.verifyIdToken(idToken);
+        verifiedPhone = decodedToken.phone_number;
+        if (!verifiedPhone) throw new Error("No phone in token");
+      } catch (error: any) {
+        console.error("Firebase Verification Error:", error);
+        return NextResponse.json({ error: "Invalid or expired session" }, { status: 401 });
       }
-    } catch (error: any) {
-      console.error("Firebase ID Token Verification Error:", error);
-      return NextResponse.json({ error: "Invalid or expired verification token" }, { status: 401 });
+    } else if (otp && phoneNumber) {
+      // 1B. Verify with our Backend (WhatsApp Fallback)
+      const normalizedPhone = phoneNumber.replace(/^\+91|^91/, "");
+      const verification = await prisma.otpVerification.findUnique({
+        where: { phone: normalizedPhone }
+      });
+
+      if (!verification || verification.otp !== otp) {
+        return NextResponse.json({ error: "Invalid OTP code" }, { status: 400 });
+      }
+
+      if (new Date() > verification.expiresAt) {
+        return NextResponse.json({ error: "OTP has expired" }, { status: 400 });
+      }
+
+      verifiedPhone = `+91${normalizedPhone}`;
+      // Clear OTP record
+      await prisma.otpVerification.delete({ where: { phone: normalizedPhone } }).catch(() => {});
     }
 
     // Normalize: Strip +91 for consistency in Prisma
