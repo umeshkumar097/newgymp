@@ -27,7 +27,7 @@ export default function AuthPage() {
     if (typeof window !== "undefined" && !window.recaptchaVerifier) {
       try {
         window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-          'size': 'invisible'
+          'size': 'normal'
         });
       } catch (err) {
         console.error("ReCAPTCHA Link Fail:", err);
@@ -36,12 +36,9 @@ export default function AuthPage() {
   }, []);
 
   const handleSendOtp = async () => {
-    if (!phoneNumber || phoneNumber.length < 10) {
-      setError("Please enter a valid 10-digit phone number");
-      return;
-    }
-
-    const fullPhone = phoneNumber.startsWith("+") ? phoneNumber : `+91${phoneNumber}`;
+    // Pre-parse: Remove any non-numeric things except +
+    const cleanPhone = phoneNumber.replace(/[^\d+]/g, "").replace(/^0+/, "");
+    const fullPhone = cleanPhone.startsWith("+") ? cleanPhone : `+91${cleanPhone}`;
 
     setError(null);
     startTransition(async () => {
