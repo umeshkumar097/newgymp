@@ -57,220 +57,216 @@ export function GymReviewModal({ gym, isOpen, onClose, defaultOnboardingFee = 49
   };
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 backdrop-blur-3xl bg-slate-100/40 transition-all animate-in fade-in duration-500">
-      <div className="bg-white border border-slate-200/60 rounded-[4rem] w-full max-w-6xl max-h-[94vh] shadow-3xl flex flex-col animate-in zoom-in slide-in-from-bottom-8 duration-500 overflow-hidden ring-1 ring-slate-100">
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 md:p-8 backdrop-blur-3xl bg-slate-100/40 transition-all animate-in fade-in duration-500">
+      <div className="bg-white border border-slate-200/60 rounded-[3rem] w-full max-w-6xl max-h-[92vh] shadow-3xl flex flex-col animate-in zoom-in slide-in-from-bottom-8 duration-500 overflow-hidden ring-1 ring-slate-100/50">
         
-        {/* Premium Header */}
-        <div className="bg-slate-50/80 px-12 py-10 flex justify-between items-center border-b border-slate-100 backdrop-blur-xl">
-          <div className="flex items-center space-x-6">
-            <div className="w-16 h-16 rounded-3xl bg-slate-900 flex items-center justify-center text-white shadow-xl shadow-slate-200">
-              <ShieldCheck size={32} className="text-brand-green" />
+        {/* Refined Header */}
+        <div className="bg-white px-10 py-8 flex justify-between items-center border-b border-slate-100">
+          <div className="flex items-center space-x-5">
+            <div className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-lg shadow-slate-200">
+              <ShieldCheck size={24} className="text-brand-green" />
             </div>
-            <div>
-               <div className="flex items-center space-x-3 mb-1">
-                  <span className="text-[10px] font-black text-brand-green uppercase tracking-[0.4em]">Review Protocol</span>
-                  <div className="w-1.5 h-1.5 rounded-full bg-brand-green animate-pulse" />
+            <div className="space-y-0.5">
+               <div className="flex items-center space-x-2">
+                  <span className="text-[9px] font-black text-brand-green uppercase tracking-[0.4em]">Governance Protocol</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-brand-green shrink-0 animate-pulse" />
                </div>
-               <h3 className="text-3xl font-black uppercase tracking-tighter text-slate-900 italic">Elite Hub <span className="text-brand-green underline decoration-slate-200 underline-offset-8">Verification</span></h3>
+               <h3 className="text-xl font-black uppercase tracking-tighter text-slate-900 italic">Hub Verification <span className="text-slate-300 font-medium">/ {gym.name}</span></h3>
             </div>
           </div>
-          <button onClick={onClose} className="w-12 h-12 flex items-center justify-center bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-slate-900 hover:shadow-lg transition-all active:scale-95">
-            <X size={24} />
+          <button onClick={onClose} className="w-10 h-10 flex items-center justify-center bg-slate-50 border border-slate-100 rounded-xl text-slate-400 hover:text-slate-900 hover:shadow-sm transition-all active:scale-95">
+            <X size={20} />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-12 py-12 space-y-16">
+        <div className="flex-1 overflow-y-auto px-10 py-10 space-y-12 bg-slate-50/30">
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
             
             {/* Left Column: Visuals & Identity */}
-            <div className="space-y-12">
-              <section className="space-y-6">
-                <div className="flex items-center justify-between">
-                   <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-300 italic">Hub Visuals & Media</h4>
-                   <span className="text-[9px] font-black text-brand-green uppercase tracking-widest">{gym.imageUrls?.length || 0} Assets</span>
+            <div className="space-y-10">
+              <section className="space-y-4">
+                <div className="flex items-center justify-between px-2">
+                   <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 italic">Facility Documentation</h4>
+                   <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">{gym.imageUrls?.length || 0} Assets Loaded</span>
                 </div>
-                <div className="aspect-[16/10] bg-slate-50 rounded-[3.5rem] border border-slate-100 overflow-hidden relative group shadow-sm ring-1 ring-slate-50">
+                <div className="aspect-[16/10] bg-white rounded-[2rem] border border-slate-200/60 overflow-hidden relative group shadow-sm ring-1 ring-slate-100">
                   {gym.imageUrls && gym.imageUrls.length > 0 ? (
                     <>
-                      <img src={gym.imageUrls[activePhoto]} className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110" alt="gym" />
+                      <img src={gym.imageUrls[activePhoto]} className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-105" alt="gym" />
                       {gym.imageUrls.length > 1 && (
-                        <div className="absolute inset-x-6 top-1/2 -translate-y-1/2 flex justify-between opacity-0 group-hover:opacity-100 transition-all duration-500">
+                        <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 flex justify-between opacity-0 group-hover:opacity-100 transition-all duration-300">
                           <button 
                             onClick={() => setActivePhoto(prev => (prev > 0 ? prev - 1 : gym.imageUrls.length - 1))}
-                            className="w-14 h-14 rounded-2xl bg-white/80 backdrop-blur-xl flex items-center justify-center text-slate-900 shadow-xl border border-white/50 hover:bg-white"
+                            className="w-12 h-12 rounded-xl bg-white/90 backdrop-blur-md flex items-center justify-center text-slate-900 shadow-xl border border-white/50 hover:bg-white"
                           >
-                            <ChevronLeft size={24} />
+                            <ChevronLeft size={20} />
                           </button>
                           <button 
                             onClick={() => setActivePhoto(prev => (prev < gym.imageUrls.length - 1 ? prev + 1 : 0))}
-                            className="w-14 h-14 rounded-2xl bg-white/80 backdrop-blur-xl flex items-center justify-center text-slate-900 shadow-xl border border-white/50 hover:bg-white"
+                            className="w-12 h-12 rounded-xl bg-white/90 backdrop-blur-md flex items-center justify-center text-slate-900 shadow-xl border border-white/50 hover:bg-white"
                           >
-                            <ChevronRight size={24} />
+                            <ChevronRight size={20} />
                           </button>
                         </div>
                       )}
-                      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex space-x-3 bg-white/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
+                      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2.5 bg-white/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/40">
                          {gym.imageUrls.map((_: any, i: number) => (
                            <button 
                              key={i} 
                              onClick={() => setActivePhoto(i)}
-                             className={cn("h-1.5 rounded-full transition-all duration-500", i === activePhoto ? "w-8 bg-brand-green" : "w-2 bg-slate-900/20")} 
+                             className={cn("h-1 rounded-full transition-all duration-500", i === activePhoto ? "w-6 bg-slate-900" : "w-1.5 bg-slate-900/10")} 
                            />
                          ))}
                       </div>
                     </>
                   ) : (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center space-y-4">
-                       <Zap size={48} className="text-slate-100" />
-                       <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.4em]">No Media Assets</span>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center space-y-3 opacity-30">
+                       <Zap size={32} className="text-slate-200" />
+                       <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em]">No Visual Assets</span>
                     </div>
                   )}
                 </div>
                 
-                <div className="p-10 bg-slate-50/50 rounded-[3rem] border border-slate-100 space-y-4">
-                   <h5 className="text-3xl font-black text-slate-900 uppercase tracking-tighter italic">{gym.name}</h5>
-                   <div className="flex items-center text-xs font-bold text-slate-400 uppercase tracking-widest italic leading-relaxed">
-                      <MapPin size={16} className="mr-3 text-brand-green" />
+                <div className="p-8 bg-white rounded-[2rem] border border-slate-200/60 shadow-sm space-y-3">
+                   <h5 className="text-2xl font-black text-slate-900 uppercase tracking-tighter italic">{gym.name}</h5>
+                   <div className="flex items-center text-[11px] font-bold text-slate-400 uppercase tracking-[0.1em] italic">
+                      <MapPin size={14} className="mr-2 text-brand-green/50" />
                       {gym.location}
                    </div>
                 </div>
               </section>
 
-              <section className="space-y-6">
-                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-300 italic">Ownership Protocol</h4>
-                <div className="p-10 bg-white border border-slate-100 rounded-[3rem] grid grid-cols-2 gap-10 shadow-sm">
-                   <div className="space-y-2">
-                      <div className="flex items-center space-x-3 text-slate-300 mb-1">
-                         <User size={14} />
-                         <p className="text-[9px] font-black uppercase tracking-widest">Master Partner</p>
+              <section className="space-y-4">
+                <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 italic px-2">Master Ownership</h4>
+                <div className="p-8 bg-white border border-slate-200/60 rounded-[2rem] grid grid-cols-2 gap-8 shadow-sm">
+                   <div className="space-y-1.5">
+                      <div className="flex items-center space-x-2 text-slate-300">
+                         <User size={12} />
+                         <p className="text-[9px] font-black uppercase tracking-widest">Name</p>
                       </div>
-                      <p className="text-xl font-black text-slate-900 uppercase italic leading-none">{gym.owner?.name || "Unnamed"}</p>
+                      <p className="text-base font-black text-slate-900 uppercase italic">{gym.owner?.name || "N/A"}</p>
                    </div>
-                   <div className="space-y-2 text-right">
-                      <div className="flex items-center justify-end space-x-3 text-slate-300 mb-1">
-                         <Mail size={14} />
-                         <p className="text-[9px] font-black uppercase tracking-widest">Email Identity</p>
+                   <div className="space-y-1.5 text-right">
+                      <div className="flex items-center justify-end space-x-2 text-slate-300">
+                         <Mail size={12} />
+                         <p className="text-[9px] font-black uppercase tracking-widest">Identity</p>
                       </div>
-                      <p className="text-xs font-bold text-slate-500 truncate italic">{gym.owner?.email || "N/A"}</p>
+                      <p className="text-[11px] font-bold text-slate-500 truncate italic">{gym.owner?.email || "N/A"}</p>
                    </div>
                    <div className="col-span-2 pt-4 border-t border-slate-50">
                       <div className="flex items-center justify-between">
-                         <div className="flex items-center space-x-3">
-                            <Phone size={14} className="text-brand-green" />
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">WhatsApp Access</span>
+                         <div className="flex items-center space-x-2">
+                            <Phone size={12} className="text-brand-green/60" />
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Secure Contact</span>
                          </div>
-                         <p className="text-lg font-black text-brand-green tracking-widest tabular-nums italic">{gym.owner?.phone || "NOT PROVIDED"}</p>
+                         <p className="text-base font-black text-brand-green tracking-[0.1em] tabular-nums italic">{gym.owner?.phone || "PENDING"}</p>
                       </div>
                    </div>
                 </div>
               </section>
             </div>
 
-            {/* Right Column: Compliance & Activation */}
-            <div className="space-y-12">
-              <section className="space-y-8">
-                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-300 italic">Compliance Check (KYC)</h4>
+            {/* Right Column: Compliance & Pricing */}
+            <div className="space-y-10">
+              <section className="space-y-6">
+                <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 italic px-2">Compliance Vault (KYC)</h4>
                 
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 gap-4">
                   {[
-                    { label: "PAN CARD ID", value: gym.panNumber, icon: CreditCard, color: "text-brand-green", bg: "bg-brand-green/5" },
-                    { label: "REGISTRATION", value: gym.registrationDocUrl ? "VERIFIED" : "PENDING", icon: Building, color: "text-blue-500", bg: "bg-blue-500/5" },
+                    { label: "PAN ID", value: gym.panNumber, icon: CreditCard, color: "text-brand-green", bg: "bg-slate-50" },
+                    { label: "REGISTRY", value: gym.registrationDocUrl ? "ACTIVE" : "MISSING", icon: Building, color: "text-blue-500", bg: "bg-slate-50" },
                   ].map((doc) => (
-                    <div key={doc.label} className={cn("p-8 rounded-[2.5rem] border border-slate-100 space-y-3 transition-all hover:shadow-lg", doc.bg)}>
-                       <doc.icon size={20} className={doc.color} />
+                    <div key={doc.label} className={cn("p-6 rounded-[1.5rem] border border-slate-100 space-y-2 transition-all hover:border-slate-200", doc.bg)}>
+                       <doc.icon size={16} className={doc.color} />
                        <div>
-                          <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">{doc.label}</p>
-                          <p className="text-sm font-black text-slate-900 truncate uppercase italic">{doc.value || "MISSING"}</p>
+                          <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-0.5">{doc.label}</p>
+                          <p className="text-xs font-black text-slate-900 truncate uppercase italic">{doc.value || "VOID"}</p>
                        </div>
                     </div>
                   ))}
                 </div>
 
-                <div className="space-y-6">
-                   <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-300 italic">Operations Flow</h4>
-                   <div className="grid grid-cols-2 gap-6">
-                      <div className="p-8 bg-slate-50/50 rounded-[2.5rem] border border-slate-100 space-y-3">
-                         <div className="flex items-center space-x-3 text-slate-300">
-                            <Clock size={16} />
-                            <p className="text-[9px] font-black uppercase tracking-widest">Active Window</p>
-                         </div>
-                         <p className="text-sm font-black text-slate-900 uppercase italic leading-none">{gym.openingTime || "06:00 AM"} - {gym.closingTime || "10:00 PM"}</p>
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="p-6 bg-slate-50 rounded-[1.5rem] border border-slate-100 space-y-2">
+                      <div className="flex items-center space-x-2 text-slate-300">
+                         <Clock size={14} />
+                         <p className="text-[8px] font-black uppercase tracking-widest">Timeline</p>
                       </div>
-                      <div className="p-8 bg-slate-50/50 rounded-[2.5rem] border border-slate-100 space-y-3">
-                         <div className="flex items-center space-x-3 text-slate-300">
-                            <AlertCircle size={16} />
-                            <p className="text-[9px] font-black uppercase tracking-widest">Maintenance</p>
-                         </div>
-                         <p className="text-sm font-black text-slate-900 uppercase italic leading-none">{gym.weeklyOffDay || "NON-STOP"}</p>
+                      <p className="text-xs font-black text-slate-900 uppercase italic">{gym.openingTime || "06 AM"} - {gym.closingTime || "10 PM"}</p>
+                   </div>
+                   <div className="p-6 bg-slate-50 rounded-[1.5rem] border border-slate-100 space-y-2">
+                      <div className="flex items-center space-x-2 text-slate-300">
+                         <AlertCircle size={14} />
+                         <p className="text-[8px] font-black uppercase tracking-widest">Protocol</p>
                       </div>
+                      <p className="text-xs font-black text-slate-900 uppercase italic">{gym.weeklyOffDay || "NO OFF"}</p>
                    </div>
                 </div>
 
-                <div className="p-10 bg-slate-900 rounded-[3.5rem] space-y-8 relative overflow-hidden group shadow-2xl">
-                  {/* Dark Pricing Engine Card */}
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-brand-green/10 blur-[80px] -mr-16 -mt-16" />
+                {/* Refined Pricing Engine (Less Massive) */}
+                <div className="p-8 bg-slate-900 rounded-[2.5rem] space-y-6 relative overflow-hidden shadow-xl ring-1 ring-white/5">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-brand-green/10 blur-[60px] -mr-12 -mt-12" />
                   
-                  <div className="relative space-y-8">
+                  <div className="relative space-y-6">
                      <div className="flex justify-between items-center">
-                       <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-brand-green italic">Master Pricing</h4>
-                       <span className="text-[9px] font-black text-slate-500 uppercase italic">Base Rate: ₹{defaultOnboardingFee}</span>
+                       <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-green italic leading-none">Decision Engine</h4>
+                       <span className="text-[8px] font-black text-slate-500 uppercase italic">Base: ₹{defaultOnboardingFee}</span>
                      </div>
                      
-                     <div className="grid grid-cols-2 gap-6">
-                       <div className="space-y-3">
-                          <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] px-2">Discount (%)</p>
-                          <div className="bg-slate-950 border border-white/5 p-6 rounded-[1.5rem] focus-within:border-brand-green/40 transition-all shadow-inner">
+                     <div className="grid grid-cols-2 gap-4">
+                       <div className="space-y-2">
+                          <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.2em] px-1">Discount %</p>
+                          <div className="bg-slate-950 border border-white/5 p-4 rounded-xl focus-within:border-brand-green/40 transition-all shadow-inner">
                              <input 
                                type="number" 
                                placeholder="0"
                                value={discount}
                                onChange={(e) => setDiscount(e.target.value)}
-                               className="bg-transparent border-none outline-none text-2xl font-black text-brand-green w-full placeholder:text-slate-800 tracking-tighter italic" 
+                               className="bg-transparent border-none outline-none text-xl font-black text-brand-green w-full placeholder:text-slate-800 tracking-tighter italic" 
                              />
                           </div>
                        </div>
 
-                       <div className="space-y-3">
-                          <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] px-2">Final Activation Fee</p>
-                          <div className="bg-slate-950 border border-white/5 p-6 rounded-[1.5rem] focus-within:border-brand-green/40 transition-all shadow-inner">
+                       <div className="space-y-2">
+                          <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.2em] px-1">Active Fee</p>
+                          <div className="bg-slate-950 border border-white/5 p-4 rounded-xl focus-within:border-brand-green/40 transition-all shadow-inner">
                              <input 
                                type="number" 
                                value={setupFee}
                                onChange={(e) => setSetupFee(e.target.value)}
-                               className="bg-transparent border-none outline-none text-2xl font-black text-white w-full placeholder:text-slate-800 tracking-tighter italic" 
+                               className="bg-transparent border-none outline-none text-xl font-black text-white w-full placeholder:text-slate-800 tracking-tighter italic" 
                              />
                           </div>
                        </div>
                      </div>
 
-                     <div className="space-y-4">
-                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] px-2">Reason for Decision (Internal Log)</p>
+                     <div className="space-y-3">
                         <textarea 
-                          placeholder="e.g. Documentation verified, gym standards match elite criteria..."
+                          placeholder="Internal decision notes..."
                           value={rejectionReason}
                           onChange={(e) => setRejectionReason(e.target.value)}
-                          className="w-full bg-slate-950 border border-white/5 p-6 rounded-[1.5rem] focus:border-brand-green/40 transition-all shadow-inner text-xs font-bold text-slate-300 placeholder:text-slate-800 min-h-[100px] outline-none italic"
+                          className="w-full bg-slate-950 border border-white/5 p-4 rounded-xl focus:border-brand-green/40 transition-all shadow-inner text-[11px] font-bold text-slate-400 placeholder:text-slate-800 min-h-[80px] outline-none italic"
                         />
                      </div>
 
-                     <div className="flex gap-4 pt-4">
+                     <div className="flex gap-3 pt-2">
                        <button 
                          disabled={isPending}
                          onClick={handleReject}
-                         className="flex-1 bg-white/5 border border-white/5 text-slate-500 font-black py-6 rounded-[2rem] text-[10px] uppercase tracking-[0.3em] hover:bg-red-500/10 hover:text-red-500 transition-all active:scale-95 italic"
+                         className="flex-1 bg-white/5 border border-white/5 text-slate-500 font-black py-4.5 rounded-[1.2rem] text-[9px] uppercase tracking-[0.2em] hover:bg-red-500/10 hover:text-red-500 transition-all italic"
                        >
                          {isPending ? "..." : "Reject"}
                        </button>
                        <button 
                          disabled={isPending}
                          onClick={handleApprove}
-                         className="flex-[2.5] bg-brand-green text-slate-950 font-black py-6 rounded-[2rem] text-[11px] uppercase tracking-[0.3em] active:scale-95 transition-all shadow-xl shadow-brand-green/20 flex items-center justify-center space-x-3 italic"
+                         className="flex-[2] bg-brand-green text-slate-950 font-black py-4.5 rounded-[1.2rem] text-[10px] uppercase tracking-[0.2em] transition-all shadow-lg active:scale-95 flex items-center justify-center space-x-2 italic"
                        >
-                         {isPending ? <Loader2 className="animate-spin text-slate-950" size={20} /> : (
+                         {isPending ? <Loader2 className="animate-spin" size={16} /> : (
                            <>
-                             <span>Approve Hub</span>
-                             <ChevronRight size={18} />
+                             <span>Activate Hub</span>
+                             <ChevronRight size={14} />
                            </>
                          )}
                        </button>
@@ -282,8 +278,12 @@ export function GymReviewModal({ gym, isOpen, onClose, defaultOnboardingFee = 49
           </div>
         </div>
         
-        <div className="bg-slate-50 px-12 py-6 border-t border-slate-100 text-center">
-           <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.8em] italic">PassFit Governance Mode • Enterprise Secure Port</p>
+        <div className="bg-white px-10 py-5 border-t border-slate-100 flex items-center justify-between">
+           <p className="text-[9px] font-black text-slate-300 uppercase tracking-[0.5em] italic">Enterprise Vault Access • Secured Node</p>
+           <div className="flex items-center space-x-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-brand-green" />
+              <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Stable Encryption</span>
+           </div>
         </div>
       </div>
     </div>
