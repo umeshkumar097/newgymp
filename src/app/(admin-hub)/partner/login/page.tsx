@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Store, Phone, ArrowRight, ShieldCheck, Loader2, ArrowLeft, Zap } from "lucide-react";
+import { Store, Phone, ArrowRight, ShieldCheck, Loader2, ArrowLeft, Zap, Mail, Lock, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
@@ -89,155 +89,174 @@ export default function PartnerLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0F172A] flex items-center justify-center p-6 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 relative overflow-hidden font-sans">
       
-      {/* Brand Gradients */}
-      <div className="absolute -top-[10%] -right-[10%] w-[50%] h-[50%] bg-brand-green/5 blur-[150px] rounded-full" />
-      <div className="absolute -bottom-[10%] -left-[10%] w-[50%] h-[50%] bg-brand-blue/5 blur-[150px] rounded-full" />
+      {/* Premium Light Gradients */}
+      <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-brand-green/5 blur-[120px] rounded-full animate-pulse" />
+      <div className="absolute bottom-[-20%] left-[-10%] w-[60%] h-[60%] bg-brand-green/5 blur-[120px] rounded-full animate-pulse delay-1000" />
 
-      <div className="w-full max-w-md space-y-8 relative z-10">
+      <div className="w-full max-w-md space-y-10 relative z-10">
         <div className="text-center space-y-4">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-[1.5rem] bg-brand-green shadow-2xl shadow-brand-green/20 mb-2">
-            <Store size={28} className="text-[#0F172A]" />
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-[2rem] bg-white shadow-2xl shadow-slate-200/50 border border-slate-50 mb-2 group hover:scale-110 transition-all duration-500">
+            <Store size={32} className="text-brand-green transition-transform group-hover:rotate-12" />
           </div>
-          <h1 className="text-4xl font-extrabold font-heading text-white tracking-tighter uppercase leading-none">
-            PassFit <span className="text-brand-green">Partner</span>
-          </h1>
-          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Gym Management Access</p>
+          <div className="space-y-1">
+            <h1 className="text-5xl font-black font-heading text-slate-900 tracking-tighter uppercase leading-none italic">
+                PassFit <span className="text-brand-green">Partner</span>
+            </h1>
+            <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.4em] pl-1">Gym Management Access</p>
+          </div>
         </div>
 
-        <div className="bg-slate-900/40 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] p-10 shadow-2xl space-y-8">
+        <div className="bg-white/80 backdrop-blur-3xl border border-white rounded-[3.5rem] p-12 shadow-3xl shadow-slate-200/50 space-y-10">
           
           {/* Auth Mode Toggle */}
           {step === "PHONE" && (
-            <div className="flex p-1 bg-slate-950 border border-white/5 rounded-2xl">
-              <button 
-                onClick={() => setAuthMode("OTP")}
-                className={cn(
-                  "flex-1 py-3 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all",
-                  authMode === "OTP" ? "bg-brand-green text-[#0F172A]" : "text-slate-500"
-                )}
-              >
-                OTP Mode
-              </button>
-              <button 
-                onClick={() => setAuthMode("PASSWORD")}
-                className={cn(
-                  "flex-1 py-3 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all",
-                  authMode === "PASSWORD" ? "bg-white text-[#0F172A]" : "text-slate-500"
-                )}
-              >
-                Password
-              </button>
+            <div className="flex p-1.5 bg-slate-50 border border-slate-100 rounded-2xl">
+              {["OTP", "PASSWORD"].map((mode) => (
+                <button 
+                  key={mode}
+                  onClick={() => { setAuthMode(mode as any); setError(null); }}
+                  className={cn(
+                    "flex-1 py-3.5 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all",
+                    authMode === mode ? "bg-white text-slate-900 shadow-md" : "text-slate-400 hover:text-slate-600"
+                  )}
+                >
+                  {mode === "OTP" ? "OTP Login" : "Security Pwd"}
+                </button>
+              ))}
             </div>
           )}
 
           {step === "PHONE" ? (
             authMode === "OTP" ? (
-              <form onSubmit={handleSendOtp} className="space-y-8">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-600 px-1">Partner WhatsApp</label>
-                  <div className="flex items-center space-x-4 bg-white/5 border border-white/5 p-5 rounded-2xl focus-within:border-brand-green/30 transition-all">
-                    <Phone size={18} className="text-slate-700" />
+              <form onSubmit={handleSendOtp} className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2 leading-none">Partner WhatsApp</label>
+                  <div className="flex items-center space-x-5 bg-slate-50 border border-slate-100 p-6 rounded-[1.5rem] focus-within:bg-white focus-within:border-brand-green/30 focus-within:shadow-lg transition-all group">
+                    <Phone size={20} className="text-slate-300 group-focus-within:text-brand-green transition-colors" />
                     <input 
                       type="tel" 
                       value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      placeholder="Enter Phone Number" 
-                      className="bg-transparent border-none outline-none text-sm font-bold text-white w-full"
+                      onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ""))}
+                      placeholder="84494 88090" 
+                      className="bg-transparent border-none outline-none text-sm font-extrabold text-slate-900 w-full placeholder:text-slate-200"
                       maxLength={10}
                       required
                     />
                   </div>
                 </div>
 
-                {error && <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-[10px] font-bold text-center uppercase tracking-widest leading-relaxed">{error}</div>}
+                {error && (
+                  <div className="p-5 bg-red-50 border border-red-100 rounded-2xl text-red-500 text-[10px] font-black text-center uppercase tracking-widest leading-relaxed animate-shake">
+                    {error}
+                  </div>
+                )}
 
                 <button 
-                  type="submit"
-                  disabled={isPending || phoneNumber.length < 10}
-                  className="w-full bg-brand-green text-[#0F172A] font-bold py-5 rounded-2xl shadow-xl flex items-center justify-center space-x-3 active:scale-95 transition-all text-xs uppercase tracking-widest"
+                   type="submit"
+                   disabled={isPending || phoneNumber.length < 10}
+                   className="w-full bg-slate-900 text-white font-black py-7 rounded-[2rem] shadow-2xl flex items-center justify-center space-x-3 active:scale-95 transition-all text-[11px] uppercase tracking-[0.3em] overflow-hidden group shadow-slate-200/50"
                 >
                   {isPending ? <Loader2 className="animate-spin" size={20} /> : (
                     <>
-                      <span>Secure Access</span>
-                      <ArrowRight size={18} />
+                      <span className="relative z-10">Request Access Code</span>
+                      <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />
                     </>
                   )}
                 </button>
               </form>
             ) : (
-              <form onSubmit={handlePasswordLogin} className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-600 px-1">Email / Partner ID</label>
-                  <input 
-                    type="email" 
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="partner@passfit.in" 
-                    className="w-full bg-white/5 border border-white/5 p-5 rounded-2xl text-sm font-bold text-white outline-none focus:border-white/20 transition-all"
-                    required
-                  />
+              <form onSubmit={handlePasswordLogin} className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2">Partner Email</label>
+                  <div className="flex items-center space-x-5 bg-slate-50 border border-slate-100 p-6 rounded-[1.5rem] focus-within:bg-white focus-within:border-brand-green/30 focus-within:shadow-lg transition-all shadow-sm">
+                    <Mail size={20} className="text-slate-300" />
+                    <input 
+                      type="email" 
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="GYM@PASSFIT.IN" 
+                      className="bg-transparent border-none outline-none text-sm font-extrabold text-slate-900 w-full placeholder:text-slate-200"
+                      required
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-600 px-1">Password</label>
-                  <input 
-                    type="password" 
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••" 
-                    className="w-full bg-white/5 border border-white/5 p-5 rounded-2xl text-sm font-bold text-white outline-none focus:border-white/20 transition-all"
-                    required
-                  />
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2">Security ID</label>
+                  <div className="flex items-center space-x-5 bg-slate-50 border border-slate-100 p-6 rounded-[1.5rem] focus-within:bg-white focus-within:border-brand-green/30 focus-within:shadow-lg transition-all shadow-sm">
+                    <Lock size={20} className="text-slate-300" />
+                    <input 
+                      type="password" 
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••" 
+                      className="bg-transparent border-none outline-none text-sm font-extrabold text-slate-900 w-full placeholder:text-slate-200"
+                      required
+                    />
+                  </div>
                 </div>
 
-                {error && <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-[10px] font-bold text-center uppercase tracking-widest leading-relaxed">{error}</div>}
+                {error && (
+                   <div className="p-5 bg-red-50 border border-red-100 rounded-2xl text-red-500 text-[10px] font-black text-center uppercase tracking-widest leading-relaxed">
+                     {error}
+                   </div>
+                )}
 
                 <button 
                   type="submit"
                   disabled={isPending}
-                  className="w-full bg-white text-[#0F172A] font-bold py-5 rounded-2xl shadow-xl flex items-center justify-center space-x-3 active:scale-95 transition-all text-xs uppercase tracking-widest"
+                  className="w-full bg-slate-900 text-white font-black py-7 rounded-[2rem] shadow-2xl flex items-center justify-center space-x-3 active:scale-95 transition-all text-[11px] uppercase tracking-[0.3em] shadow-slate-200/50"
                 >
                   {isPending ? <Loader2 className="animate-spin" size={20} /> : (
                     <>
-                      <span>Partner Login</span>
-                      <Zap size={18} />
+                      <span>Enter Dashboard</span>
+                      <Zap size={18} className="text-brand-green fill-brand-green" />
                     </>
                   )}
                 </button>
               </form>
             )
           ) : (
-            <form onSubmit={handleVerifyOtp} className="space-y-8">
-               <div className="flex justify-between items-center">
-                  <h2 className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Security Code</h2>
-                  <button type="button" onClick={() => setStep("PHONE")} className="text-[10px] font-bold text-brand-green uppercase tracking-widest flex items-center">
-                    <ArrowLeft size={12} className="mr-1" />
-                    Back
+            <form onSubmit={handleVerifyOtp} className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+               <div className="flex justify-between items-center text-center">
+                  <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-900 italic">Verify Identity</h2>
+                  <button type="button" onClick={() => setStep("PHONE")} className="text-[10px] font-black text-brand-green uppercase tracking-[0.2em] flex items-center hover:scale-105 transition-all">
+                    <ArrowLeft size={14} className="mr-2" />
+                    Change
                   </button>
                </div>
                
-               <input 
-                  type="text" 
-                  value={otp} 
-                  onChange={(e) => setOtp(e.target.value)} 
-                  placeholder="0000" 
-                  maxLength={4} 
-                  autoFocus
-                  className="w-full bg-white/5 border border-white/10 p-8 rounded-2xl text-5xl text-center font-bold text-brand-green tracking-[0.4em] outline-none placeholder:text-slate-800" 
-               />
+               <div className="relative group">
+                   <input 
+                      type="text" 
+                      value={otp} 
+                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))} 
+                      placeholder="0000" 
+                      maxLength={4} 
+                      autoFocus
+                      className="w-full bg-slate-50 border-2 border-dashed border-slate-200 p-8 rounded-[2rem] text-6xl text-center font-black text-slate-900 tracking-[0.5em] outline-none placeholder:text-slate-100 focus:bg-white focus:border-brand-green focus:border-solid transition-all" 
+                   />
+                   <div className="absolute bottom-[-10px] left-1/2 -translate-x-1/2 px-4 py-1 bg-white border border-slate-100 rounded-full text-[8px] font-black uppercase tracking-widest text-slate-400 group-focus-within:text-brand-green transition-colors">
+                       SENT VIA WHATSAPP
+                   </div>
+               </div>
 
-               {error && <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-[10px] font-bold text-center uppercase tracking-widest leading-relaxed">{error}</div>}
+               {error && (
+                  <div className="p-5 bg-red-50 border border-red-100 rounded-2xl text-red-500 text-[10px] font-black text-center uppercase tracking-widest leading-relaxed">
+                    {error}
+                  </div>
+               )}
 
                <button 
                   type="submit"
                   disabled={isPending || otp.length !== 4}
-                  className="w-full bg-white text-[#0F172A] font-bold py-5 rounded-2xl shadow-2xl flex items-center justify-center space-x-3 active:scale-95 transition-all text-xs uppercase tracking-widest"
+                  className="w-full bg-slate-900 text-white font-black py-7 rounded-[2rem] shadow-2xl flex items-center justify-center space-x-3 active:scale-95 transition-all text-[11px] uppercase tracking-[0.4em] shadow-slate-200/50"
                >
-                  {isPending ? <Loader2 className="animate-spin" size={20} /> : (
+                  {isPending ? <Loader2 className="animate-spin" size={24} /> : (
                     <>
-                      <span>Open Dashboard</span>
-                      <ShieldCheck size={18} />
+                      <span>Open Hub</span>
+                      <ShieldCheck size={20} className="text-brand-green" />
                     </>
                   )}
                </button>
@@ -245,9 +264,18 @@ export default function PartnerLoginPage() {
           )}
         </div>
 
-        <p className="text-center text-[9px] text-slate-700 font-bold uppercase tracking-[0.5em]">
-          Version 3.5.0 • Aiclex Enterprise
-        </p>
+        <div className="flex flex-col items-center space-y-6 pt-4">
+             <div className="flex items-center space-x-6">
+                 <div className="h-[1px] w-12 bg-slate-200" />
+                 <p className="text-[9px] text-slate-300 font-bold uppercase tracking-[0.4em]">Secure Hub v3.5</p>
+                 <div className="h-[1px] w-12 bg-slate-200" />
+             </div>
+             
+             <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center space-x-2 opacity-50">
+                 <Lock size={10} />
+                 <span>Aiclex Enterprise Port ⚡</span>
+             </div>
+        </div>
       </div>
     </div>
   );
