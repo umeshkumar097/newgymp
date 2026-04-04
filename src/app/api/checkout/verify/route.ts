@@ -48,8 +48,7 @@ export async function POST(req: Request) {
       try {
         await sendWhatsAppOTP(
           bookingData.customerPhone || "9999999999", 
-          otp, 
-          bookingData.gymName || "PassFit Gym"
+          otp
         );
         console.log("WhatsApp OTP sent successfully");
       } catch (wsError) {
