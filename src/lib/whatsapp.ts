@@ -1,7 +1,8 @@
 import axios from "axios";
 
-const WHATSAPP_API_URL = `https://graph.facebook.com/v21.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
-const ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
+const PHONE_ID = (process.env.WHATSAPP_PHONE_NUMBER_ID || "").trim();
+const ACCESS_TOKEN = (process.env.WHATSAPP_ACCESS_TOKEN || "").trim();
+const WHATSAPP_API_URL = `https://graph.facebook.com/v20.0/${PHONE_ID}/messages`;
 
 export async function sendWhatsAppOTP(phoneNumber: string, otp: string) {
   try {

@@ -30,8 +30,9 @@ export const NotificationEngine = {
       await sendWhatsAppOTP(phone, otp);
       report.whatsapp = true;
     } catch (e: any) {
-      console.error(`[AUTH] WhatsApp Error:`, e.message);
-      report.error += `WhatsApp: ${e.message}. `;
+      const msg = e.response?.data?.error?.message || e.message;
+      console.error(`[AUTH] WhatsApp Error:`, msg);
+      report.error += `WHATSAPP: ${msg}. `;
     }
 
     // 2. Email Delivery
@@ -43,7 +44,7 @@ export const NotificationEngine = {
           <div style="font-family: sans-serif; max-width: 600px; padding: 20px; border: 1px solid #e5e7eb; border-radius: 12px;">
             <h2 style="color: #10b981;">PassFit Verification</h2>
             <p>Hello ${userName},</p>
-            <p>Your one-time password (OTP) is: <strong>${otp}</strong></p>
+            <p>Your verification code is: <strong>${otp}</strong></p>
             <p style="font-size: 14px; color: #6b7280;">Do not share this code.</p>
           </div>
         `;
@@ -51,8 +52,10 @@ export const NotificationEngine = {
         report.email = true;
       } catch (e: any) {
         console.error(`[AUTH] Email Error:`, e.message);
-        report.error += `Email: ${e.message}. `;
+        report.error += `EMAIL: ${e.message}. `;
       }
+    } else {
+      report.error += "EMAIL: No address provided for register. ";
     }
 
     return report;
