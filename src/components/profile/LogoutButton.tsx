@@ -3,15 +3,17 @@
 import React from "react";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 
 export function LogoutButton() {
   const router = useRouter();
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
-      router.push("/auth");
-      router.refresh(); // Refresh to clear server-side state
+      await signOut({ 
+        callbackUrl: "/auth",
+        redirect: true 
+      });
     } catch (err) {
       console.error("Logout failed", err);
     }
