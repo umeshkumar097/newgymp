@@ -53,7 +53,7 @@ export async function POST(req: Request) {
       // Welcome notification
       await NotificationEngine.sendWelcomePartner({ 
         email: user.email, 
-        name: user.name, 
+        name: user.name || "User", 
         phone: user.phone 
       }).catch(e => console.error("Welcome Notification Error:", e));
 
