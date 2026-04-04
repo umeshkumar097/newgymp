@@ -2,10 +2,11 @@
 
 import React, { useState } from "react";
 import { 
-  ShieldCheck, MapPin, Clock, ArrowRight, Eye, Store, AlertCircle 
+  ShieldCheck, MapPin, Clock, ArrowRight, Store, Info 
 } from "lucide-react";
 import { GymReviewModal } from "../GymReviewModal";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 export function VerificationDesk({ 
   gyms, 
@@ -19,86 +20,97 @@ export function VerificationDesk({
   const [selectedGym, setSelectedGym] = useState<any>(null);
 
   return (
-    <div className="space-y-10 animate-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
       
-      <div className="flex items-center justify-between mb-10 px-4">
-         <div className="space-y-2">
-            <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic">Verification Desk</h2>
-            <p className="text-sm font-medium text-slate-400">Review and verify incoming gym partner applications.</p>
+      {/* Verification Header Section */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 px-4">
+         <div className="space-y-3">
+            <div className="flex items-center space-x-3 text-brand-green">
+               <ShieldCheck size={20} />
+               <span className="text-[10px] font-black uppercase tracking-[0.3em]">Compliance Protocol Active</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black text-slate-900 uppercase tracking-tighter italic leading-none">Verification <span className="text-brand-green underline decoration-slate-100 underline-offset-8">Desk</span></h2>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest italic">Reviewing India's most elite fitness hubs.</p>
          </div>
-         <div className="flex items-center space-x-6 bg-zinc-900 border border-white/10 rounded-3xl px-8 py-5 shadow-3xl">
-            <Clock size={20} className="text-orange-500" />
+         
+         <div className="flex items-center space-x-6 bg-white border border-slate-100 rounded-[2.5rem] px-8 py-6 shadow-xl shadow-slate-200/50">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 border border-amber-100">
+               <Clock size={22} />
+            </div>
             <div>
-               <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Avg Wait Time</p>
-               <p className="text-lg font-black text-white tracking-tight">{waitTime}</p>
+               <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">Live Wait Time</p>
+               <p className="text-xl font-black text-slate-900 tracking-tighter italic">{waitTime}</p>
             </div>
          </div>
       </div>
 
-      <div className="bg-zinc-900 border border-white/10 rounded-[3.5rem] overflow-hidden shadow-3xl">
+      {/* Main Table Container */}
+      <div className="bg-white border border-slate-100 rounded-[3.5rem] overflow-hidden shadow-2xl shadow-slate-200/40 relative">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead className="bg-zinc-950/50 border-b border-white/10">
+            <thead className="bg-slate-50/50 border-b border-slate-100">
               <tr>
-                <th className="p-10 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Gym Hub & Identity</th>
-                <th className="p-10 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Owner Contact</th>
-                <th className="p-10 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Location</th>
-                <th className="p-10 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Application Date</th>
-                <th className="p-10 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 text-right">Actions</th>
+                <th className="p-10 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 italic">Hub Identity</th>
+                <th className="p-10 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 italic">Owner Details</th>
+                <th className="p-10 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 italic">Territory</th>
+                <th className="p-10 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 italic">Submission</th>
+                <th className="p-10 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 italic text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-slate-50">
               {gyms.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-28 text-center bg-zinc-950/20">
+                  <td colSpan={5} className="p-32 text-center bg-white">
                     <div className="flex flex-col items-center space-y-8 opacity-20">
-                      <ShieldCheck size={72} strokeWidth={1} />
-                      <p className="text-sm font-black uppercase tracking-[0.4em]">All applications cleared</p>
+                      <div className="w-24 h-24 rounded-full border-2 border-dashed border-slate-300 flex items-center justify-center">
+                         <ShieldCheck size={48} strokeWidth={1} className="text-slate-400" />
+                      </div>
+                      <p className="text-sm font-black uppercase tracking-[0.5em] text-slate-500 italic">Vault Cleared • 0 Pending</p>
                     </div>
                   </td>
                 </tr>
               ) : (
                 gyms.map((gym: any) => (
-                  <tr key={gym.id} className="hover:bg-zinc-900 transition-all group border-white/5">
+                  <tr key={gym.id} className="hover:bg-slate-50/50 transition-all group">
                     <td className="p-10">
                       <div className="flex items-center space-x-6">
-                         <div className="w-16 h-16 rounded-2xl bg-zinc-950 flex items-center justify-center shrink-0 border border-white/5 overflow-hidden shadow-2xl group-hover:scale-105 transition-transform duration-500">
+                         <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center shrink-0 border border-slate-100 overflow-hidden shadow-sm group-hover:scale-105 transition-transform duration-500">
                             {gym.imageUrls && gym.imageUrls[0] ? (
-                               <Image src={gym.imageUrls[0]} alt="" width={64} height={64} className="object-cover w-full h-full" />
+                               <Image src={gym.imageUrls[0]} alt="" width={64} height={64} className="object-cover w-full h-full opacity-90 group-hover:opacity-100" />
                             ) : (
-                               <Store size={26} className="text-slate-600" />
+                               <Store size={26} className="text-slate-300" />
                             )}
                          </div>
                          <div>
-                            <div className="text-lg font-black text-white uppercase tracking-tight group-hover:text-brand-green transition-colors">{gym.name}</div>
-                            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">HUB CODE: {gym.id.substring(0, 8).toUpperCase()}</div>
+                            <div className="text-lg font-black text-slate-900 uppercase tracking-tight group-hover:text-brand-green transition-colors italic">{gym.name}</div>
+                            <div className="text-[10px] font-black text-slate-300 uppercase tracking-widest mt-1">ID: {gym.id.substring(0, 8).toUpperCase()}</div>
                          </div>
                       </div>
                     </td>
                     <td className="p-10">
-                      <div className="space-y-1.5">
-                         <div className="text-sm font-black text-slate-200 tracking-wide uppercase">{gym.owner?.name || "Unnamed"}</div>
-                         <div className="text-sm font-medium text-slate-400 lowercase">{gym.owner?.email}</div>
+                      <div className="space-y-1">
+                         <div className="text-sm font-black text-slate-700 tracking-wide uppercase italic">{gym.owner?.name || "Partner"}</div>
+                         <div className="text-[11px] font-bold text-slate-400 lowercase tracking-tight italic">{gym.owner?.email}</div>
                       </div>
                     </td>
                     <td className="p-10">
-                      <div className="flex items-center text-sm font-black text-slate-400 uppercase tracking-tighter">
-                         <MapPin size={16} className="mr-3 text-brand-blue" />
+                      <div className="flex items-center text-xs font-black text-slate-400 uppercase tracking-widest italic group-hover:text-slate-600 transition-colors">
+                         <MapPin size={16} className="mr-3 text-brand-green/40" />
                          {gym.location}
                       </div>
                     </td>
                     <td className="p-10">
-                      <div className="space-y-1.5">
-                         <div className="text-sm font-black text-slate-100 italic tracking-tight">{new Date(gym.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}</div>
-                         <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{new Date(gym.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</div>
+                      <div className="space-y-1">
+                         <div className="text-sm font-black text-slate-700 italic tracking-tight">{new Date(gym.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                         <div className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Received AT {new Date(gym.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                       </div>
                     </td>
                     <td className="p-10 text-right">
                        <button 
                          onClick={() => setSelectedGym(gym)}
-                         className="inline-flex items-center space-x-3 bg-white text-zinc-950 px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-3xl hover:bg-brand-green transition-all active:scale-95 group/btn"
+                         className="inline-flex items-center space-x-3 bg-slate-900 text-white px-8 py-4 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-brand-green hover:scale-[1.02] transition-all active:scale-95 group/btn italic"
                        >
-                          <span>Review Mode</span>
+                          <span>Review Application</span>
                           <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
                        </button>
                     </td>
@@ -110,14 +122,15 @@ export function VerificationDesk({
         </div>
       </div>
 
-      <div className="bg-brand-blue/5 border border-brand-blue/20 rounded-[2.5rem] p-10 flex items-start space-x-6 shadow-4xl shadow-brand-blue/5">
-         <div className="w-12 h-12 rounded-2xl bg-brand-blue flex items-center justify-center shrink-0 shadow-lg shadow-brand-blue/20">
-            <AlertCircle size={24} className="text-zinc-950" />
+      {/* Protocol Note */}
+      <div className="bg-slate-50/50 border border-slate-100 rounded-[3rem] p-10 flex items-start space-x-8 shadow-sm group">
+         <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-sm border border-slate-100 group-hover:scale-110 transition-transform duration-500">
+            <Info size={24} className="text-brand-green" />
          </div>
          <div className="space-y-2">
-            <p className="text-[11px] font-black text-brand-blue uppercase tracking-[0.2em]">Compliance Protocol</p>
-            <p className="text-sm font-medium text-slate-400 leading-relaxed uppercase tracking-tight">
-               High-resolution KYC documents are critical for GST-registered fitness centers. Ensure photos accurately represent the facility quality before granting premium status.
+            <p className="text-[11px] font-black text-brand-green uppercase tracking-[0.4em] italic underline decoration-brand-green/20 underline-offset-4">Quality Control Protocol</p>
+            <p className="text-xs font-bold text-slate-400 leading-relaxed uppercase tracking-widest italic">
+               High-resolution KYC documents are critical for elite verification. Ensure images accurately reflect facility premium standards before activation.
             </p>
          </div>
       </div>

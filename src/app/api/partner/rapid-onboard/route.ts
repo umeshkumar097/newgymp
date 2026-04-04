@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hash } from "bcryptjs";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 
 export async function POST(req: Request) {
   try {
@@ -84,6 +85,9 @@ export async function POST(req: Request) {
       maxAge: 30 * 24 * 60 * 60,
       path: "/",
     });
+
+    // 5. Revalidate Admin Path
+    revalidatePath("/admin/gyms");
 
     return NextResponse.json({ 
       success: true, 

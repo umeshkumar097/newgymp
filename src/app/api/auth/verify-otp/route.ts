@@ -70,13 +70,30 @@ export async function POST(req: Request) {
       { expiresIn: "7d" }
     );
 
-    // 6. Set Cookie
+    // 6. Set Cookies
     const cookieStore = await cookies();
     cookieStore.set("auth_token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 7, 
+      path: "/",
+    });
+
+    // Set legacy cookies for dashboard compatibility
+    cookieStore.set("user_id", user.id, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7,
+      path: "/",
+    });
+
+    cookieStore.set("user_role", user.role, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7,
       path: "/",
     });
 
