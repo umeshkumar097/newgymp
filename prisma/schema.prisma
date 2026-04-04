@@ -32,6 +32,7 @@ model User {
   reviews        Review[]
   supportTickets SupportTicket[]
   transactions   Transaction[]
+  fcmToken       String?
 }
 
 model Gym {

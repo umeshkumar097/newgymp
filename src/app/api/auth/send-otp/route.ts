@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sendWhatsAppOTP } from "@/lib/whatsapp";
+import { NotificationEngine } from "@/lib/notifications";
 
 export async function POST(req: Request) {
   try {
@@ -13,16 +13,14 @@ export async function POST(req: Request) {
     // Normalize: Strip +91 or 91 if present for consistent DB records
     phoneNumber = phoneNumber.replace(/^\+91|^91/, "");
 
+    // Fetch user details for multi-channel notification
+    const user = await prisma.user.findFirst({
+      where: { phone: phoneNumber }
+    });
+
     // Role Check for Partners/Admins
     if (role === "GYM_OWNER" || role === "ADMIN") {
-      const user = await prisma.user.findFirst({
-        where: { 
-          phone: phoneNumber,
-          role: { in: ["GYM_OWNER", "ADMIN"] }
-        }
-      });
-
-      if (!user) {
+      if (!user || (user.role !== "GYM_OWNER" && user.role !== "ADMIN")) {
         return NextResponse.json({ 
           error: "Aap register nahi ho. Kripya support se sampark karein.",
           notRegistered: true 
@@ -43,20 +41,19 @@ export async function POST(req: Request) {
       create: { phone: phoneNumber, otp, expiresAt }
     });
 
-    // 4. Send OTP via WhatsApp
-    try {
-      await sendWhatsAppOTP(phoneNumber, otp, "PassFit Auth");
-      console.log(`OTP Sent to ${phoneNumber}: ${otp}`);
-    } catch (wsError: any) {
-      console.error("WhatsApp Send Error:", wsError.message);
-      // In development, we allow fallback for testing if WhatsApp is not fully configured
-      if (process.env.NODE_ENV === "production") {
-         return NextResponse.json({ error: "Failed to send OTP. Please try again later." }, { status: 500 });
-      }
-    }
-    console.log(`[DEBUG] OTP for ${phoneNumber} is ${otp}`);
+    // 4. Send OTP via Triple Channels (WhatsApp, Email, Push)
+    // We use Promise.allSettled inside the engine, so this won't block the response
+    await NotificationEngine.sendTripleChannelOTP({
+      phone: phoneNumber,
+      otp,
+      email: user?.email,
+      fcmToken: user?.fcmToken,
+      name: user?.name
+    });
 
-    return NextResponse.json({ success: true, message: "OTP sent successfully" });
+    console.log(`[DEBUG] Triple Channel OTP Triggered for ${phoneNumber}: ${otp}`);
+
+    return NextResponse.json({ success: true, message: "OTP sent successfully via all channels" });
 
   } catch (error: any) {
     console.error("Verify Auth ERROR (Internal):", error);

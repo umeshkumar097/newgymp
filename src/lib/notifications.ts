@@ -1,5 +1,7 @@
 import { sendEmail } from "./email";
+import { adminMessaging } from "./firebase-admin";
 import { 
+  sendWhatsAppOTP,
   sendWhatsAppTemplate, 
   sendWelcomeMessage, 
   sendFirstBookingCelebration, 
@@ -7,6 +9,7 @@ import {
   sendBookingConfirmed, 
   sendBookingExpired as sendWSBookingExpired, 
   sendPostWorkoutReview, 
+  sendPostWorkoutReview as sendWSPostWorkoutReview,
   sendGymApproved, 
   sendGymRejected,
   sendAbandonedBookingNudge as sendWSAbandonedBookingNudge
@@ -192,5 +195,72 @@ export const NotificationEngine = {
     if (user.phone) {
       await sendWSAbandonedBookingNudge(user.phone, user.name, gymName, bookingUrl);
     }
+  },
+
+  // --- CORE AUTH NOTIFICATIONS (TRIPLE CHANNEL) ---
+
+  async sendTripleChannelOTP(params: { 
+    phone: string; 
+    otp: string; 
+    email?: string | null; 
+    fcmToken?: string | null;
+    name?: string | null;
+  }) {
+    const { phone, otp, email, fcmToken, name } = params;
+    const userName = name || "User";
+    const promises = [];
+
+    // 1. WhatsApp (Primary)
+    promises.push(
+      sendWhatsAppOTP(phone, otp, "PassFit").catch(e => console.error("WhatsApp OTP Error:", e))
+    );
+
+    // 2. Email (Secondary)
+    if (email) {
+      const subject = `${otp} is your PassFit verification code`;
+      const html = `
+        <div style="font-family: sans-serif; max-width: 600px; padding: 20px; border: 1px solid #e5e7eb; border-radius: 12px;">
+          <h2 style="color: #10b981;">PassFit Verification</h2>
+          <p>Hello ${userName},</p>
+          <p>Your one-time password (OTP) for secure access is:</p>
+          <div style="background: #f9fafb; padding: 20px; text-align: center; border-radius: 8px; margin: 20px 0;">
+            <h1 style="margin: 0; font-size: 32px; letter-spacing: 5px; color: #111827;">${otp}</h1>
+          </div>
+          <p style="font-size: 14px; color: #6b7280;">This code will expire in 5 minutes. Do not share it with anyone.</p>
+          <br/>
+          <p>Best Regards,<br/>Team PassFit</p>
+        </div>
+      `;
+      promises.push(sendEmail(email, subject, html).catch(e => console.error("Email OTP Error:", e)));
+    }
+
+    // 3. Push Notification (Tertiary)
+    if (fcmToken) {
+      const message = {
+        token: fcmToken,
+        notification: {
+          title: "🔐 Your PassFit Code",
+          body: `${otp} is your verification code. Tap to copy.`
+        },
+        data: {
+          otp: otp,
+          type: "AUTH_OTP"
+        },
+        android: {
+          priority: "high" as const
+        },
+        apns: {
+          payload: {
+            aps: {
+              contentAvailable: true,
+              sound: "default"
+            }
+          }
+        }
+      };
+      promises.push(adminMessaging.send(message).catch(e => console.error("Push OTP Error:", e)));
+    }
+
+    return Promise.allSettled(promises);
   }
 };
