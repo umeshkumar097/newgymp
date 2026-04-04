@@ -5,32 +5,30 @@ import { NotificationEngine } from "@/lib/notifications";
 
 export async function POST(req: Request) {
   try {
-    let { phoneNumber, otp, name, email, password, role, mode } = await req.json();
+    let { phoneNumber, idToken, name, email, password, role, mode } = await req.json();
 
-    if (!phoneNumber || !otp) {
-      return NextResponse.json({ error: "Phone number and OTP are required" }, { status: 400 });
+    if (!idToken) {
+      return NextResponse.json({ error: "Verification token is required" }, { status: 400 });
     }
 
-    // Normalize: Same as send-otp to match records
-    phoneNumber = phoneNumber.replace(/^\+91|^91/, "");
+    // 1. Verify with Firebase Admin
+    const { adminAuth } = await import("@/lib/firebase-admin");
+    let verifiedPhone;
 
-    // 1. Verify OTP
-    const verification = await prisma.otpVerification.findUnique({
-      where: { phone: phoneNumber }
-    });
-    
-    if (!verification || verification.otp !== otp) {
-      return NextResponse.json({ error: "Invalid OTP code" }, { status: 400 });
+    try {
+      const decodedToken = await adminAuth.verifyIdToken(idToken);
+      verifiedPhone = decodedToken.phone_number;
+      
+      if (!verifiedPhone) {
+        return NextResponse.json({ error: "Phone number not found in token" }, { status: 400 });
+      }
+    } catch (error: any) {
+      console.error("Firebase ID Token Verification Error:", error);
+      return NextResponse.json({ error: "Invalid or expired verification token" }, { status: 401 });
     }
 
-    if (new Date() > verification.expiresAt) {
-      return NextResponse.json({ error: "OTP has expired" }, { status: 400 });
-    }
-
-    // 2. Verified! Clear OTP
-    await prisma.otpVerification.delete({
-      where: { phone: phoneNumber }
-    }).catch(e => console.error("OTP Delete Error:", e));
+    // Normalize: Strip +91 for consistency in Prisma
+    phoneNumber = verifiedPhone.replace(/^\+91|^91/, "");
 
     // 3. Get or Create User
     let user = await prisma.user.findFirst({

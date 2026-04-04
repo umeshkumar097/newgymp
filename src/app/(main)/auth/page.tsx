@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useState, useEffect, useTransition } from "react";
 import { User, Phone, ArrowRight, ShieldCheck, Mail, Lock, CheckCircle2, Loader2, ArrowLeft, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { auth } from "@/lib/firebase";
+import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from "firebase/auth";
 
 export default function AuthPage() {
   const router = useRouter();
@@ -18,6 +20,20 @@ export default function AuthPage() {
   
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+
+  useEffect(() => {
+    // Setup Invisible ReCAPTCHA once when the component mounts
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        'size': 'invisible',
+        'callback': (response: any) => {
+          // reCAPTCHA solved, allow signInWithPhoneNumber.
+          console.log("ReCAPTCHA solved");
+        }
+      });
+    }
+  }, []);
 
   const handleSendOtp = async () => {
     if (!phoneNumber || phoneNumber.length < 10) {
@@ -25,41 +41,51 @@ export default function AuthPage() {
       return;
     }
 
+    const fullPhone = phoneNumber.startsWith("+") ? phoneNumber : `+91${phoneNumber}`;
+
     setError(null);
     startTransition(async () => {
       try {
-        const res = await fetch("/api/auth/send-otp", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phoneNumber }),
-        });
-
-        const data = await res.json();
-        if (data.success) {
-          setStep("OTP");
-          setError(null);
-        } else {
-          setError(data.error || "Failed to send OTP");
-        }
-      } catch (err) {
-        setError("Something went wrong. Please try again.");
+        const appVerifier = window.recaptchaVerifier;
+        const result = await signInWithPhoneNumber(auth, fullPhone, appVerifier);
+        setConfirmationResult(result);
+        setStep("OTP");
+      } catch (err: any) {
+        console.error("Firebase Auth Error:", err);
+        setError("Too many requests or invalid number. Please try again later.");
       }
     });
   };
 
   const handleVerifyOtp = async () => {
-    if (otp.length !== 4) {
-      setError("Please enter the 4-digit OTP");
+    if (otp.length !== 6) {
+      setError("Please enter the 6-digit code from your SMS");
+      return;
+    }
+
+    if (!confirmationResult) {
+      setError("Session expired. Please try again.");
       return;
     }
 
     setError(null);
     startTransition(async () => {
       try {
+        // 1. Verify with Firebase
+        const credential = await confirmationResult.confirm(otp);
+        const userToken = await credential.user.getIdToken();
+
+        // 2. Finalize with our Backend
         const res = await fetch("/api/auth/verify-otp", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phoneNumber, otp, name, email, mode }),
+          body: JSON.stringify({ 
+            phoneNumber, 
+            idToken: userToken, 
+            name, 
+            email, 
+            mode 
+          }),
         });
 
         const data = await res.json();
@@ -67,10 +93,11 @@ export default function AuthPage() {
           router.push("/");
           router.refresh();
         } else {
-          setError(data.error || "Invalid OTP code");
+          setError(data.error || "Verification failed on server");
         }
-      } catch (err) {
-        setError("Verification failed. Please try again.");
+      } catch (err: any) {
+        console.error("Verification Error:", err);
+        setError("Invalid code. Please check and try again.");
       }
     });
   };
@@ -78,6 +105,9 @@ export default function AuthPage() {
   return (
     <div className="flex flex-col min-h-screen bg-[#0F172A] items-center justify-center p-6 relative overflow-hidden font-sans">
       
+      {/* Required for Firebase ReCAPTCHA */}
+      <div id="recaptcha-container"></div>
+
       {/* Background Brand Gradients */}
       <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-brand-blue/5 blur-[150px] rounded-full" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-brand-green/5 blur-[150px] rounded-full" />
@@ -196,7 +226,7 @@ export default function AuthPage() {
            ) : (
              <div className="space-y-8">
                <div className="flex justify-between items-center">
-                 <h2 className="text-sm font-bold uppercase tracking-widest text-white">Enter OTP</h2>
+                 <h2 className="text-sm font-bold uppercase tracking-widest text-white">Enter SMS Code</h2>
                  <button onClick={() => setStep("PHONE")} className="text-[10px] font-bold text-brand-green uppercase tracking-widest flex items-center">
                    <ArrowLeft size={12} className="mr-1" />
                    Change
@@ -207,8 +237,8 @@ export default function AuthPage() {
                   type="text" 
                   value={otp} 
                   onChange={(e) => setOtp(e.target.value)} 
-                  placeholder="0000" 
-                  maxLength={4} 
+                  placeholder="000000" 
+                  maxLength={6} 
                   className="w-full bg-white/5 border border-white/10 p-8 rounded-[2rem] text-5xl text-center font-bold text-brand-green tracking-[0.4em] outline-none placeholder:text-slate-800" 
                />
 
@@ -216,7 +246,7 @@ export default function AuthPage() {
 
                <button 
                   onClick={handleVerifyOtp}
-                  disabled={isPending || otp.length !== 4}
+                  disabled={isPending || otp.length !== 6}
                   className="w-full bg-white text-[#0F172A] font-bold py-6 rounded-[2.5rem] shadow-2xl flex items-center justify-center space-x-3 active:scale-95 transition-all text-sm uppercase tracking-[0.2em]"
                >
                   {isPending ? <Loader2 className="animate-spin" size={20} /> : (
@@ -229,14 +259,14 @@ export default function AuthPage() {
 
                <div className="flex flex-col items-center space-y-4 pt-4 border-t border-white/5">
                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest text-center">
-                   Didn't receive the code?
+                   Didn't receive the SMS?
                  </p>
                  <button 
                    onClick={handleSendOtp}
                    disabled={isPending}
                    className="text-xs font-extrabold text-brand-green uppercase tracking-widest hover:underline disabled:opacity-50"
                  >
-                   Resend Code via WhatsApp
+                   Resend Code 
                  </button>
                </div>
              </div>
@@ -249,10 +279,15 @@ export default function AuthPage() {
         </div>
       </div>
 
-      {/* Footer Branding */}
       <div className="absolute bottom-10 text-[9px] text-slate-800 font-bold uppercase tracking-[1em] z-10">
-         Version 3.1.2
+         Version 3.2.0 (Powered by Firebase)
       </div>
     </div>
   );
+}
+
+declare global {
+  interface Window {
+    recaptchaVerifier: any;
+  }
 }
