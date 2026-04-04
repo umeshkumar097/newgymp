@@ -15,7 +15,7 @@ export async function POST(req: Request) {
 
     // 1. Create/Update the Gym record
     // Using any cast temporarily if IDE persists with stale type cache
-    const gym = await (prisma.gym as any).create({
+    const gym = await prisma.gym.create({
       data: {
         name: data.gymName,
         location: data.location,
@@ -42,6 +42,7 @@ export async function POST(req: Request) {
     await prisma.plan.create({
       data: {
         gymId: gym.id,
+        name: "Standard Day Pass",
         type: "DAY",
         price: parseFloat(data.dayPassPrice || "0"),
       }
