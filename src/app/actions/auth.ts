@@ -14,7 +14,7 @@ export async function completeUserProfile(data: { phone: string }) {
     }
 
     // Check if phone already exists
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.user.findFirst({
       where: { phone: data.phone }
     });
 
