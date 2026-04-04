@@ -3,11 +3,21 @@
 import React, { useState } from "react";
 import { User, ShieldCheck, Mail, CheckCircle2, Lock, Eye, EyeOff, CheckSquare, Square } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
+import { useEffect } from "react";
 
 export default function AuthPage() {
+  const { data: session, status } = useSession();
   const router = useRouter();
+  
+  // If already logged in, redirect to home
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/");
+    }
+  }, [status, router]);
+
   const [mode, setMode] = useState<"login" | "register">("login");
   const [showPassword, setShowPassword] = useState(false);
   const [consent, setConsent] = useState(false);
@@ -19,6 +29,15 @@ export default function AuthPage() {
   
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Don't show the form if redirecting
+  if (status === "authenticated" || status === "loading") {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center p-6">
+        <div className="w-10 h-10 border-4 border-brand-green border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
