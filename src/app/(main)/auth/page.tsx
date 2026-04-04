@@ -136,8 +136,6 @@ export default function AuthPage() {
   return (
     <div className="flex flex-col min-h-screen bg-[#0F172A] items-center justify-center p-6 relative overflow-hidden font-sans">
       
-      <div id="recaptcha-container"></div>
-
       {/* Brand Gradients */}
       <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-brand-blue/5 blur-[150px] rounded-full" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-brand-green/5 blur-[150px] rounded-full" />
@@ -220,6 +218,8 @@ export default function AuthPage() {
                    </button>
                  </div>
                )}
+
+               <div id="recaptcha-container" className="flex justify-center mb-4"></div>
 
                <button 
                   onClick={handleSendOtp}
