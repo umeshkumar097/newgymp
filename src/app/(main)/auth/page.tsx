@@ -1,11 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useTransition } from "react";
-import { User, Phone, ArrowRight, ShieldCheck, Mail, Lock, CheckCircle2, Loader2, ArrowLeft, Zap, MessageCircle } from "lucide-react";
+import React, { useState, useTransition } from "react";
+import { User, Phone, ArrowRight, ShieldCheck, Mail, CheckCircle2, Loader2, ArrowLeft, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { auth } from "@/lib/firebase";
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from "firebase/auth";
 
 export default function AuthPage() {
   const router = useRouter();
@@ -20,103 +18,58 @@ export default function AuthPage() {
   
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
-
-  useEffect(() => {
-    // Setup Invisible ReCAPTCHA once when the component mounts
-    if (typeof window !== "undefined" && !window.recaptchaVerifier) {
-      try {
-        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-          'size': 'normal'
-        });
-      } catch (err) {
-        console.error("ReCAPTCHA Link Fail:", err);
-      }
-    }
-  }, []);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   const handleSendOtp = async () => {
-    // Pre-parse: Remove any non-numeric things except +
-    const cleanPhone = phoneNumber.replace(/[^\d+]/g, "").replace(/^0+/, "");
-    const fullPhone = cleanPhone.startsWith("+") ? cleanPhone : `+91${cleanPhone}`;
+    if (!phoneNumber || phoneNumber.length < 10) {
+      setError("Please enter a valid 10-digit phone number");
+      return;
+    }
+
+    if (mode === "register" && (!name || !email)) {
+      setError("Please fill in your name and email to register");
+      return;
+    }
 
     setError(null);
-    startTransition(async () => {
-      try {
-        if (!window.recaptchaVerifier) throw new Error("Recaptcha not ready");
-        const appVerifier = window.recaptchaVerifier;
-        const result = await signInWithPhoneNumber(auth, fullPhone, appVerifier);
-        setConfirmationResult(result);
-        setStep("OTP");
-      } catch (err: any) {
-        console.error("Firebase Auth Error:", err);
-        const errorCode = err.code || "unknown";
-        if (errorCode === "auth/invalid-phone-number") {
-          setError("Invalid phone number. Use 10 digits.");
-        } else if (errorCode === "auth/too-many-requests") {
-          setError("Too many attempts. Please wait 10 minutes.");
-        } else if (errorCode === "auth/unauthorized-domain") {
-          setError("Domain passfit.in not authorized in Firebase.");
-        } else if (errorCode === "auth/billing-not-enabled") {
-          setError("SMS Quota full. Try the WhatsApp button below.");
-        } else {
-          setError(`Error (${errorCode}): Please use WhatsApp.`);
-        }
-      }
-    });
-  };
+    setSuccessMsg(null);
 
-  const handleWhatsAppFallback = async () => {
-    if (!phoneNumber) return;
-    setError(null);
     startTransition(async () => {
       try {
         const res = await fetch("/api/auth/send-otp", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phoneNumber, name, email }),
+          body: JSON.stringify({ phoneNumber, name, email, mode }),
         });
+        
         const data = await res.json();
+        
         if (data.success) {
           setStep("OTP");
-          setConfirmationResult(null); // Signal it's NOT a Firebase session
-          setError(null);
+          setSuccessMsg(data.message || "Code sent to WhatsApp & Email ✅");
         } else {
-          setError(data.error || "WhatsApp delivery failed.");
+          setError(data.error || "Failed to send code. Please try again.");
         }
-      } catch (err) {
-        setError("WhatsApp delivery failed. Try again.");
+      } catch (err: any) {
+        console.error("Auth Send Error:", err);
+        setError("Network error. Please check your connection.");
       }
     });
   };
 
   const handleVerifyOtp = async () => {
-    // Firebase uses 6 digits, our WhatsApp fallback uses 4 digits
-    const expectedLength = confirmationResult ? 6 : 4;
-    if (otp.length !== expectedLength) {
-      setError(`Please enter the ${expectedLength}-digit code`);
+    if (otp.length !== 4) {
+      setError("Please enter the 4-digit code");
       return;
     }
 
     setError(null);
     startTransition(async () => {
       try {
-        let payload: any = { phoneNumber, name, email, mode };
-
-        if (confirmationResult) {
-          // A. Verify with Firebase
-          const credential = await confirmationResult.confirm(otp);
-          payload.idToken = await credential.user.getIdToken();
-        } else {
-          // B. Verify with our Backend (WhatsApp/Custom Fallback)
-          payload.otp = otp;
-        }
-
-        // Finalize with our Backend
         const res = await fetch("/api/auth/verify-otp", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+          body: JSON.stringify({ phoneNumber, otp, name, email, mode }),
         });
 
         const data = await res.json();
@@ -124,11 +77,11 @@ export default function AuthPage() {
           router.push("/");
           router.refresh();
         } else {
-          setError(data.error || "Verification failed on server");
+          setError(data.error || "Invalid verification code.");
         }
       } catch (err: any) {
         console.error("Verification Error:", err);
-        setError("Invalid code. Please check and try again.");
+        setError("Network error. Please try again.");
       }
     });
   };
@@ -142,7 +95,7 @@ export default function AuthPage() {
 
       <div className="w-full max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center gap-20 relative z-10">
         
-        {/* Desk Side */}
+        {/* Left Side (Desktop) */}
         <div className="hidden md:flex flex-col space-y-8 max-w-md">
            <div className="w-16 h-16 rounded-[2rem] bg-brand-green flex items-center justify-center shadow-2xl shadow-brand-green/20">
               <Zap size={32} className="text-[#0F172A] fill-[#0F172A]" />
@@ -152,11 +105,11 @@ export default function AuthPage() {
                  Pass<span className="text-brand-green">Fit</span>
               </h1>
               <p className="text-xl text-slate-500 font-medium leading-relaxed">
-                 Join thousands of users accessing premium fitness centers across the country. One account, infinite access.
+                 Fast, simple, and reliable access to fitness hubs near you. One code, zero hassle.
               </p>
            </div>
            <div className="flex flex-col space-y-4 pt-4 text-xs font-bold text-slate-400">
-              {[ "Instant Entry via QR", "No Commitments", "Pay per Session" ].map((t, i) => (
+              {[ "Official WhatsApp OTP", "Instant Dashboard Access", "End-to-End Secure" ].map((t, i) => (
                 <div key={i} className="flex items-center space-x-3">
                    <CheckCircle2 size={18} className="text-brand-green" />
                    <span>{t}</span>
@@ -192,34 +145,30 @@ export default function AuthPage() {
                    <>
                     <div className="space-y-2">
                       <label className="text-[10px] items-center flex font-bold uppercase tracking-widest text-slate-600 px-1 ml-1"><User size={10} className="mr-2"/> Full Name</label>
-                      <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Full Name" className="w-full bg-white/5 border border-white/5 p-5 rounded-2xl text-sm font-bold text-white outline-none focus:border-brand-green/30" />
+                      <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your Name" className="w-full bg-white/5 border border-white/5 p-5 rounded-2xl text-sm font-bold text-white outline-none focus:border-brand-green/30 px-6" />
                     </div>
                     <div className="space-y-2">
                        <label className="text-[10px] items-center flex font-bold uppercase tracking-widest text-slate-600 px-1 ml-1"><Mail size={10} className="mr-2"/> Email</label>
-                       <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email Address" className="w-full bg-white/5 border border-white/5 p-5 rounded-2xl text-sm font-bold text-white outline-none focus:border-brand-green/30" />
+                       <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email Address" className="w-full bg-white/5 border border-white/5 p-5 rounded-2xl text-sm font-bold text-white outline-none focus:border-brand-green/30 px-6" />
                     </div>
                    </>
                  )}
                  <div className="space-y-2">
                     <label className="text-[10px] items-center flex font-bold uppercase tracking-widest text-slate-600 px-1 ml-1"><Phone size={10} className="mr-2"/> WhatsApp Phone</label>
-                    <input type="tel" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="Phone Number" className="w-full bg-white/5 border border-white/5 p-5 rounded-2xl text-sm font-bold text-white outline-none focus:border-brand-green/30" maxLength={10} />
+                    <input 
+                      type="tel" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} 
+                      placeholder="9999999999" 
+                      className="w-full bg-white/5 border border-white/5 p-5 rounded-2xl text-sm font-bold text-white outline-none focus:border-brand-green/30 px-6" 
+                      maxLength={10} 
+                    />
                  </div>
                </div>
 
                {error && (
-                 <div className="space-y-4 text-center">
-                   <p className="text-red-500 text-[10px] font-bold uppercase leading-relaxed tracking-wider bg-red-500/5 py-3 rounded-xl border border-red-500/20">{error}</p>
-                   <button 
-                     onClick={handleWhatsAppFallback}
-                     className="w-full py-4 bg-brand-green/10 border border-brand-green/30 rounded-2xl flex items-center justify-center space-x-3 text-brand-green text-[10px] font-bold uppercase tracking-widest hover:bg-brand-green/20 transition-all shadow-xl shadow-brand-green/5"
-                   >
-                     <MessageCircle size={14} className="fill-brand-green/20" />
-                     <span>Get Access Code via WhatsApp instead</span>
-                   </button>
-                 </div>
+                 <p className="text-red-500 text-[10px] font-bold uppercase text-center leading-relaxed bg-red-500/5 py-3 rounded-xl border border-red-500/10">
+                   {error}
+                 </p>
                )}
-
-               <div id="recaptcha-container" className="flex justify-center mb-4"></div>
 
                <button 
                   onClick={handleSendOtp}
@@ -230,21 +179,22 @@ export default function AuthPage() {
                </button>
              </div>
            ) : (
-             <div className="space-y-8">
+             <div className="space-y-8 text-center">
                <div className="flex justify-between items-center px-1">
-                 <h2 className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{confirmationResult ? "6-Digit SMS Code" : "4-Digit WhatsApp Code"}</h2>
+                 <h2 className="text-[10px] font-bold uppercase tracking-widest text-slate-500">4-Digit Verification Code</h2>
                  <button onClick={() => setStep("PHONE")} className="text-[10px] font-bold text-brand-green uppercase tracking-widest flex items-center">
                    <ArrowLeft size={10} className="mr-2" /> Change
                  </button>
                </div>
                
                <input 
-                  type="text" value={otp} onChange={(e) => setOtp(e.target.value)} placeholder={confirmationResult ? "000000" : "0000"} 
-                  maxLength={confirmationResult ? 6 : 4} 
+                  type="text" value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="0000" 
+                  maxLength={4} 
                   className="w-full bg-white/5 border border-white/10 p-8 rounded-[2rem] text-4xl text-center font-bold text-brand-green tracking-[0.4em] outline-none" 
                />
 
-               {error && <p className="text-red-500 text-[10px] font-bold uppercase text-center">{error}</p>}
+               {successMsg && <p className="text-brand-green text-[10px] font-bold uppercase">{successMsg}</p>}
+               {error && <p className="text-red-500 text-[10px] font-bold uppercase leading-relaxed">{error}</p>}
 
                <button 
                   onClick={handleVerifyOtp}
@@ -253,20 +203,18 @@ export default function AuthPage() {
                >
                   {isPending ? <Loader2 className="animate-spin" size={20} /> : <><span>Enter Dashboard</span> <ShieldCheck size={18} /></>}
                </button>
+
+               <button onClick={handleSendOtp} className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-white transition-all">
+                 Didn't receive code? Resend
+               </button>
              </div>
            )}
         </div>
       </div>
 
       <div className="absolute bottom-8 text-[8px] text-slate-800 font-bold uppercase tracking-[1.5em] z-10">
-         Version 3.2.1-Failover
+         Version 4.0.0-Bypass
       </div>
     </div>
   );
-}
-
-declare global {
-  interface Window {
-    recaptchaVerifier: any;
-  }
 }

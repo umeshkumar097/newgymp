@@ -1,124 +1,104 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { sign } from "jsonwebtoken";
 import { cookies } from "next/headers";
 import { NotificationEngine } from "@/lib/notifications";
 
+const JWT_SECRET = process.env.JWT_SECRET || "fallback_secret_for_dev_only";
+
 export async function POST(req: Request) {
   try {
-    let { phoneNumber, idToken, otp, name, email, password, role, mode } = await req.json();
+    let { phoneNumber, otp, name, email, mode } = await req.json();
 
-    if (!idToken && !otp) {
-      return NextResponse.json({ error: "Verification token or OTP is required" }, { status: 400 });
+    if (!phoneNumber || !otp) {
+      return NextResponse.json({ error: "Phone number and OTP are required" }, { status: 400 });
     }
 
-    let verifiedPhone;
+    // 1. Normalize: Strip +91/91 for consistency in Prisma
+    const normalizedPhone = phoneNumber.replace(/^\+91|^91/, "");
 
-    if (idToken) {
-      // 1A. Verify with Firebase Admin
-      const { adminAuth } = await import("@/lib/firebase-admin");
-      try {
-        const decodedToken = await adminAuth.verifyIdToken(idToken);
-        verifiedPhone = decodedToken.phone_number;
-        if (!verifiedPhone) throw new Error("No phone in token");
-      } catch (error: any) {
-        console.error("Firebase Verification Error:", error);
-        return NextResponse.json({ error: "Invalid or expired session" }, { status: 401 });
-      }
-    } else if (otp && phoneNumber) {
-      // 1B. Verify with our Backend (WhatsApp Fallback)
-      const normalizedPhone = phoneNumber.replace(/^\+91|^91/, "");
-      const verification = await prisma.otpVerification.findUnique({
-        where: { phone: normalizedPhone }
-      });
+    // 2. Fetch OTP from DB
+    const verification = await prisma.otpVerification.findUnique({
+      where: { phone: normalizedPhone }
+    });
 
-      if (!verification || verification.otp !== otp) {
-        return NextResponse.json({ error: "Invalid OTP code" }, { status: 400 });
-      }
-
-      if (new Date() > verification.expiresAt) {
-        return NextResponse.json({ error: "OTP has expired" }, { status: 400 });
-      }
-
-      verifiedPhone = `+91${normalizedPhone}`;
-      // Clear OTP record
-      await prisma.otpVerification.delete({ where: { phone: normalizedPhone } }).catch(() => {});
+    // 3. Validate OTP
+    if (!verification || verification.otp !== otp) {
+      return NextResponse.json({ error: "Invalid verification code. Please try again." }, { status: 400 });
     }
 
-    if (!verifiedPhone) {
-      return NextResponse.json({ error: "Verification failed. Please try again." }, { status: 401 });
+    // 4. Check Expiration
+    if (new Date() > verification.expiresAt) {
+      return NextResponse.json({ error: "Verification code has expired. Please request a new one." }, { status: 400 });
     }
 
-    // Normalize: Strip +91 for consistency in Prisma
-    phoneNumber = verifiedPhone.replace(/^\+91|^91/, "");
-
-    // 3. Get or Create User
+    // 5. Get or Create User
     let user = await prisma.user.findFirst({
-        where: { phone: phoneNumber }
+      where: { phone: normalizedPhone }
     });
 
-    if (user) {
-        // Update existing user with provided details
-        user = await prisma.user.update({
-            where: { id: user.id },
-            data: {
-                name: name || user.name,
-                email: email || user.email,
-                password: password || user.password,
-                role: (role === "GYM_OWNER" || role === "ADMIN") ? role : user.role
-            }
-        });
-
-        // Send Welcome email for new partners (if email present)
-        if (role === "GYM_OWNER" && user.email) {
-            await NotificationEngine.sendWelcomePartner({ 
-                email: user.email, 
-                name: user.name || "Partner", 
-                phone: user.phone || ""
-            }).catch(e => console.error("Email Error:", e));
+    if (!user && mode === "register") {
+      // Create new user for first-time signups
+      user = await prisma.user.create({
+        data: {
+          phone: normalizedPhone,
+          name: name || "User",
+          email: email || `${normalizedPhone}@passfit.in`,
+          role: "CUSTOMER",
+          status: "ACTIVE"
         }
-    } else {
-        // Create new user
-        user = await prisma.user.create({
-            data: {
-                clerkId: `clerk_${Date.now()}`,
-                email: email || `${phoneNumber}@passfit.in`,
-                phone: phoneNumber,
-                name: name || "New User",
-                password: password || null,
-                role: role || "USER"
-            }
-        });
+      });
+      console.log(`[AUTH] New user created: ${normalizedPhone}`);
+      
+      // Welcome notification
+      await NotificationEngine.sendWelcomePartner({ 
+        email: user.email, 
+        name: user.name, 
+        phone: user.phone 
+      }).catch(e => console.error("Welcome Notification Error:", e));
 
-        if (role === "GYM_OWNER" && user.email) {
-            await NotificationEngine.sendWelcomePartner({ 
-                email: user.email, 
-                name: user.name || "Partner", 
-                phone: user.phone || ""
-            }).catch(e => console.error("Email Error:", e));
-        }
+    } else if (!user && mode === "login") {
+       return NextResponse.json({ 
+         error: "Account not found. Please register first.",
+         notRegistered: true 
+       }, { status: 404 });
     }
 
-    // Set a session cookie
-    (await cookies()).set("user_id", user.id, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 60 * 60 * 2, // 2 hours
-        path: "/",
+    if (!user) {
+      return NextResponse.json({ error: "Authentication failed. Could not find or create user." }, { status: 500 });
+    }
+
+    // 6. Generate Session Token (JWT)
+    const token = sign(
+      { userId: user.id, role: user.role, phone: user.phone },
+      JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    // 7. Set Cookie
+    const cookieStore = await cookies();
+    cookieStore.set("auth_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: "/",
     });
+
+    // 8. Cleanup used OTP
+    await prisma.otpVerification.delete({
+      where: { phone: normalizedPhone }
+    }).catch(() => {});
+
+    console.log(`[AUTH] Successful login: ${normalizedPhone} (${user.role})`);
 
     return NextResponse.json({ 
-        success: true, 
-        message: "Login successful",
-        user: {
-            id: user.id,
-            name: user.name || "",
-            email: user.email || ""
-        }
+      success: true, 
+      user: { id: user.id, name: user.name, role: user.role } 
     });
 
   } catch (error: any) {
-    console.error("Verify Auth ERROR:", error);
-    return NextResponse.json({ error: "Internal server error", details: error.message }, { status: 500 });
+    console.error("Verification System ERROR:", error);
+    return NextResponse.json({ error: "Authentication system error. Please try again later." }, { status: 500 });
   }
 }
