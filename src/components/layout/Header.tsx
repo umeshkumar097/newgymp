@@ -26,8 +26,10 @@ export function Header({ userInitials = "PF", avatarUrl, isLoggedIn = false }: H
 
   return (
     <header className={cn(
-      "fixed top-0 left-0 right-0 z-[100] transition-all duration-500 px-6 py-4",
-      scrolled ? "bg-white/90 backdrop-blur-xl border-b border-slate-100 py-3 shadow-sm" : "bg-transparent"
+      "fixed top-0 left-0 right-0 z-[100] transition-all duration-500 px-6",
+      scrolled 
+        ? "bg-white/90 backdrop-blur-xl border-b border-slate-100 py-3 shadow-sm" 
+        : "bg-white/50 backdrop-blur-md border-b border-slate-50 py-4"
     )}>
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         {/* Brand */}
