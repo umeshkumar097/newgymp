@@ -9,21 +9,27 @@ import { hash } from "bcryptjs";
 
 export async function POST(req: Request) {
   try {
-    const { name, email, password } = await req.json();
+    const { name, email, password, phone } = await req.json();
 
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !phone) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
 
     const emailNormalized = email.toLowerCase().trim();
 
-    // 1. Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email: emailNormalized },
+    // 1. Check if user already exists (by email or phone)
+    const existingUser = await prisma.user.findFirst({
+      where: { 
+        OR: [
+          { email: emailNormalized },
+          { phone: phone }
+        ]
+      },
     });
 
     if (existingUser) {
-      return NextResponse.json({ error: "An account with this email already exists" }, { status: 400 });
+      const field = existingUser.email === emailNormalized ? "email" : "phone number";
+      return NextResponse.json({ error: `An account with this ${field} already exists` }, { status: 400 });
     }
 
     // 2. Hash the password
@@ -35,9 +41,10 @@ export async function POST(req: Request) {
         name,
         email: emailNormalized,
         password: hashedPassword,
+        phone,
         role: "USER",
         consentSignedAt: new Date(),
-        clerkId: `passfit_native_${Date.now()}`, // Temporary clerkId for existing schema compatibility
+        clerkId: `passfit_native_${Date.now()}`, 
       },
     });
 
