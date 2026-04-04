@@ -71,7 +71,7 @@ export default async function PassesPage() {
                       </div>
                       <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center">
                         <Calendar size={12} className="mr-2" />
-                        {new Date(booking.bookingDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                        {new Date(booking.bookingDate || booking.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                       </div>
                     </div>
 

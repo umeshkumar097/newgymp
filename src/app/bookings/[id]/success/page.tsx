@@ -68,7 +68,7 @@ export default async function BookingSuccessPage({ params }: { params: Promise<{
                 <Calendar size={10} className="mr-1" />
                 Date
               </div>
-              <div className="text-sm font-bold text-white">{new Date(booking.bookingDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+              <div className="text-sm font-bold text-white">{new Date(booking.bookingDate || booking.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
             </div>
             <div className="space-y-1 text-center">
               <div className="flex items-center justify-center text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-1">

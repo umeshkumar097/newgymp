@@ -142,7 +142,7 @@ export const BookingVoucher = ({ booking }: { booking: any }) => (
         </View>
         <View style={styles.gridItem}>
           <Text style={styles.label}>Date</Text>
-          <Text style={styles.value}>{new Date(booking.bookingDate).toLocaleDateString()}</Text>
+          <Text style={styles.value}>{new Date(booking.bookingDate || booking.createdAt).toLocaleDateString()}</Text>
         </View>
         <View style={styles.gridItem}>
           <Text style={styles.label}>To Pay</Text>
