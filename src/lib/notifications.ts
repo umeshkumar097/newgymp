@@ -212,7 +212,7 @@ export const NotificationEngine = {
 
     // 1. WhatsApp (Primary)
     promises.push(
-      sendWhatsAppOTP(phone, otp, "PassFit").catch(e => console.error("WhatsApp OTP Error:", e))
+      sendWhatsAppOTP(phone, otp).catch(e => console.error("WhatsApp OTP Error:", e))
     );
 
     // 2. Email (Secondary)

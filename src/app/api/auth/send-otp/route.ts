@@ -4,7 +4,7 @@ import { NotificationEngine } from "@/lib/notifications";
 
 export async function POST(req: Request) {
   try {
-    let { phoneNumber, role } = await req.json();
+    let { phoneNumber, role, email: providedEmail, name: providedName } = await req.json();
 
     if (!phoneNumber) {
       return NextResponse.json({ error: "Phone number is required" }, { status: 400 });
@@ -41,19 +41,19 @@ export async function POST(req: Request) {
       create: { phone: phoneNumber, otp, expiresAt }
     });
 
-    // 4. Send OTP via Triple Channels (WhatsApp, Email, Push)
-    // We use Promise.allSettled inside the engine, so this won't block the response
+    // 4. Send OTP via Triple Channels
+    // Use providedEmail/Name if user doesn't exist yet (for registration)
     await NotificationEngine.sendTripleChannelOTP({
       phone: phoneNumber,
       otp,
-      email: user?.email,
+      email: user?.email || providedEmail,
       fcmToken: user?.fcmToken,
-      name: user?.name
+      name: user?.name || providedName
     });
 
-    console.log(`[DEBUG] Triple Channel OTP Triggered for ${phoneNumber}: ${otp}`);
+    console.log(`[AUTH] OTP Triggered: ${phoneNumber} -> ${otp}`);
 
-    return NextResponse.json({ success: true, message: "OTP sent successfully via all channels" });
+    return NextResponse.json({ success: true, message: "OTP sent successfully" });
 
   } catch (error: any) {
     console.error("Verify Auth ERROR (Internal):", error);

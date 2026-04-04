@@ -77,7 +77,7 @@ export default function AuthPage() {
         const res = await fetch("/api/auth/send-otp", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phoneNumber }),
+          body: JSON.stringify({ phoneNumber, name, email }),
         });
         const data = await res.json();
         if (data.success) {
