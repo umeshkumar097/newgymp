@@ -1,27 +1,37 @@
+import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 
-export function middleware(request: NextRequest) {
-  const userId = request.cookies.get("user_id")?.value;
-  const { pathname } = request.nextUrl;
+export default withAuth(
+  function middleware(req) {
+    const { pathname } = req.nextUrl;
+    const token = req.nextauth.token;
 
-  // 1. If trying to access Auth while logged in, redirect to home
-  if (pathname === "/auth" && userId) {
-    return NextResponse.redirect(new URL("/", request.url));
+    // 1. Redirect logged-in users away from /auth
+    if (pathname === "/auth" && !!token) {
+      return NextResponse.redirect(new URL("/", req.url));
+    }
+
+    // 2. Extra logic for specific roles if needed
+    if (pathname.startsWith("/admin") && token?.role !== "ADMIN") {
+      return NextResponse.redirect(new URL("/", req.url));
+    }
+
+    return NextResponse.next();
+  },
+  {
+    callbacks: {
+      authorized: ({ token, req }) => {
+        const { pathname } = req.nextUrl;
+        
+        // Public routes
+        if (pathname === "/" || pathname === "/auth") return true;
+        
+        // Protected routes require a token
+        return !!token;
+      },
+    },
   }
-
-  // 2. Protect Admin Routes
-  if (pathname.startsWith("/admin") && !userId) {
-    return NextResponse.redirect(new URL("/auth", request.url));
-  }
-
-  // 3. Protect Partner Dashboards (excluding onboarding)
-  if (pathname.startsWith("/partner") && (pathname.includes("/dashboard") || pathname.includes("/settings")) && !userId) {
-    return NextResponse.redirect(new URL("/auth", request.url));
-  }
-
-  return NextResponse.next();
-}
+);
 
 export const config = {
   matcher: ["/admin/:path*", "/partner/:path*", "/auth"],

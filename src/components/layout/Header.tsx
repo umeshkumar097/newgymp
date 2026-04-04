@@ -27,15 +27,15 @@ export function Header({ userInitials = "PF", avatarUrl, isLoggedIn = false }: H
   return (
     <header className={cn(
       "fixed top-0 left-0 right-0 z-[100] transition-all duration-500 px-6 py-4",
-      scrolled ? "bg-[#0F172A]/80 backdrop-blur-xl border-b border-white/5 py-3 shadow-2xl shadow-black/50" : "bg-transparent"
+      scrolled ? "bg-white/90 backdrop-blur-xl border-b border-slate-100 py-3 shadow-sm" : "bg-transparent"
     )}>
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         {/* Brand */}
         <Link href="/" className="group flex items-center space-x-2">
-          <div className="w-10 h-10 rounded-xl bg-brand-green flex items-center justify-center shadow-lg shadow-brand-green/20 group-hover:scale-110 transition-transform">
-             <span className="text-[#0F172A] font-black text-xl leading-none ml-0.5">P</span>
+          <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+             <span className="text-white font-black text-xl leading-none ml-0.5">P</span>
           </div>
-          <h1 className="text-2xl font-extrabold font-heading tracking-tighter text-white uppercase">
+          <h1 className="text-2xl font-extrabold font-heading tracking-tighter text-slate-900 uppercase">
             Pass<span className="text-brand-green">Fit</span>
           </h1>
         </Link>
@@ -48,18 +48,18 @@ export function Header({ userInitials = "PF", avatarUrl, isLoggedIn = false }: H
         </nav>
 
         {/* Global Search & Location */}
-        <div className="hidden lg:flex items-center space-x-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-2.5 hover:border-brand-green/30 transition-all group shadow-inner">
+        <div className="hidden lg:flex items-center space-x-4 bg-slate-50 border border-slate-100 rounded-2xl px-5 py-2.5 hover:border-brand-green/30 transition-all group">
             <LocationSearch 
               initialLocation="Indore, MP"
               onLocationSelect={() => {}} 
             />
-            <div className="w-px h-4 bg-white/10" />
+            <div className="w-px h-4 bg-slate-200" />
             <div className="flex items-center space-x-3">
-                <Search size={14} className="text-slate-500 group-focus-within:text-brand-green transition-colors" />
+                <Search size={14} className="text-slate-400 group-focus-within:text-brand-green transition-colors" />
                 <input 
                    type="text" 
                    placeholder="Search gyms..." 
-                   className="bg-transparent border-none outline-none text-[10px] font-bold text-white placeholder:text-slate-700 w-32 uppercase tracking-widest"
+                   className="bg-transparent border-none outline-none text-[10px] font-bold text-slate-900 placeholder:text-slate-300 w-32 uppercase tracking-widest"
                 />
             </div>
         </div>
@@ -67,18 +67,18 @@ export function Header({ userInitials = "PF", avatarUrl, isLoggedIn = false }: H
         {/* User Actions */}
         <div className="flex items-center space-x-4">
            {isLoggedIn ? (
-             <Link href="/profile" className="flex items-center space-x-3 p-1 rounded-full hover:bg-white/5 transition-all group">
-                <div className="w-10 h-10 rounded-full bg-slate-900 border-2 border-white/10 flex items-center justify-center overflow-hidden shadow-xl group-hover:border-brand-green/50 transition-all">
+             <Link href="/profile" className="flex items-center space-x-3 p-1 rounded-full hover:bg-slate-50 transition-all group">
+                <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden group-hover:border-brand-green transition-all">
                     <img 
                       src={displayAvatar} 
                       alt="Profile" 
                       className="w-full h-full object-cover"
                     />
                 </div>
-                <ChevronDown size={14} className="text-slate-700 hidden md:block group-hover:text-brand-green transition-colors" />
+                <ChevronDown size={14} className="text-slate-400 hidden md:block group-hover:text-brand-green transition-colors" />
              </Link>
            ) : (
-             <Link href="/auth" className="bg-brand-green text-[#0F172A] font-bold px-6 py-3 rounded-xl text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-brand-green/20 hover:scale-105 active:scale-95 transition-all">
+             <Link href="/auth" className="bg-slate-900 text-white font-bold px-6 py-3 rounded-xl text-[10px] uppercase tracking-[0.2em] shadow-lg hover:bg-slate-800 transition-all">
                 Login / Join
              </Link>
            )}
