@@ -13,8 +13,9 @@ export async function approveGym(gymId: string, setupFee: number) {
     const gym = await (prisma.gym as any).update({
       where: { id: gymId },
       data: { 
-        status: "AWAITING_PAYMENT" as any,
-        onboardingFeeAmount: setupFee
+        status: "APPROVED" as any,
+        onboardingFeeAmount: setupFee,
+        onboardingFeePaid: true
       },
       include: { owner: true }
     });

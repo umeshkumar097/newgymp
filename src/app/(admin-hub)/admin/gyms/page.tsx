@@ -17,7 +17,15 @@ export default async function AdminGymsPage() {
     platformSettings
   ] = await Promise.all([
     prisma.gym.findMany({
-      where: { status: GymStatus.PENDING },
+      where: { 
+        status: { 
+          in: [
+            GymStatus.PENDING, 
+            "AWAITING_PAYMENT" as any, 
+            "REJECTED" as any
+          ] 
+        } 
+      },
       include: { owner: true },
       orderBy: { createdAt: "desc" }
     }),
