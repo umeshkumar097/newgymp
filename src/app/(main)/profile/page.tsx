@@ -5,28 +5,29 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LogoutButton } from "@/components/profile/LogoutButton";
-import Image from "next/image";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export default async function ProfilePage() {
-  // 1. Get user from session cookie
-  const cookieStore = await cookies();
-  const userId = cookieStore.get("user_id")?.value;
+  // 1. Get user from NextAuth session
+  const session = await getServerSession(authOptions);
+  
+  if (!session?.user?.email) {
+    redirect("/auth");
+  }
 
   // 2. Fetch the user from Prisma with booking count
-  const user = userId 
-    ? await prisma.user.findUnique({ 
-        where: { id: userId },
-        include: {
-          supportTickets: {
-            orderBy: { createdAt: "desc" }
-          },
-          _count: {
-            select: { bookings: true }
-          }
-        }
-      })
-    : null;
+  const user = await prisma.user.findUnique({ 
+    where: { email: session.user.email },
+    include: {
+      supportTickets: {
+        orderBy: { createdAt: "desc" }
+      },
+      _count: {
+        select: { bookings: true }
+      }
+    }
+  });
 
   if (!user) {
     redirect("/auth");

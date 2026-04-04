@@ -10,13 +10,26 @@ import { redirect } from "next/navigation";
 import { SupportForm } from "./SupportForm";
 import { HelpCircle, ShieldAlert } from "lucide-react";
 
-export default async function SupportPage() {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get("user_id")?.value;
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { prisma } from "@/lib/prisma";
 
-  if (!userId) {
+export default async function SupportPage() {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.email) {
     redirect("/auth");
   }
+
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email }
+  });
+
+  if (!user) {
+    redirect("/auth");
+  }
+
+  const userId = user.id;
 
   return (
     <div className="min-h-screen bg-zinc-950 font-outfit p-6 md:p-12 lg:p-24 space-y-16">
