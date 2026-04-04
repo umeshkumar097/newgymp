@@ -4,62 +4,73 @@ import { NotificationEngine } from "@/lib/notifications";
 
 export async function POST(req: Request) {
   try {
-    let { phoneNumber, role, email: providedEmail, name: providedName } = await req.json();
+    let { phoneNumber, email: providedEmail, role, name: providedName } = await req.json();
 
-    if (!phoneNumber) {
-      return NextResponse.json({ error: "Phone number is required" }, { status: 400 });
+    if (!phoneNumber && !providedEmail) {
+      return NextResponse.json({ error: "Phone number or Email is required" }, { status: 400 });
     }
 
-    // 1. Normalize: Strip +91/91 for consistency in Prisma
-    const normalizedPhone = phoneNumber.replace(/^\+91|^91/, "");
-
-    // 2. Fetch or Mock User
-    const user = await prisma.user.findFirst({
-      where: { phone: normalizedPhone }
-    });
+    // 1. Resolve User
+    let user = null;
+    if (providedEmail) {
+      user = await prisma.user.findUnique({ where: { email: providedEmail.toLowerCase().trim() } });
+    } else if (phoneNumber) {
+      const normalizedPhone = phoneNumber.replace(/^\+91|^91/, "");
+      user = await prisma.user.findFirst({ where: { phone: normalizedPhone } });
+    }
 
     // Role Enforcement for Partners/Admins
     if (role === "GYM_OWNER" || role === "ADMIN") {
-      if (!user || (user.role !== "GYM_OWNER" && user.role !== "ADMIN")) {
+      if (!user && !providedEmail) { // Onboarding might have providedEmail but no user yet
         return NextResponse.json({ 
-          error: "This phone number is not registered as a Partner.",
+          error: "Account not found.",
           notRegistered: true 
         }, { status: 404 });
       }
     }
 
-    // 3. Generate Secure 4-digit OTP
+    // 2. Generate Secure 4-digit OTP
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
 
-    // 4. Save to DB
-    await prisma.otpVerification.upsert({
-      where: { phone: normalizedPhone },
-      update: { otp, expiresAt, createdAt: new Date() },
-      create: { phone: normalizedPhone, otp, expiresAt }
-    });
+    // 3. Save to DB (Handle either Phone or Email)
+    if (providedEmail) {
+      const emailNorm = providedEmail.toLowerCase().trim();
+      await prisma.otpVerification.upsert({
+        where: { email: emailNorm },
+        update: { otp, expiresAt, createdAt: new Date() },
+        create: { email: emailNorm, otp, expiresAt }
+      });
+    } else if (phoneNumber) {
+      const normalizedPhone = phoneNumber.replace(/^\+91|^91/, "");
+      await prisma.otpVerification.upsert({
+        where: { phone: normalizedPhone },
+        update: { otp, expiresAt, createdAt: new Date() },
+        create: { phone: normalizedPhone, otp, expiresAt }
+      });
+    }
 
-    // 5. Sequential Delivery (WhatsApp then Email)
+    // 4. Sequential Delivery
     const report = await NotificationEngine.sendAuthOTP({
-      phone: normalizedPhone,
+      phone: phoneNumber?.replace(/^\+91|^91/, ""),
       otp,
-      email: user?.email || providedEmail,
-      name: user?.name || providedName
+      email: providedEmail || user?.email,
+      name: providedName || user?.name
     });
 
-    console.log(`[AUTH] Delivery Report for ${normalizedPhone}:`, report);
+    console.log(`[AUTH] Delivery Report:`, report);
 
     if (report.whatsapp || report.email) {
       return NextResponse.json({ 
         success: true, 
-        message: report.whatsapp ? "WhatsApp Sent ✅" : "Email Sent ✅ (WhatsApp Delayed)",
+        message: report.email ? "Email Sent ✅" : "WhatsApp Sent ✅",
         channels: report 
       });
     }
 
     return NextResponse.json({ 
       success: false, 
-      error: `Could not reach you via WhatsApp or Email. ${report.error}` 
+      error: `Could not reach you via Email or WhatsApp. ${report.error || ""}` 
     }, { status: 500 });
 
   } catch (error: any) {
