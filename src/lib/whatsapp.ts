@@ -27,6 +27,17 @@ export async function sendWhatsAppOTP(phoneNumber: string, otp: string) {
                 },
               ],
             },
+            {
+              type: "button",
+              sub_type: "url",
+              index: "0",
+              parameters: [
+                {
+                  type: "text",
+                  text: otp,
+                },
+              ],
+            },
           ],
         },
       },
