@@ -44,6 +44,10 @@ export async function POST(req: Request) {
       await prisma.otpVerification.delete({ where: { phone: normalizedPhone } }).catch(() => {});
     }
 
+    if (!verifiedPhone) {
+      return NextResponse.json({ error: "Verification failed. Please try again." }, { status: 401 });
+    }
+
     // Normalize: Strip +91 for consistency in Prisma
     phoneNumber = verifiedPhone.replace(/^\+91|^91/, "");
 

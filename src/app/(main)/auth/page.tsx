@@ -212,17 +212,15 @@ export default function AuthPage() {
                </div>
 
                {error && (
-                 <div className="space-y-4">
-                   <p className="text-red-500 text-[10px] font-bold uppercase text-center leading-relaxed">{error}</p>
-                   {error.includes("SMS Quota") || error.includes("Error") ? (
-                     <button 
-                       onClick={handleWhatsAppFallback}
-                       className="w-full py-4 border border-brand-green/30 rounded-2xl flex items-center justify-center space-x-3 text-brand-green text-[10px] font-bold uppercase tracking-widest hover:bg-brand-green/10 transition-all"
-                     >
-                       <MessageCircle size={14} />
-                       <span>Get Code via WhatsApp instead</span>
-                     </button>
-                   ) : null}
+                 <div className="space-y-4 text-center">
+                   <p className="text-red-500 text-[10px] font-bold uppercase leading-relaxed tracking-wider bg-red-500/5 py-3 rounded-xl border border-red-500/20">{error}</p>
+                   <button 
+                     onClick={handleWhatsAppFallback}
+                     className="w-full py-4 bg-brand-green/10 border border-brand-green/30 rounded-2xl flex items-center justify-center space-x-3 text-brand-green text-[10px] font-bold uppercase tracking-widest hover:bg-brand-green/20 transition-all shadow-xl shadow-brand-green/5"
+                   >
+                     <MessageCircle size={14} className="fill-brand-green/20" />
+                     <span>Get Access Code via WhatsApp instead</span>
+                   </button>
                  </div>
                )}
 
