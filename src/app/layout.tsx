@@ -51,7 +51,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <body className={`${outfit.variable} ${inter.variable} font-outfit antialiased text-zinc-100 selection:bg-brand-green/30 tracking-tight`}>
+      <body 
+        className={`${outfit.variable} ${inter.variable} font-outfit antialiased text-zinc-100 selection:bg-brand-green/30 tracking-tight`}
+        suppressHydrationWarning
+      >
         <GoogleMapsProvider>
           {children}
         </GoogleMapsProvider>

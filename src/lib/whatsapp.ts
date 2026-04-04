@@ -51,12 +51,18 @@ export async function sendWhatsAppOTP(phoneNumber: string, otp: string) {
 
     return response.data;
   } catch (error: any) {
-    if (error.response) {
-      console.error("WhatsApp API Detailed Error:", JSON.stringify(error.response.data, null, 2));
-    } else {
-      console.error("WhatsApp API Error:", error.message);
+    const detail = error.response?.data?.error;
+    const msg = detail?.message || error.message;
+    const code = detail?.code;
+
+    console.error("WhatsApp API Error:", msg);
+
+    // Sandbox Detection (Recipient not in whitelist)
+    if (code === 131030) {
+      throw new Error("Phone number is NOT in Meta Test List. Please add it in Meta Dashboard -> WhatsApp -> API Setup.");
     }
-    throw error;
+
+    throw new Error(msg);
   }
 }
 
