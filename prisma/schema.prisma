@@ -120,6 +120,8 @@ model GymPlan {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   gym         Gym      @relation(fields: [gymId], references: [id], onDelete: Cascade)
+  bookings    Booking[]
+  intents     BookingIntent[]
 
   @@index([gymId])
 }
@@ -146,9 +148,11 @@ model Booking {
   
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   gym  Gym  @relation(fields: [gymId], references: [id])
+  plan GymPlan @relation(fields: [planId], references: [id])
 
   @@index([userId])
   @@index([gymId])
+  @@index([planId])
   @@index([status])
 }
 
@@ -261,8 +265,10 @@ model BookingIntent {
   updatedAt      DateTime     @updatedAt
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   gym            Gym          @relation(fields: [gymId], references: [id])
+  plan           GymPlan      @relation(fields: [planId], references: [id])
 
   @@index([userId])
+  @@index([planId])
   @@index([status])
 }
 
