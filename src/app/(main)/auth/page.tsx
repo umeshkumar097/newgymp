@@ -52,7 +52,16 @@ export default function AuthPage() {
         setStep("OTP");
       } catch (err: any) {
         console.error("Firebase Auth Error:", err);
-        setError("Too many requests or invalid number. Please try again later.");
+        const errorCode = err.code || "unknown";
+        if (errorCode === "auth/invalid-phone-number") {
+          setError("Invalid phone number. Use 10 digits.");
+        } else if (errorCode === "auth/too-many-requests") {
+          setError("Too many attempts. Please wait 10 minutes.");
+        } else if (errorCode === "auth/unauthorized-domain") {
+          setError("Domain passfit.in not authorized in Firebase Console.");
+        } else {
+          setError(`Error (${errorCode}): Please try again later.`);
+        }
       }
     });
   };
