@@ -12,27 +12,25 @@ import { BottomNav } from "@/components/layout/BottomNav";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-plus-jakarta" });
 
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
 export default async function MainLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Fetch user data for the header
-  const cookieStore = await cookies();
-  const userId = cookieStore.get("user_id")?.value;
+  // Fetch session data for the header (Server Side)
+  const session = await getServerSession(authOptions);
   
-  const user = userId 
-    ? await prisma.user.findUnique({ where: { id: userId }, select: { name: true } })
-    : null;
-
-  const initials = user?.name 
-    ? user.name.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2)
-    : "JD";
+  const initials = session?.user?.name 
+    ? session.user.name.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2)
+    : "PF";
 
   return (
     <div className={`${inter.variable} ${plusJakarta.variable} min-h-screen bg-white flex flex-col font-sans`}>
       {/* Top Navigation */}
-      <Header userInitials={initials} isLoggedIn={!!user} />
+      <Header userInitials={initials} isLoggedIn={!!session} />
 
       {/* Main Content Area */}
       <MobileContainer>
