@@ -10,53 +10,60 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Phone number is required" }, { status: 400 });
     }
 
-    // Normalize: Strip +91 or 91 if present for consistent DB records
-    phoneNumber = phoneNumber.replace(/^\+91|^91/, "");
+    // 1. Normalize: Strip +91/91 for consistency in Prisma
+    const normalizedPhone = phoneNumber.replace(/^\+91|^91/, "");
 
-    // Fetch user details for multi-channel notification
+    // 2. Fetch or Mock User
     const user = await prisma.user.findFirst({
-      where: { phone: phoneNumber }
+      where: { phone: normalizedPhone }
     });
 
-    // Role Check for Partners/Admins
+    // Role Enforcement for Partners/Admins
     if (role === "GYM_OWNER" || role === "ADMIN") {
       if (!user || (user.role !== "GYM_OWNER" && user.role !== "ADMIN")) {
         return NextResponse.json({ 
-          error: "Aap register nahi ho. Kripya support se sampark karein.",
+          error: "This phone number is not registered as a Partner.",
           notRegistered: true 
         }, { status: 404 });
       }
     }
 
-    // 1. Generate a 4-digit OTP
+    // 3. Generate Secure 4-digit OTP
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
 
-    // 2. Set expiration (5 minutes from now)
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-
-    // 3. Save or Update OTP in database
+    // 4. Save to DB
     await prisma.otpVerification.upsert({
-      where: { phone: phoneNumber },
+      where: { phone: normalizedPhone },
       update: { otp, expiresAt, createdAt: new Date() },
-      create: { phone: phoneNumber, otp, expiresAt }
+      create: { phone: normalizedPhone, otp, expiresAt }
     });
 
-    // 4. Send OTP via Triple Channels
-    // Use providedEmail/Name if user doesn't exist yet (for registration)
-    await NotificationEngine.sendTripleChannelOTP({
-      phone: phoneNumber,
+    // 5. Sequential Delivery (WhatsApp then Email)
+    const report = await NotificationEngine.sendAuthOTP({
+      phone: normalizedPhone,
       otp,
       email: user?.email || providedEmail,
-      fcmToken: user?.fcmToken,
       name: user?.name || providedName
     });
 
-    console.log(`[AUTH] OTP Triggered: ${phoneNumber} -> ${otp}`);
+    console.log(`[AUTH] Delivery Report for ${normalizedPhone}:`, report);
 
-    return NextResponse.json({ success: true, message: "OTP sent successfully" });
+    if (report.whatsapp || report.email) {
+      return NextResponse.json({ 
+        success: true, 
+        message: report.whatsapp ? "WhatsApp Sent ✅" : "Email Sent ✅ (WhatsApp Delayed)",
+        channels: report 
+      });
+    }
+
+    return NextResponse.json({ 
+      success: false, 
+      error: `Could not reach you via WhatsApp or Email. ${report.error}` 
+    }, { status: 500 });
 
   } catch (error: any) {
-    console.error("Verify Auth ERROR (Internal):", error);
-    return NextResponse.json({ error: "Internal server error", details: error.message }, { status: 500 });
+    console.error("Auth System Final ERROR:", error);
+    return NextResponse.json({ error: "System encountered an error. Please try again later." }, { status: 500 });
   }
 }
