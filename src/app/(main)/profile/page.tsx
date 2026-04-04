@@ -7,6 +7,8 @@ import { redirect } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { LogoutButton } from "@/components/profile/LogoutButton";
+import Image from "next/image";
 
 export default async function ProfilePage() {
   // 1. Get user from NextAuth session
