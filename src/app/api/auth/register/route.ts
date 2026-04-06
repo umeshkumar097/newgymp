@@ -50,14 +50,24 @@ export async function POST(req: Request) {
 
     console.log(`[AUTH] New user registered: ${user.email}`);
 
+    // 4. Return User Profile (Consistent with Login API)
     return NextResponse.json({ 
       success: true, 
-      message: "Registration successful! You can now sign in.",
-      user: { id: user.id, email: user.email }
+      message: "Registration successful!",
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role
+      }
     });
 
   } catch (error: any) {
     console.error("Registration ERROR:", error);
-    return NextResponse.json({ error: "System error during registration. Please try again later." }, { status: 500 });
+    return NextResponse.json({ 
+      success: false, 
+      error: "System error during registration. Please try again later." 
+    }, { status: 500 });
   }
 }

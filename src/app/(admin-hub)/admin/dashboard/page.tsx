@@ -12,7 +12,6 @@ export default async function AdminDashboardPage({
   const { period = "30d" } = await searchParams;
 
   // Real DB Queries
-  // Time-based trend calculations
   const now = new Date();
   let startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   let prevStartDate = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
@@ -99,68 +98,52 @@ export default async function AdminDashboardPage({
   const defaultFee = platformSettings.find((s: any) => s.key === "DEFAULT_ONBOARDING_FEE")?.value || "4999";
 
   const stats = [
-    { label: "Total Revenue", value: `₹${(totalRevenue / 1000).toFixed(1)}k`, trend: revenueTrend, up: currentRevenue >= prevRevenue, icon: Wallet, color: "text-green-500", bg: "bg-green-500/10" },
+    { label: "Total Revenue", value: `₹${(totalRevenue / 1000).toFixed(1)}k`, trend: revenueTrend, up: currentRevenue >= prevRevenue, icon: Wallet, color: "text-brand-green", bg: "bg-brand-green/10" },
     { label: "Active Users", value: userCount.toString(), trend: userTrend, up: currentUserCount >= prevUserCount, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
     { label: "Partner Hubs", value: gymCount.toString(), trend: gymTrend, up: currentGymCount >= prevGymCount, icon: Store, color: "text-orange-500", bg: "bg-orange-500/10" },
     { label: "Open Tickets", value: openTicketsCount.toString(), trend: openTicketsCount > 0 ? "Urgent" : "Stable", up: openTicketsCount === 0, icon: Activity, color: "text-red-500", bg: "bg-red-500/10" },
   ];
 
   return (
-    <div className="space-y-12 font-outfit animate-in fade-in slide-in-from-bottom-4 duration-500 bg-[#0B0F19] min-h-screen -m-8 p-8 pb-20">
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
       {/* Welcome Header */}
-      <div className="flex justify-between items-start pt-4">
-        <div className="space-y-2">
-          <h1 className="text-5xl font-black font-outfit text-white tracking-tighter uppercase italic leading-none">System <span className="text-brand-green">Overview</span></h1>
-          <p className="text-slate-400 text-sm font-medium tracking-wide">Real-time performance metrics and platform health.</p>
+      <div className="flex justify-between items-end">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-black text-slate-950 tracking-tighter uppercase leading-none">Overview</h1>
+          <p className="text-slate-500 text-sm font-medium">Real-time performance and health tracking.</p>
         </div>
-        <div className="flex bg-zinc-900 border border-white/10 rounded-2xl p-1 shadow-2xl">
-          <Link 
-            href="/admin/dashboard?period=24h"
-            className={cn(
-              "px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
-              period === "24h" ? "bg-brand-green text-zinc-950 shadow-lg shadow-brand-green/20" : "text-slate-400 hover:text-white"
-            )}
-          >
-            Last 24h
-          </Link>
-          <Link 
-            href="/admin/dashboard?period=7d"
-            className={cn(
-              "px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
-              period === "7d" ? "bg-brand-green text-zinc-950 shadow-lg shadow-brand-green/20" : "text-slate-400 hover:text-white"
-            )}
-          >
-            7 Days
-          </Link>
-          <Link 
-            href="/admin/dashboard?period=30d"
-            className={cn(
-              "px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
-              period === "30d" ? "bg-brand-green text-zinc-950 shadow-lg shadow-brand-green/20" : "text-slate-400 hover:text-white"
-            )}
-          >
-            30 Days
-          </Link>
+        <div className="flex bg-white border border-slate-200/60 rounded-2xl p-1 shadow-sm">
+          {["24h", "7d", "30d"].map((p) => (
+            <Link 
+              key={p}
+              href={`/admin/dashboard?period=${p}`}
+              className={cn(
+                "px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                period === p ? "bg-slate-900 text-white shadow-lg shadow-slate-200" : "text-slate-400 hover:text-slate-900"
+              )}
+            >
+              {p === "24h" ? "Last 24h" : p === "7d" ? "7 Days" : "30 Days"}
+            </Link>
+          ))}
         </div>
       </div>
 
       {/* Hero Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat) => (
-          <div key={stat.label} className="group bg-zinc-900 border border-white/10 rounded-[2.5rem] p-8 space-y-6 hover:border-white/20 transition-all shadow-3xl relative overflow-hidden">
-             <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div key={stat.label} className="group bg-white border border-slate-200/60 rounded-[2rem] p-8 space-y-6 hover:border-slate-300 transition-all shadow-sm">
             <div className="flex justify-between items-center relative z-10">
-               <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center border border-white/5 shadow-inner", stat.bg, stat.color)}>
+               <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center border border-slate-100 shadow-sm", stat.bg, stat.color)}>
                   <stat.icon size={26} />
                </div>
-               <div className={cn("flex items-center space-x-1 text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-xl border border-white/5", stat.up ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500")}>
+               <div className={cn("flex items-center space-x-1 text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-xl border border-slate-100", stat.up ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600")}>
                   {stat.up ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
                   <span>{stat.trend}</span>
                </div>
             </div>
-            <div className="relative z-10">
-               <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">{stat.label}</div>
-               <div className="text-4xl font-black text-white tabular-nums group-hover:text-brand-green transition-colors tracking-tight">{stat.value}</div>
+            <div>
+               <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2">{stat.label}</div>
+               <div className="text-4xl font-black text-slate-950 tabular-nums tracking-tight">{stat.value}</div>
             </div>
           </div>
         ))}
@@ -168,30 +151,30 @@ export default async function AdminDashboardPage({
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         <div className="lg:col-span-2 space-y-12">
-          {/* Verification Radar (VISIBLE SHORTCUT) */}
+          {/* Pending Verification */}
           {pendingGyms.length > 0 && (
-            <div className="space-y-8">
-              <div className="flex justify-between items-center px-4">
-                <h2 className="text-2xl font-black font-outfit text-white uppercase tracking-tighter italic flex items-center">
-                  <ShieldCheck size={28} className="mr-3 text-orange-500" />
-                  Verification Radar
+            <div className="space-y-6">
+              <div className="flex justify-between items-center px-2">
+                <h2 className="text-xl font-black text-slate-900 uppercase tracking-tighter flex items-center">
+                  <ShieldCheck size={24} className="mr-3 text-orange-500" />
+                  Pending Verification
                 </h2>
-                <span className="text-orange-500 text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">HUB ACTIVATION PENDING</span>
+                <span className="text-orange-500 text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">Action Required</span>
               </div>
-              <div className="bg-orange-500/5 border border-orange-500/20 rounded-[3.5rem] p-6 shadow-3xl space-y-4">
+              <div className="bg-white border border-slate-200/60 rounded-[2.5rem] p-4 shadow-sm space-y-3">
                 {pendingGyms.map((gym: any) => (
-                  <div key={gym.id} className="flex justify-between items-center p-6 bg-zinc-950/60 backdrop-blur-md rounded-[2.5rem] border border-white/5 hover:border-orange-500/40 transition-all group">
+                  <div key={gym.id} className="flex justify-between items-center p-6 bg-slate-50 rounded-[2rem] border border-slate-200/40 hover:border-orange-500/40 transition-all group">
                     <div className="flex items-center space-x-6">
-                      <div className="w-14 h-14 rounded-2xl bg-zinc-900 border border-white/5 flex items-center justify-center text-slate-500 group-hover:text-orange-500 transition-colors">
+                      <div className="w-14 h-14 rounded-2xl bg-white border border-slate-200/60 flex items-center justify-center text-slate-400 group-hover:text-orange-500 transition-colors">
                         <Store size={22} />
                       </div>
                       <div>
-                        <div className="text-md font-black text-white uppercase tracking-wider">{gym.name}</div>
-                        <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1 italic">{gym.location}</div>
+                        <div className="text-md font-black text-slate-900 uppercase tracking-wider">{gym.name}</div>
+                        <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1">{gym.location}</div>
                       </div>
                     </div>
-                    <Link href="/admin/gyms" className="bg-white text-zinc-950 px-6 py-3 rounded-xl font-black text-[9px] uppercase tracking-widest hover:bg-orange-500 transition-all shadow-xl flex items-center space-x-2">
-                       <span>Review Node</span>
+                    <Link href="/admin/gyms" className="bg-slate-900 text-white px-6 py-3 rounded-xl font-black text-[9px] uppercase tracking-widest hover:bg-orange-500 transition-all shadow-md flex items-center space-x-2 border border-slate-800">
+                       <span>Review HUB</span>
                        <MousePointer2 size={12} />
                     </Link>
                   </div>
@@ -200,44 +183,44 @@ export default async function AdminDashboardPage({
             </div>
           )}
 
-          {/* Live Transactions */}
-          <div className="space-y-8">
-            <div className="flex justify-between items-center px-4">
-              <h2 className="text-2xl font-black font-outfit text-white uppercase tracking-tighter italic">Live Transactions</h2>
-              <button className="text-brand-green text-[10px] font-black uppercase tracking-[0.2em] hover:bg-brand-green hover:text-zinc-950 transition-all px-6 py-3 bg-brand-green/10 rounded-2xl border border-brand-green/20">View Journal</button>
+          {/* Recent Transactions */}
+          <div className="space-y-6">
+            <div className="flex justify-between items-center px-2">
+              <h2 className="text-xl font-black text-slate-900 uppercase tracking-tighter">Recent activity</h2>
+              <Link href="/admin/gyms" className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] hover:text-slate-900 transition-all px-6 py-3 bg-white rounded-2xl border border-slate-200 shadow-sm">View Journal</Link>
             </div>
-            <div className="bg-zinc-900/60 border border-white/10 rounded-[3.5rem] p-4 shadow-3xl space-y-3">
+            <div className="bg-white border border-slate-200/60 rounded-[2.5rem] p-4 shadow-sm space-y-3">
               {recentBookings.length > 0 ? recentBookings.map((booking: any) => (
-                <div key={booking.id} className="flex justify-between items-center p-6 bg-zinc-950 rounded-[2.5rem] border border-white/5 hover:border-brand-green/30 transition-all group cursor-pointer hover:bg-zinc-900">
+                <div key={booking.id} className="flex justify-between items-center p-6 bg-slate-50/50 rounded-[2rem] border border-slate-100 hover:border-brand-green/30 transition-all group cursor-pointer hover:bg-white">
                   <div className="flex items-center space-x-6">
                     <div className="relative">
-                        <div className="w-16 h-16 rounded-2xl bg-zinc-900 flex items-center justify-center group-hover:bg-brand-green transition-all duration-700 border border-white/5">
-                          <Zap size={24} className="text-slate-500 group-hover:text-zinc-950" />
+                        <div className="w-16 h-16 rounded-2xl bg-white border border-slate-200 flex items-center justify-center group-hover:bg-brand-green/10 transition-all duration-700">
+                          <Zap size={24} className="text-slate-400 group-hover:text-brand-green" />
                         </div>
-                        <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-lg bg-brand-green border-4 border-zinc-950 flex items-center justify-center">
-                          <Check size={12} className="text-zinc-950" strokeWidth={5} />
+                        <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-lg bg-brand-green border-4 border-white flex items-center justify-center">
+                          <Check size={12} className="text-slate-950" strokeWidth={5} />
                         </div>
                     </div>
                     <div>
-                        <div className="text-md font-black text-white uppercase tracking-wider">{booking.gym.name}</div>
-                        <div className="text-sm font-medium text-slate-400 tracking-tight mt-1 flex items-center space-x-2">
+                        <div className="text-md font-black text-slate-900 uppercase tracking-wider">{booking.gym.name}</div>
+                        <div className="text-sm font-medium text-slate-500 tracking-tight mt-1 flex items-center space-x-2">
                           <span className="truncate max-w-[120px]">{booking.user.email.toLowerCase()}</span>
-                          <span className="w-1 h-1 rounded-full bg-zinc-800" />
+                          <span className="w-1 h-1 rounded-full bg-slate-200" />
                           <span>{new Date(booking.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-xl font-black text-white tracking-tight">₹{booking.totalAmount}</div>
+                    <div className="text-xl font-black text-slate-950 tracking-tight">₹{booking.totalAmount}</div>
                     <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1.5 flex items-center justify-end space-x-1">
                         <ShieldCheck size={12} className="text-brand-green" />
-                        <span>SECURED</span>
+                        <span>VERIFIED</span>
                     </div>
                   </div>
                 </div>
               )) : (
-                <div className="p-24 text-center text-slate-600 font-bold uppercase tracking-[0.3em] text-xs">
-                  <Activity size={48} className="mx-auto mb-6 opacity-20" />
+                <div className="p-24 text-center text-slate-400 font-bold uppercase tracking-[0.3em] text-xs">
+                  <Activity size={48} className="mx-auto mb-6 opacity-20 text-slate-300" />
                   <p>No recent platform activity</p>
                 </div>
               )}
@@ -245,54 +228,52 @@ export default async function AdminDashboardPage({
           </div>
         </div>
 
-        {/* Universal Governance & Quick Actions */}
+        {/* Quick Actions & Settings */}
         <div className="space-y-12">
            <div className="space-y-6">
-              <h2 className="text-2xl font-black font-outfit text-white px-4 uppercase tracking-tighter italic">Universal Governance</h2>
-              <div className="bg-zinc-900 border border-white/10 rounded-[3rem] p-10 space-y-10 shadow-3xl relative overflow-hidden group">
-                 <div className="absolute inset-0 bg-brand-blue/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                 
+              <h2 className="text-xl font-black text-slate-900 px-2 uppercase tracking-tighter">Settings</h2>
+              <div className="bg-white border border-slate-200/60 rounded-[2.5rem] p-10 space-y-10 shadow-sm relative overflow-hidden group">
                  <div className="space-y-4 relative z-10">
                     <div className="flex justify-between items-center">
                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Platform Comm.</p>
-                       <span className="text-xl font-black text-brand-green italic">{commissionRate}%</span>
+                       <span className="text-xl font-black text-brand-green">{commissionRate}%</span>
                     </div>
-                    <div className="h-1.5 w-full bg-zinc-950 rounded-full border border-white/5">
-                       <div className="h-full bg-brand-green shadow-[0_0_10px_rgba(16,185,129,0.5)] rounded-full" style={{ width: `${commissionRate}%` }} />
+                    <div className="h-1.5 w-full bg-slate-50 rounded-full border border-slate-100">
+                       <div className="h-full bg-brand-green rounded-full shadow-sm" style={{ width: `${commissionRate}%` }} />
                     </div>
                  </div>
 
                  <div className="space-y-4 relative z-10">
                     <div className="flex justify-between items-center">
                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Default Onboarding</p>
-                       <span className="text-xl font-black text-orange-500 italic">₹{defaultFee}</span>
+                       <span className="text-xl font-black text-orange-500">₹{defaultFee}</span>
                     </div>
-                    <div className="flex items-center space-x-2 text-[9px] font-black text-slate-700 uppercase tracking-widest pt-1">
+                    <div className="flex items-center space-x-2 text-[9px] font-black text-slate-400 uppercase tracking-widest pt-1">
                        <Activity size={10} />
-                       <span>MODIFIABLE VIA SETTINGS</span>
+                       <span>MANAGED VIA SYSTEM SETTINGS</span>
                     </div>
                  </div>
 
-                 <Link href="/admin/settings" className="block w-full py-4 bg-zinc-950 border border-white/5 rounded-2xl text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] text-center hover:bg-brand-blue hover:text-white transition-all shadow-xl">
+                 <Link href="/admin/settings" className="block w-full py-4 bg-slate-950 border border-slate-800 rounded-2xl text-[10px] font-black text-white uppercase tracking-[0.3em] text-center hover:bg-brand-green hover:text-slate-950 transition-all shadow-md">
                     Configure Registry
                  </Link>
               </div>
            </div>
 
            <div className="space-y-6">
-              <h2 className="text-2xl font-black font-outfit text-white px-4 uppercase tracking-tighter italic">Quick Actions</h2>
+              <h2 className="text-xl font-black text-slate-900 px-2 uppercase tracking-tighter">Quick Actions</h2>
               <div className="grid grid-cols-2 gap-4">
                  {[
-                   { label: "New Blast", icon: Flame, color: "bg-orange-500" },
-                   { label: "System Health", icon: Activity, color: "bg-brand-blue" },
-                   { label: "KYC Radar", icon: ShieldCheck, color: "bg-brand-green" },
-                   { label: "Manage Hubs", icon: Store, color: "bg-purple-500", href: "/admin/gyms" },
+                    { label: "Promote", icon: Flame, color: "bg-orange-500" },
+                    { label: "Health", icon: Activity, color: "bg-blue-600" },
+                    { label: "Security", icon: ShieldCheck, color: "bg-brand-green" },
+                    { label: "View HUBs", icon: Store, color: "bg-purple-600", href: "/admin/gyms" },
                   ].map((action) => (
-                    <button key={action.label} className="p-8 bg-zinc-900 border border-white/10 rounded-[2.5rem] flex flex-col items-center justify-center space-y-4 hover:border-brand-green/30 transition-all active:scale-95 group shadow-2xl hover:bg-zinc-800">
-                       <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-2xl group-hover:scale-110 transition-transform", action.color)}>
+                    <button key={action.label} className="p-8 bg-white border border-slate-200/60 rounded-[2rem] flex flex-col items-center justify-center space-y-4 hover:border-brand-green/30 transition-all active:scale-95 group shadow-sm hover:shadow-md">
+                       <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-sm group-hover:scale-110 transition-transform", action.color)}>
                           <action.icon size={20} />
                        </div>
-                       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-white transition-colors text-center">{action.label}</span>
+                       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-slate-900 transition-colors text-center">{action.label}</span>
                     </button>
                   ))}
               </div>

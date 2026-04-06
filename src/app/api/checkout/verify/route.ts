@@ -12,9 +12,12 @@ const cashfree = new Cashfree(
 );
 
 import { sendWhatsAppOTP } from "../../../../lib/whatsapp";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../../auth/[...nextauth]/route";
 
 export async function POST(req: Request) {
   try {
+    const session = await getServerSession(authOptions);
     const { order_id, bookingData } = await req.json();
 
     // Fetch order payments from Cashfree
@@ -25,12 +28,19 @@ export async function POST(req: Request) {
     const successPayment = payments?.find((p: any) => p.payment_status === "SUCCESS");
 
     if (successPayment) {
+      // Ensure we have a valid user identity
+      const userId = session?.user ? (session.user as any).id : null;
+      
+      if (!userId) {
+          return NextResponse.json({ error: "Session identity missing during verification" }, { status: 401 });
+      }
+
       const otp = Math.floor(1000 + Math.random() * 9000).toString();
       
       // Create or Update booking
       const booking = await prisma.booking.create({
         data: {
-          userId: "mock-user-id",
+          userId: userId,
           gymId: bookingData.gymId,
           planId: bookingData.planId,
           bookingDate: new Date(),

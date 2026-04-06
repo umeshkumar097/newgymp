@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Settings, Shield, Bell, Database, Globe, Lock, Save, Zap, Loader2 } from "lucide-react";
+import { Settings as SettingsIcon, Shield, Bell, Database, Globe, Lock, Save, Zap, Loader2 } from "lucide-react";
 import { getPlatformSettings, updatePlatformSetting } from "@/app/actions/admin";
+import { cn } from "@/lib/utils";
 
 export default function AdminSettingsPage() {
   const [isPending, setIsPending] = useState(false);
@@ -44,115 +45,120 @@ export default function AdminSettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0B0F19] flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <Loader2 className="animate-spin text-brand-green" size={48} />
       </div>
     );
   }
 
   return (
-    <div className="space-y-12 font-outfit bg-[#0B0F19] -m-8 p-12 min-h-screen">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 px-4">
-        <div className="space-y-2">
-          <h1 className="text-5xl font-black text-white tracking-tighter uppercase italic">Platform Settings</h1>
-          <p className="text-slate-400 text-sm font-medium uppercase tracking-[0.1em]">Configure global platform parameters and security protocols</p>
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000 pb-20">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 px-4">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none">Settings</h1>
+          <p className="text-slate-500 text-sm font-medium">Configure global platform parameters and security.</p>
         </div>
         <div className="flex items-center space-x-4">
            <button 
              disabled={isPending}
              onClick={handleSave}
-             className="bg-white text-zinc-950 font-black px-10 py-5 rounded-[1.5rem] text-[10px] uppercase tracking-[0.2em] shadow-3xl flex items-center space-x-4 hover:bg-brand-green transition-all active:scale-95 disabled:opacity-50"
+             className="bg-slate-900 text-white font-black px-10 py-5 rounded-2xl text-[10px] uppercase tracking-[0.2em] shadow-lg flex items-center space-x-4 hover:bg-brand-green hover:text-slate-950 transition-all active:scale-95 disabled:opacity-50 border border-slate-800"
            >
               {isPending ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-              <span>{isPending ? "Syncing..." : "Commit Changes"}</span>
+              <span>{isPending ? "Syncing..." : "Save Configuration"}</span>
            </button>
         </div>
       </div>
 
+      {/* Stats/Health Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 px-4">
         {[
-          { label: "System Status", value: "Operational", icon: Zap, status: "text-brand-green", detail: "LATENCY: 12ms • UPTIME: 99.9%" },
-          { label: "Security Protocol", value: "AES-256 Active", icon: Shield, status: "text-brand-blue", detail: "SHIELDED • ENCRYPTED LAYER" },
-          { label: "API Version", value: "v2.0.4-premium", icon: Database, status: "text-slate-500", detail: "STABLE • SYNCED TO MAIN" },
+          { label: "Platform Status", value: "Operational", icon: Zap, status: "text-brand-green", detail: "LATENCY: 12ms • UPTIME: 99.9%", bg: "bg-green-50" },
+          { label: "Security", value: "AES-256", icon: Shield, status: "text-brand-blue", detail: "SHIELDED • ENCRYPTED LAYER", bg: "bg-blue-50" },
+          { label: "Registry Sync", value: "Stable", icon: Database, status: "text-slate-500", detail: "STABLE • SYNCED TO MAIN", bg: "bg-slate-100" },
         ].map((item) => (
-          <div key={item.label} className="p-10 rounded-[3rem] bg-zinc-900 border border-white/10 flex flex-col justify-between space-y-8 shadow-3xl hover:border-white/20 transition-all group hover:-translate-y-1 duration-500">
+          <div key={item.label} className="p-10 rounded-[3rem] bg-white border border-slate-200/60 flex flex-col justify-between space-y-8 shadow-sm hover:border-slate-300 transition-all group">
             <div className="flex items-start justify-between">
-              <div className="w-16 h-16 rounded-[1.5rem] bg-zinc-950 flex items-center justify-center border border-white/5 text-slate-500 shadow-2xl group-hover:text-white transition-colors">
-                <item.icon size={24} />
+              <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center border border-slate-100 shadow-sm transition-colors", item.bg)}>
+                <item.icon size={24} className={item.status} />
               </div>
-              <div className="px-3 py-1 bg-white/5 rounded-lg border border-white/5 text-[9px] font-black text-slate-600 uppercase tracking-widest">ACTIVE</div>
+              <div className="px-3 py-1 bg-slate-50 rounded-lg border border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest">Active</div>
             </div>
             <div>
-              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1.5">{item.label}</div>
-              <div className={`text-2xl font-black tracking-tight uppercase ${item.status}`}>{item.value}</div>
-              <p className="text-[9px] font-black text-slate-700 uppercase tracking-[0.2em] mt-3">{item.detail}</p>
+              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1.5">{item.label}</div>
+              <div className={cn("text-2xl font-black tracking-tight uppercase", item.status)}>{item.value}</div>
+              <p className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] mt-3">{item.detail}</p>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="bg-zinc-900 border border-white/10 rounded-[4rem] p-16 space-y-12 shadow-4xl mx-4">
-        <div className="flex items-center space-x-6 border-b border-white/5 pb-8">
+      {/* Main Governance Block */}
+      <div className="bg-white border border-slate-200/60 rounded-[4rem] p-16 space-y-12 shadow-sm mx-4">
+        <div className="flex items-center space-x-6 border-b border-slate-50 pb-8">
            <div className="w-14 h-14 rounded-2xl bg-brand-blue/10 flex items-center justify-center border border-brand-blue/20">
               <Globe size={28} className="text-brand-blue" />
            </div>
            <div>
-              <h3 className="text-3xl font-black text-white uppercase tracking-tighter italic leading-none">Global <br/> Parameters</h3>
-              <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] mt-1">Universal governance values</p>
+              <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter leading-none">Platform Governance</h3>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">Universal parameter control</p>
            </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           <div className="space-y-4">
-            <label className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-500 px-2">PLATFORM TAX / COMMISSION (%)</label>
-            <div className="p-6 bg-zinc-950 border border-white/10 rounded-2xl group focus-within:border-brand-green/30 transition-all shadow-inner">
+            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-2">COMMISSION RATE (%)</label>
+            <div className="p-6 bg-slate-50 border border-slate-100 rounded-2xl group focus-within:border-brand-green/30 transition-all shadow-inner">
               <input 
                 type="text" 
                 value={tax} 
                 onChange={(e) => setTax(e.target.value)}
-                className="bg-transparent border-none outline-none text-2xl font-black text-white w-full tracking-tighter" 
+                className="bg-transparent border-none outline-none text-2xl font-black text-slate-900 w-full tracking-tighter" 
               />
             </div>
-            <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest px-2">EFFECTIVE IMMEDIATELY ON NEW BOOKINGS</p>
+            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-2 leading-relaxed">Applied to all future hub transactions</p>
           </div>
+          
           <div className="space-y-4">
-            <label className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-500 px-2">OPERATIONAL CURRENCY</label>
-            <div className="p-6 bg-zinc-950 border border-white/10 rounded-2xl group focus-within:border-brand-blue/30 transition-all shadow-inner">
+            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-2">OPERATIONAL CURRENCY</label>
+            <div className="p-6 bg-slate-50 border border-slate-100 rounded-2xl group focus-within:border-brand-blue/30 transition-all shadow-inner">
                <div className="flex items-center space-x-4">
-                  <span className="text-2xl font-black text-brand-blue italic">{currency === "INR" ? "₹" : "$"}</span>
+                  <span className="text-2xl font-black text-brand-blue">{currency === "INR" ? "₹" : "$"}</span>
                   <input 
                     type="text" 
                     value={currency} 
                     onChange={(e) => setCurrency(e.target.value.toUpperCase())}
-                    className="bg-transparent border-none outline-none text-2xl font-black text-white w-full tracking-tighter uppercase" 
+                    className="bg-transparent border-none outline-none text-2xl font-black text-slate-900 w-full tracking-tighter uppercase" 
                   />
                </div>
             </div>
-            <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest px-2">LOCALIZATION SYMBOLS FOR VOUCHERS</p>
+            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-2 leading-relaxed">Regional localization for vouchers</p>
           </div>
+
           <div className="space-y-4">
-            <label className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-500 px-2">DEFAULT ONBOARDING FEE</label>
-            <div className="p-6 bg-zinc-950 border border-white/10 rounded-2xl group focus-within:border-orange-500/30 transition-all shadow-inner">
+            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-2">ONBOARDING FEE</label>
+            <div className="p-6 bg-slate-50 border border-slate-100 rounded-2xl group focus-within:border-orange-400/30 transition-all shadow-inner">
                <div className="flex items-center space-x-4">
-                  <span className="text-2xl font-black text-orange-500 italic">₹</span>
+                  <span className="text-2xl font-black text-orange-500">₹</span>
                   <input 
                     type="text" 
                     value={onboardingFee} 
                     onChange={(e) => setOnboardingFee(e.target.value)}
-                    className="bg-transparent border-none outline-none text-2xl font-black text-white w-full tracking-tighter uppercase" 
+                    className="bg-transparent border-none outline-none text-2xl font-black text-slate-900 w-full tracking-tighter uppercase" 
                   />
                </div>
             </div>
-            <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest px-2">BASE COST FOR NEW HUB ACTIVATION</p>
+            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-2 leading-relaxed">Default cost for new hub activation</p>
           </div>
         </div>
 
-        <div className="bg-brand-blue/5 border border-brand-blue/20 rounded-3xl p-10 flex items-start space-x-6">
-           <Shield size={24} className="text-brand-blue shrink-0 mt-1" />
+        <div className="bg-slate-50 border border-slate-100 rounded-3xl p-10 flex items-start space-x-6">
+           <Shield size={24} className="text-slate-300 shrink-0 mt-1" />
            <div className="space-y-2">
-              <p className="text-[11px] font-black text-brand-blue uppercase tracking-[0.2em]">Security Protocol Warning</p>
-              <p className="text-sm font-medium text-slate-400 leading-relaxed uppercase tracking-tight">
-                 Changes to global commission rates will be broadcasted to all active gym partners via automated governance emails. Proceed with caution as this affects platform-wide financial settlement.
+              <p className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em]">Security Advisory</p>
+              <p className="text-xs font-medium text-slate-500 leading-relaxed uppercase tracking-tight">
+                 Changes to platform parameters will take effect immediately. Ensure you have coordinated with the financial department before committing changes to commission structures.
               </p>
            </div>
         </div>

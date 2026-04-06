@@ -1,7 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { NotificationEngine } from "@/lib/notifications";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../../auth/[...nextauth]/route";
 import { cookies } from "next/headers";
+
+/**
+ * HYBRID BOOKING CREATION API
+ * Supports: 1. NextAuth (Web Sessions)
+ *           2. Manual Cookies (Mobile/Unified Auth)
+ */
 
 export async function POST(req: Request) {
   try {
@@ -15,30 +23,53 @@ export async function POST(req: Request) {
       gymName 
     } = bookingData;
 
-    // 1. Get user from session cookie
-    const cookieStore = await cookies();
-    const userId = cookieStore.get("user_id")?.value;
+    let userId: string | null = null;
+    let userName: string | null | undefined = null;
+    let userEmail: string | null | undefined = null;
+    let userPhone: string | null | undefined = null;
 
+    // 1. Attempt to Get Identity from NextAuth Session
+    const session = await getServerSession(authOptions);
+    if (session && session.user) {
+      userId = (session.user as any).id;
+      userName = session.user.name;
+      userEmail = session.user.email;
+      userPhone = (session.user as any).phone;
+    }
+
+    // 2. Fallback to user_id Cookie (Mobile/Hybrid)
     if (!userId) {
-      return NextResponse.json({ error: "Authentication required to book" }, { status: 401 });
+      const cookieStore = await cookies();
+      const cookieUserId = cookieStore.get("user_id")?.value;
+      
+      if (cookieUserId) {
+        const user = await prisma.user.findUnique({
+          where: { id: cookieUserId },
+          select: { id: true, name: true, email: true, phone: true }
+        });
+        
+        if (user) {
+          userId = user.id;
+          userName = user.name;
+          userEmail = user.email;
+          userPhone = user.phone;
+        }
+      }
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId }
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User session invalid" }, { status: 401 });
+    // 3. Reject if still no identity
+    if (!userId) {
+      return NextResponse.json({ error: "Authentication required to create booking" }, { status: 401 });
     }
 
-    // 2. Generate OTP
+    // 4. Generate OTP & Booking Details
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
     const bookingId = `BK-${Date.now()}`;
 
-    // 3. Create Booking
+    // 5. Create Booking
     const booking = await prisma.booking.create({
       data: {
-        userId: user.id,
+        userId: userId,
         gymId: gymId,
         planId: planId,
         bookingDate: new Date(),
@@ -60,12 +91,12 @@ export async function POST(req: Request) {
       }
     });
 
-    // 4. Send Owner Notification
+    // 6. Send Owner Notification
     try {
       if (booking.gym.owner?.email) {
         await NotificationEngine.sendBookingAlertToOwner(
           { email: booking.gym.owner.email, name: booking.gym.owner.name || "Partner" },
-          { name: user.name || "Customer", phone: user.phone },
+          { name: (userName ?? "Customer"), phone: (userPhone ?? null) },
           booking.gym.name,
           booking.plan.type,
           booking.totalAmount
@@ -75,36 +106,33 @@ export async function POST(req: Request) {
       console.error("Failed to send owner email notification:", ownerEmailError);
     }
 
-    // 3. Mark Intent as Converted
+    // 7. Mark Intent as Converted
     await (prisma as any).bookingIntent.updateMany({
-      where: { userId: user.id, gymId, status: "PENDING" },
+      where: { userId: userId, gymId, status: "PENDING" },
       data: { status: "CONVERTED" }
     });
 
-    // 4. Send Enhanced WhatsApp Notifications
+    // 8. Send WhatsApp Notifications
     try {
-      if (user.phone) {
-        // Check if first booking
+      if (userPhone) {
         const previousBookingsCount = await prisma.booking.count({
-          where: { userId: user.id, id: { not: booking.id } }
+          where: { userId: userId, id: { not: booking.id } }
         });
 
         const planName = planId.includes("day") ? "Day Pass" : 
                          planId.includes("week") ? "Weekly Pass" : 
                          planId.includes("month") ? "Monthly Pass" : "Gym Pass";
 
-        // 4a. Send Official Confirmation
         await NotificationEngine.sendBookingConfirmation(
-          { phone: user.phone, name: user.name || "Customer" },
+          { phone: userPhone, name: (userName ?? "Customer") },
           planName,
           gymName || "PassFit Gym",
           otp
         );
 
-        // 4b. Send Celebration if first booking
         if (previousBookingsCount === 0) {
           await NotificationEngine.sendBookingCelebration(
-            { phone: user.phone, name: user.name || "Customer" },
+            { phone: userPhone, name: (userName ?? "Customer") },
             gymName || "the Gym"
           );
         }

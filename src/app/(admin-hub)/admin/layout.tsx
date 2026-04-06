@@ -46,7 +46,6 @@ export default function AdminLayout({
           <h1 className="text-2xl font-black uppercase tracking-tighter text-slate-900 leading-none">
             PassFit <br/><span className="text-brand-green">Admin</span>
           </h1>
-px-6 py-4 rounded-2xl transition-all font-black text-[10px] uppercase tracking-[0.2em]",
           <div className="w-2 h-2 rounded-full bg-brand-green animate-pulse" />
         </div>
         
