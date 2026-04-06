@@ -141,8 +141,11 @@ export const BookingVoucher = ({ booking }: { booking: any }) => (
           <Text style={styles.value}>{booking.plan.type} PASS</Text>
         </View>
         <View style={styles.gridItem}>
-          <Text style={styles.label}>Date</Text>
-          <Text style={styles.value}>{new Date(booking.bookingDate || booking.createdAt).toLocaleDateString()}</Text>
+          <Text style={styles.label}>Date(s)</Text>
+          <Text style={styles.value}>
+            {new Date(booking.bookingDates[0] || booking.createdAt).toLocaleDateString()}
+            {booking.bookingDates.length > 1 ? ` (+${booking.bookingDates.length - 1} more)` : ''}
+          </Text>
         </View>
         <View style={styles.gridItem}>
           <Text style={styles.label}>To Pay</Text>

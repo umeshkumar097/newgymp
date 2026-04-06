@@ -64,19 +64,19 @@ export async function POST(req: Request) {
 
     // 4. Generate OTP & Booking Details
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
-    const bookingId = `BK-${Date.now()}`;
+    const cleanBookingDates = (bookingData.bookingDates || [new Date()]).map((d: string) => new Date(d));
 
-    // 5. Create Booking
+    // 5. Create Booking (Multi-Date Support)
     const booking = await prisma.booking.create({
       data: {
         userId: userId,
         gymId: gymId,
         planId: planId,
-        bookingDate: new Date(),
+        bookingDates: cleanBookingDates,
         totalAmount: parseFloat(amount),
         status: "BOOKED",
         otp: otp,
-        qrCode: `passfit-${bookingId}`,
+        qrCode: `passfit-${Date.now()}`,
         members: members || 1,
         selectedAddons: addons || [],
         paymentId: "PAY_AT_GYM",
@@ -91,19 +91,42 @@ export async function POST(req: Request) {
       }
     });
 
-    // 6. Send Owner Notification
+    // 6. Send Operational & Financial Notifications (Dual Trigger)
     try {
+      // Alert Gym Owner with Manifest
       if (booking.gym.owner?.email) {
-        await NotificationEngine.sendBookingAlertToOwner(
-          { email: booking.gym.owner.email, name: booking.gym.owner.name || "Partner" },
-          { name: (userName ?? "Customer"), phone: (userPhone ?? null) },
-          booking.gym.name,
-          booking.plan.type,
-          booking.totalAmount
-        );
+        await NotificationEngine.sendBookingAlertToOwner({
+          owner: { email: booking.gym.owner.email, name: booking.gym.owner.name || "Partner" },
+          customer: { 
+            name: (userName ?? "Member"), 
+            phone: (userPhone ?? null), 
+            email: (userEmail ?? "member@passfit.in") 
+          },
+          gymName: booking.gym.name,
+          planName: booking.plan.type,
+          amount: booking.totalAmount,
+          dates: cleanBookingDates,
+          members: booking.members
+        });
       }
-    } catch (ownerEmailError) {
-      console.error("Failed to send owner email notification:", ownerEmailError);
+
+      // Send Professional Invoice to User (Aiclex Technologies Branding)
+      if (userEmail) {
+        await NotificationEngine.sendBookingInvoice({
+          user: { 
+            email: userEmail, 
+            name: (userName ?? "Member"), 
+            phone: (userPhone ?? null) 
+          },
+          bookingId: booking.id,
+          gymName: booking.gym.name,
+          amount: booking.totalAmount,
+          dates: cleanBookingDates,
+          members: booking.members
+        });
+      }
+    } catch (notificationError) {
+      console.error("Critical Notification Error:", notificationError);
     }
 
     // 7. Mark Intent as Converted

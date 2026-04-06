@@ -43,7 +43,7 @@ export async function POST(req: Request) {
           userId: userId,
           gymId: bookingData.gymId,
           planId: bookingData.planId,
-          bookingDate: new Date(),
+          bookingDates: bookingData.bookingDates || [new Date()],
           totalAmount: bookingData.amount,
           paymentId: successPayment.cf_payment_id?.toString() || order_id,
           status: "BOOKED",
